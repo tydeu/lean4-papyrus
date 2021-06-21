@@ -25,7 +25,7 @@ EXTRA_CXX_FLAGS := -O1
 INCLUDE_DIR := include
 
 OUT := build
-LIB_OBJ := lean_llvm.o
+LIB_OBJ := papyrus.o
 
 SRCS := \
 	common.cpp\

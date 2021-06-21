@@ -1,4 +1,4 @@
-#include "lean_llvm.h"
+#include "papyrus.h"
 
 #include <lean/utf8.h>
 #include <llvm/ADT/StringRef.h>
@@ -6,9 +6,9 @@
 using namespace lean;
 using namespace llvm;
 
-namespace lean_llvm {
+namespace papyrus {
 
-void nopForeach(void* p, b_obj_arg a) {
+void nopForeach(void*, b_obj_arg) {
   return;
 }
 
@@ -23,9 +23,9 @@ lean::object* mk_string(const llvm::StringRef& str) {
     return obj;
 }
 
-const llvm::StringRef string_to_ref(lean::object* o) {
-  lean_assert(is_string(o));
-  return llvm::StringRef(lean_to_string(o)->m_data, string_size(o) - 1);
+const llvm::StringRef string_to_ref(lean::object* obj) {
+  lean_assert(is_string(obj));
+  return llvm::StringRef(lean_to_string(obj)->m_data, string_size(obj) - 1);
 }
 
-} // end namespace lean_llvm
+} // end namespace papyrus

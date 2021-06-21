@@ -9,7 +9,7 @@ namespace llvm {
   class Module;
 }
 
-namespace lean_llvm {
+namespace papyrus {
 
 //------------------------------------------------------------------------------
 // LLVM interfaces
@@ -44,4 +44,4 @@ lean::external_object_class* registerDeleteClass() {
     return lean_register_external_class(&deletePointer<T>, &nopForeach);
 }
 
-} // end namespace lean_llvm
+} // end namespace papyrus
