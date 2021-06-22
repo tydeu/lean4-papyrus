@@ -11,3 +11,6 @@ namespace Module
 
 @[extern "papyrus_module_getModuleIdentifier"]
 constant getModuleIdentifier (mod : @& Module) : IO String
+
+@[extern "papyrus_module_setModuleIdentifier"]
+constant setModuleIdentifier (mod : @& Module) (id : @& String) : IO Unit

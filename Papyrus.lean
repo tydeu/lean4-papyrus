@@ -7,3 +7,5 @@ def main : IO Unit := do
   let ctx ← LLVM.newContext
   let mod ← ctx.newModule "hello"
   IO.println (← mod.getModuleIdentifier)
+  mod.setModuleIdentifier "world"
+  IO.println (← mod.getModuleIdentifier)
