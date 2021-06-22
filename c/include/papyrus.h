@@ -3,10 +3,10 @@
 
 // Forward declarations
 namespace llvm {
-  class StringRef;
-  class MemoryBuffer;
-  class LLVMContext;
-  class Module;
+    class StringRef;
+    class MemoryBuffer;
+    class LLVMContext;
+    class Module;
 }
 
 namespace papyrus {
@@ -42,6 +42,40 @@ void deletePointer(void* p) {
 template<typename T>
 lean::external_object_class* registerDeleteClass() {
     return lean_register_external_class(&deletePointer<T>, &nopForeach);
+}
+
+
+// An external object that is also contained within some other object.
+// It holds a handle to this so that it is not deleted before we are
+// done with this object.
+template<typename T>
+struct ContainedExternal {
+    // Lean object for the container
+    lean::object* container;
+    std::unique_ptr<T> value;
+
+    ContainedExternal(const ContainedExternal&) = delete;
+
+    ContainedExternal(lean::object* container, std::unique_ptr<T> value)
+	    : container(container), value(std::move(value)) {}
+
+    ~ContainedExternal() {
+        value = nullptr;
+        lean::dec_ref(container);
+    }
+};
+
+template<typename T>
+void containedExternalForeach(void * p, lean::b_obj_arg a) {
+    auto d = static_cast<ContainedExternal<T>*>(p);
+   lean::apply_1(a, d->container);
+}
+
+// Register a class whose lifetime is extends another objects.
+// It holds a reference to the container while alive and releases it when finalized.
+template<typename T>
+lean::external_object_class* registerContainedClass() {
+    return lean_register_external_class(&deletePointer<ContainedExternal<T>>, &containedExternalForeach<T>);
 }
 
 } // end namespace papyrus

@@ -10,7 +10,7 @@ namespace papyrus {
 
 // Class for freshly created LLVM contexts.
 static external_object_class* getLLVMContextClass() {
-    // Use static thread to make this thread safe (hopefully).
+    // Use static to make this thread safe by static initialization rules.
     static external_object_class* c = registerDeleteClass<LLVMContext>();
     return c;
 }

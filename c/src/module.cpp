@@ -8,47 +8,20 @@ using namespace llvm;
 
 namespace papyrus {
 
-// This owns a LLVM module and also a pointer to the context to ensure
-// the context is not freed as long as the module is alive.
-struct ModuleRec {
-    // Lean object for context
-    // (we hold a handle to this so that it is not
-    // deleted before we are done with the module).
-    lean::object* contextObject;
-
-    std::unique_ptr<llvm::Module> module;
-
-    ModuleRec(const ModuleRec&) = delete;
-
-    ModuleRec(lean::object* ctxObj, std::unique_ptr<llvm::Module> mod)
-	    : contextObject(ctxObj), module(std::move(mod)) {}
-
-    ~ModuleRec() {
-        module = nullptr;
-        dec_ref(contextObject);
-    }
-};
-
-void moduleRecForeach(void * p, b_obj_arg a) {
-    ModuleRec* d = static_cast<ModuleRec*>(p);
-    apply_1(a, d->contextObject);
-}
-
-static external_object_class* getModuleRecClass() {
-    // Use static thread to make this thread safe due to static initialization rule.
-    static external_object_class* c(lean_register_external_class(
-        &deletePointer<ModuleRec>, &moduleRecForeach));
+static external_object_class* getModuleClass() {
+    // Use static to make this thread safe due to static initialization rule.
+    static external_object_class* c = registerContainedClass<llvm::Module>();
     return c;
 }
 
 obj_res allocModule(object* ctx, std::unique_ptr<llvm::Module> mod) {
-    return lean_alloc_external(getModuleRecClass(), new ModuleRec(ctx, std::move(mod)));
+    return lean_alloc_external(getModuleClass(), new ContainedExternal<llvm::Module>(ctx, std::move(mod)));
 }
 
 llvm::Module* toModule(b_obj_arg o) {
-    lean_assert(lean_get_external_class(o) == getModuleRecClass());
-    auto p = static_cast<ModuleRec*>(lean_get_external_data(o));
-    return p->module.get();
+    lean_assert(lean_get_external_class(o) == getModuleClass());
+    auto p = static_cast<ContainedExternal<llvm::Module>*>(lean_get_external_data(o));
+    return p->value.get();
 }
 
 extern "C" obj_res papyrus_module_new(b_obj_arg nameObj, b_obj_arg ctxObj, obj_arg /* w */) {
