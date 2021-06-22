@@ -1,11 +1,9 @@
-import Papyrus.LLVM.Context
-import Papyrus.LLVM.Module
+import Papyrus.Module
 
 open Papyrus
 
-def main : IO Unit := do
-  let ctx ← LLVM.newContext
-  let mod ← ctx.newModule "hello"
-  IO.println (← mod.getModuleIdentifier)
-  mod.setModuleIdentifier "world"
-  IO.println (← mod.getModuleIdentifier)
+def main : IO Unit := LLVM.run do
+  let mod ← ModuleRef.new "hello"
+  IO.println (← mod.getModuleID)
+  mod.setModuleID "world"
+  IO.println (← mod.getModuleID)

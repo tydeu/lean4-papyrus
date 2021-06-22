@@ -35,12 +35,12 @@ extern "C" obj_res papyrus_module_new(b_obj_arg modIdObj, b_obj_arg ctxObj, obj_
 }
 
 // Get the ID of the module.
-extern "C" obj_res papyrus_module_getModuleIdentifier(b_obj_arg modObj, obj_arg /* w */) {
+extern "C" obj_res papyrus_module_get_id(b_obj_arg modObj, obj_arg /* w */) {
     return io_result_mk_ok(mk_string(toModule(modObj)->getModuleIdentifier()));
 }
 
 // Set the ID of the module.
-extern "C" obj_res papyrus_module_setModuleIdentifier(b_obj_arg modObj, b_obj_arg modIdObj, obj_arg /* w */) {
+extern "C" obj_res papyrus_module_set_id(b_obj_arg modObj, b_obj_arg modIdObj, obj_arg /* w */) {
     toModule(modObj)->setModuleIdentifier(string_to_ref(modIdObj));
     return io_result_mk_ok(box(0));
 }
