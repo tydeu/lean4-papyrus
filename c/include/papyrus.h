@@ -44,8 +44,8 @@ lean::external_object_class* registerDeleteClass() {
 }
 
 // An external object that is also contained within some other object.
-// It holds a handle to this so that it is not deleted before we are
-// done with this object.
+// It holds a handle to the container so that it is not garbage collected
+// before this object is deleted.
 template<typename T>
 struct ContainedExternal {
     // Lean object for the container
@@ -63,6 +63,7 @@ struct ContainedExternal {
     }
 };
 
+// A foreach for contained externals that applies its argument to the container.
 template<typename T>
 void containedExternalForeach(void * p, lean::b_obj_arg a) {
     auto d = static_cast<ContainedExternal<T>*>(p);
