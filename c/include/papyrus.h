@@ -6,6 +6,7 @@ namespace llvm {
     class StringRef;
     class LLVMContext;
     class Module;
+    class Type;
 }
 
 namespace papyrus {
@@ -22,6 +23,9 @@ llvm::LLVMContext* toLLVMContext(lean::object* obj);
 
 lean::object* mk_module(lean::object* ctx, std::unique_ptr<llvm::Module> mod);
 llvm::Module* toModule(lean::object* obj);
+
+lean::object* mk_type(lean::object* ctx, llvm::Type* type);
+llvm::Type* toType(lean::object* obj);
 
 //------------------------------------------------------------------------------
 // Generic utilities
@@ -60,7 +64,7 @@ struct ContainedExternal {
         lean_dec_ref(container);
     }
 
-    // Lean object for the container
+    // Lean object for the container.
     lean::object* container;
 
     // The handle for the external value.
@@ -80,6 +84,47 @@ void containedExternalForeach(void * p, lean::b_obj_arg a) {
 template<typename T>
 lean::external_object_class* registerContainedClass() {
     return lean_register_external_class(&deletePointer<ContainedExternal<T>>, &containedExternalForeach<T>);
+}
+
+// An external object that is owned by some other object.
+// It holds a reference to its owner so that the owner is not garbage collected
+// before this object is deleted.
+// The external value will *not* be deleted when the object is garbadge collected.
+template<typename T>
+struct OwnedExternal {
+    OwnedExternal(lean::object* owner, T* value)
+        : owner(owner), value(value) {}
+
+    OwnedExternal(const OwnedExternal& other)
+        : owner(other.owner), value(other.value)
+    {
+        lean_inc_ref(owner);
+    };
+
+    ~OwnedExternal() {
+        lean_dec_ref(owner);
+    }
+
+     // Lean object for the owner.
+    lean::object* owner;
+
+    // The handle for the external value.
+    // The owner is responsible for deleting it.
+    T* value;
+};
+
+// A foreach for owned externals that applies its argument to the container.
+template<typename T>
+void ownedExternalForeach(void *p, lean::b_obj_arg a) {
+    auto d = static_cast<OwnedExternal<T>*>(p);
+    lean_apply_1(a, d->owner);
+}
+
+// Register a class whose lifetime is controlled by another object.
+// It holds a reference to the owner while alive and releases it when finalized.
+template<typename T>
+lean::external_object_class* registerOwnedClass() {
+    return lean_register_external_class(&deletePointer<OwnedExternal<T>>, &ownedExternalForeach<T>);
 }
 
 } // end namespace papyrus

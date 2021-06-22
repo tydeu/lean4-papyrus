@@ -21,7 +21,7 @@ lean::object* mk_module(lean::object* ctx, std::unique_ptr<llvm::Module> mod) {
 }
 
 // Get the LLVM Module wrapped in an object.
-llvm::Module* toModule(b_obj_arg obj) {
+llvm::Module* toModule(lean::object* obj) {
     lean_assert(lean_get_external_class(obj) == getModuleClass());
     auto p = static_cast<ContainedExternal<llvm::Module>*>(lean_get_external_data(obj));
     return p->value.get();
