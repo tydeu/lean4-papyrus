@@ -6,8 +6,8 @@ make -C c
 # Make Papyrus
 
 LLVM_CONFIG=llvm-config
-LLVM_COMPONENTS="core bitreader"
-LEAN_LLVM_LIB="c/build/lean_llvm.o"
+LLVM_COMPONENTS="core"
+LEAN_LLVM_LIB="c/build/papyrus.o"
 
 LLVM_LIBDIR=$($LLVM_CONFIG --libdir)
 LLVM_LINK_FLAGS=$($LLVM_CONFIG --ldflags)
