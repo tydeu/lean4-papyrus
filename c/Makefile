@@ -9,45 +9,48 @@ LEAN_INCLUDE := $(LEAN_HOME)/include
 
 # Detect LLVM
 
-ifndef LLVM_HOME
 LLVM_CONFIG	?= llvm-config
-LLVM_HOME := $(shell $(LLVM_CONFIG) --prefix)
-else
-LLVM_CONFIG	:= $(LLVM_HOME)/bin/llvm-config
-endif
-
 LLVM_CXX_FLAGS := $(shell $(LLVM_CONFIG) --cxxflags)
 
 # Config
 
+MKPATH := mkdir -p
+RMPATH := rm -rf
+
 CXX	:= c++
 EXTRA_CXX_FLAGS := -O1
-INCLUDE_DIR := include
 
-OUT := build
-LIB_OBJ := papyrus.o
+SRC_DIR := src
+HDR_DIR := include
+OUT_DIR := build
+
+HDRS := \
+	papyrus.h
 
 SRCS := \
 	common.cpp\
   context.cpp\
   module.cpp\
 
-OBJS=$(addprefix $(OUT)/,$(SRCS:.cpp=.o))
+LIB_OBJ := papyrus.o
+
+OBJ_FILES := $(addprefix $(OUT_DIR)/,$(SRCS:.cpp=.o))
+HDR_FILES := $(addprefix $(HDR_DIR)/,$(HDRS))
 
 # Build Rules
 
 all: lib
 
-lib: $(OUT)/$(LIB_OBJ)
+lib: $(OUT_DIR)/$(LIB_OBJ)
 
-$(OUT):
-	mkdir -p $@
+$(OUT_DIR):
+	$(MKPATH) $@
 
-$(OUT)/$(LIB_OBJ) : $(OBJS) | $(OUT)
+$(OUT_DIR)/$(LIB_OBJ) : $(OBJ_FILES) | $(OUT_DIR)
 	$(CXX) -r -o $@ $^
 
-$(OUT)/%.o : src/%.cpp | $(OUT)
-	$(CXX) -o $@ -c $< -I$(INCLUDE_DIR) -I$(LEAN_INCLUDE) $(LLVM_CXX_FLAGS) $(EXTRA_CXX_FLAGS)
+$(OUT_DIR)/%.o : $(SRC_DIR)/%.cpp $(HDR_FILES) | $(OUT_DIR)
+	$(CXX) -o $@ -c $< -I$(HDR_DIR) -I$(LEAN_INCLUDE) $(LLVM_CXX_FLAGS) $(EXTRA_CXX_FLAGS)
 
 clean:
-	rm -rf $(OUT)
+	$(RMPATH) $(OUT_DIR)
