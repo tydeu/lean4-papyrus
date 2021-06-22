@@ -4,7 +4,6 @@
 // Forward declarations
 namespace llvm {
     class StringRef;
-    class MemoryBuffer;
     class LLVMContext;
     class Module;
 }
@@ -15,23 +14,23 @@ namespace papyrus {
 // LLVM interfaces
 //------------------------------------------------------------------------------
 
-llvm::LLVMContext* toLLVMContext(lean::b_obj_arg o);
-llvm::MemoryBuffer* toMemoryBuffer(lean::b_obj_arg o);
+lean::object* mk_string(const llvm::StringRef& str);
+const llvm::StringRef string_to_ref(lean::object* obj);
 
-llvm::Module* toModule(lean::b_obj_arg o);
-lean::obj_res allocModule(lean::object* ctx, std::unique_ptr<llvm::Module> m);
+lean::object* mk_context(llvm::LLVMContext* ctx);
+llvm::LLVMContext* toLLVMContext(lean::object* obj);
 
-lean::object* mk_string(const llvm::StringRef& s);
-const llvm::StringRef string_to_ref(lean::object* o);
+lean::object* mk_module(lean::object* ctx, std::unique_ptr<llvm::Module> mod);
+llvm::Module* toModule(lean::object* obj);
 
 //------------------------------------------------------------------------------
-// Generic utility functions
+// Generic utilities
 //------------------------------------------------------------------------------
 
 // A no-op foreach callback for external classes
 void nopForeach(void* p, lean::b_obj_arg a);
 
-// Casts to pointer to the template type and invokes delete
+// Casts the pointer to the template type and invokes delete
 template<typename T>
 void deletePointer(void* p) {
     delete static_cast<T*>(p);
@@ -43,7 +42,6 @@ template<typename T>
 lean::external_object_class* registerDeleteClass() {
     return lean_register_external_class(&deletePointer<T>, &nopForeach);
 }
-
 
 // An external object that is also contained within some other object.
 // It holds a handle to this so that it is not deleted before we are
@@ -61,14 +59,14 @@ struct ContainedExternal {
 
     ~ContainedExternal() {
         value = nullptr;
-        lean::dec_ref(container);
+        lean_dec_ref(container);
     }
 };
 
 template<typename T>
 void containedExternalForeach(void * p, lean::b_obj_arg a) {
     auto d = static_cast<ContainedExternal<T>*>(p);
-   lean::apply_1(a, d->container);
+    lean_apply_1(a, d->container);
 }
 
 // Register a class whose lifetime is extends another objects.

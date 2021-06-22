@@ -8,24 +8,28 @@ using namespace llvm;
 
 namespace papyrus {
 
-// Class for freshly created LLVM contexts.
+// Lean object class for LLVM contexts.
 static external_object_class* getLLVMContextClass() {
     // Use static to make this thread safe by static initialization rules.
     static external_object_class* c = registerDeleteClass<LLVMContext>();
     return c;
 }
 
-// Get the LLVM context associated with the object.
-LLVMContext* toLLVMContext(b_obj_arg o) {
-    lean_assert(lean_get_external_class(o) == getLLVMContextClass());
-    return static_cast<LLVMContext*>(lean_get_external_data(o));
+// Wrap an LLVMContext in a Lean object.
+lean::object* mk_context(LLVMContext* ctx) {
+    return lean_alloc_external(getLLVMContextClass(), ctx);;
 }
 
-// Create a new LLVM context object.
+// Get the LLVMContext wrapped in an object.
+LLVMContext* toLLVMContext(lean::object* obj) {
+    lean_assert(lean_get_external_class(obj) == getLLVMContextClass());
+    return static_cast<LLVMContext*>(lean_get_external_data(obj));
+}
+
+// Create a new Lean LLVM Context object.
 extern "C" obj_res papyrus_context_new(obj_arg /* w */) {
     auto ctx = new LLVMContext();
-    object* ctxObj = lean_alloc_external(getLLVMContextClass(), ctx);
-    return io_result_mk_ok(ctxObj);
+    return io_result_mk_ok(mk_context(new LLVMContext()));
 }
 
 } // end namespace papyrus
