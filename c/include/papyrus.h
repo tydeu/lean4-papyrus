@@ -43,24 +43,29 @@ lean::external_object_class* registerDeleteClass() {
     return lean_register_external_class(&deletePointer<T>, &nopForeach);
 }
 
-// An external object that is also contained within some other object.
-// It holds a handle to the container so that it is not garbage collected
-// before this object is deleted.
+// An external object that is also weakly contained within some other object.
+// It holds a reference to the container so that the container is not
+// garbage collected before this object is deleted.
+// However, this object *can* be garbaged collected naturally and will remove
+// itself from its container upon deletion.
 template<typename T>
 struct ContainedExternal {
-    // Lean object for the container
-    lean::object* container;
-    std::unique_ptr<T> value;
-
-    ContainedExternal(const ContainedExternal&) = delete;
-
     ContainedExternal(lean::object* container, std::unique_ptr<T> value)
 	    : container(container), value(std::move(value)) {}
+
+    ContainedExternal(const ContainedExternal&) = delete;
 
     ~ContainedExternal() {
         value = nullptr;
         lean_dec_ref(container);
     }
+
+    // Lean object for the container
+    lean::object* container;
+
+    // The handle for the external value.
+    // Deleted upon garbage collection of this object.
+    std::unique_ptr<T> value;
 };
 
 // A foreach for contained externals that applies its argument to the container.
