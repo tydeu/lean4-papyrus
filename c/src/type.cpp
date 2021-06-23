@@ -138,6 +138,21 @@ extern "C" obj_res papyrus_get_integer_type(
     return io_result_mk_ok(mk_type_ref(ctxObj, type));
 }
 
+// Get a reference to the function type with the given parameters and result.
+extern "C" obj_res papyrus_get_function_type(
+    b_obj_arg resultObj, b_obj_arg paramsObj, uint8_t isVarArgs, obj_arg /* w */)
+{
+    lean_array_object* paramsArrObj = lean_to_array(paramsObj);
+    size_t len = paramsArrObj->m_size;
+    llvm::Type* paramTypes[len];
+    for (size_t i = 0; i < len; i++) {
+        paramTypes[i] = toType(paramsArrObj->m_data[i]);
+    }
+    ArrayRef<llvm::Type*> params(paramTypes, len);
+    auto type = FunctionType::get(toType(resultObj), params, isVarArgs);
+    return io_result_mk_ok(mk_type_ref(getTypeContext(resultObj), type));
+}
+
 // Get a reference to the pointer type
 // to the given pointee type in the given address space.
 extern "C" obj_res papyrus_get_pointer_type(

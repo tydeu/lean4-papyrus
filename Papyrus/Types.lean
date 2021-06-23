@@ -2,6 +2,7 @@ import Papyrus.Types.TypeID
 import Papyrus.Types.TypeRef
 import Papyrus.Types.Primitive
 import Papyrus.Types.Integer
+import Papyrus.Types.Function
 import Papyrus.Types.Pointer
 import Papyrus.Types.Array
 import Papyrus.Types.Vector

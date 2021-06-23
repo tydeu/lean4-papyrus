@@ -42,6 +42,12 @@ def main : IO Unit := LLVM.run do
   assertRefTypeID TypeID.Pointer    (← doubleType.pointerType.getRef)
   assertRefTypeID TypeID.Array      (← (arrayType doubleType 8).getRef)
 
+  -- Test Function Types
+  assertRefTypeID TypeID.Function
+    (← (functionType voidType doubleType).getRef)
+  assertRefTypeID TypeID.Function
+    (← (functionType voidType (halfType, doubleType) true).getRef)
+
   -- Test Vector Types
   assertRefTypeID TypeID.FixedVector
     (← (fixedVectorType doubleType 8).getRef)
