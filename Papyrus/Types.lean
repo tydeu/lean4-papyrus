@@ -140,119 +140,210 @@ extern_singleton_type "papyrus_get_ppc_fp128_type" PPCFP128Type ppcFP128Type
 -- Integer Types
 --------------------------------------------------------------------------------
 
+/-- An arbirtrary precision integer type. -/
+structure IntegerType (numBits : Nat) deriving Inhabited
+
+/-- Make a new integer type with the given precision. -/
+def IntegerType.mk' (numBits : Nat) : IntegerType numBits :=
+  IntegerType.mk
+
+/-- An integer type of the given precision. -/
+def integerType (numBits : Nat) :=
+  IntegerType.mk' numBits
+
 @[extern "papyrus_get_integer_type"]
 private constant getIntegerTypeRef (numBits : @& UInt32) : LLVM TypeRef
 
--- Minimum number of bits that can be specified.
-def IntegerType.MIN_INT_BITS : Nat := 1
-
--- Maximum number of bits that can be specified.
-def IntegerType.MAX_INT_BITS : Nat := 16777215 -- (1 <<< 24) - 1
-
-structure IntegerType where
-  /-- The number of bits in this type. -/
-  bitWidth : UInt32
-  isGt : bitWidth.toNat >= IntegerType.MIN_INT_BITS
-  isLt : bitWidth.toNat <= IntegerType.MAX_INT_BITS
-
-/-- Create a new IntegerType, attempting to auto prove hypotheses by decide. -/
-def integerType
-  (bitWidth : UInt32)
-  (isGt : bitWidth.toNat >= IntegerType.MIN_INT_BITS := by decide)
-  (isLt : bitWidth.toNat <= IntegerType.MAX_INT_BITS := by decide)
-:=
-  IntegerType.mk bitWidth isGt isLt
-
 namespace IntegerType
 
-/-- Make a new IntegerType, attempting to auto prove hypotheses by decide. -/
-def mk'
-  (bitWidth : UInt32)
-  (isGt : bitWidth.toNat >= IntegerType.MIN_INT_BITS := by decide)
-  (isLt : bitWidth.toNat <= IntegerType.MAX_INT_BITS := by decide)
-:=
-  mk bitWidth isGt isLt
+/-- Minimum number of bits that can be specified. -/
+def MIN_INT_BITS : Nat := 1
 
-/-- Get a reference to the LLVM representation of this type. -/
-def getRef (self : IntegerType) : LLVM TypeRef :=
-  getIntegerTypeRef self.bitWidth
+/-- Maximum number of bits that can be specified. -/
+def MAX_INT_BITS : Nat := 16777215 -- (1 <<< 24) - 1
+
+/-- Condition for a valid integer type. -/
+def isValidBitWidth (bitWidth : Nat) : Prop :=
+  bitWidth ≥ IntegerType.MIN_INT_BITS ∧ bitWidth ≤ IntegerType.MAX_INT_BITS
+
+variable {numBits : Nat}
 
 /--
-  A UInt64 bit mask with ones set for all the bits of this type
+  Get a reference to the LLVM representation of this type.
+  It is the user's responsible to ensure that the bit width of the type falls
+  within the LLVM's requirements (i.e., that `isValidBitWidth numBits` holds).
+-/
+def getRef (self : IntegerType numBits) : LLVM TypeRef :=
+  getIntegerTypeRef numBits.toUInt32
+
+/-- The number of bits in this type. -/
+def bitWidth (self : IntegerType numBits) := numBits
+
+/-- An integer type twice as wide as this type. -/
+def extendedType (self : IntegerType numBits) :=
+  integerType (self.bitWidth <<< 1)
+
+/--
+  A 64-bit mask with ones set for all the bits of this type
   (or just every bit, if this type's bit width is greater than 64).
 -/
-def bitMask (self : IntegerType) : UInt64 :=
+def bitMask (self : IntegerType numBits) : UInt64 :=
   ~~~(0 : UInt64) >>> (64 - self.bitWidth.toUInt64)
 
 /--
-  Returns a UInt64 with just the most significant bit of this type set
+  A `UInt64` with just the most significant bit of this type set
   (the sign bit, if the value is treated as a signed number).
 -/
-def signBit (self : IntegerType) : UInt64 :=
+def signBit (self : IntegerType numBits) : UInt64 :=
   (1 : UInt64) <<< (self.bitWidth.toUInt64 - 1)
 
 /--
   A bit mask with ones set for all the bits of this type.
   For example, this is 0xFF for an 8 bit integer, 0xFFFF for i16, etc.
 -/
-def mask (self : IntegerType) : Nat :=
-  (1 <<< self.bitWidth.toNat) - 1
+def mask (self : IntegerType numBits) : Nat :=
+  (1 <<< self.bitWidth) - 1
 
 end IntegerType
 
-instance : ToTypeRef IntegerType := ⟨IntegerType.getRef⟩
+instance {numBits} : ToTypeRef (IntegerType numBits) := ⟨IntegerType.getRef⟩
 
 --------------------------------------------------------------------------------
 -- Pointer Types
 --------------------------------------------------------------------------------
 
-@[extern "papyrus_get_pointer_type"]
-private constant getPointerTypeRef (pointee : TypeRef) (addrSpace : @& UInt32) : LLVM TypeRef
+-- # Address Space
 
 /-- A numerically indexed address space. -/
 structure AddressSpace where
-  index : UInt32
+  index : Nat
+
+namespace AddressSpace
 
 /-- The default address space (i.e., 0). -/
-def AddressSpace.default :=
-  AddressSpace.mk 0
+def default := mk 0
+
+/-- Make an address space from a `Nat`. -/
+def ofNat (n : Nat) := mk n
+
+end AddressSpace
 
 instance : Inhabited AddressSpace := ⟨AddressSpace.default⟩
-
-def AddressSpace.ofNat (n : Nat) :=
-  AddressSpace.mk (UInt32.ofNat n)
-
 instance {n} : OfNat AddressSpace n := ⟨AddressSpace.ofNat n⟩
 
-/-- A type for pointers to a given set of types. -/
-structure PointerType (α) where
+-- # Pointer Type
+
+/-- A type for pointers to a given kind of types. -/
+structure PointerType (α) (addrSpace := AddressSpace.default) where
   pointeeType : α
-  addressSpace := AddressSpace.default
 
 /--
-  Create a new pointer type to the given type in the given address space
-  (or the default one).
+  Make a new pointer type to the given type
+  in the given address space (or the default one).
+-/
+def PointerType.mk' (pointeeType : α) (addrSpace := AddressSpace.default) :=
+  (PointerType.mk pointeeType : PointerType α addrSpace)
+
+/--
+  A pointer type to the given type
+  in the given address space (or the default one).
 -/
 def pointerType (pointeeType : α) (addrSpace := AddressSpace.default) :=
-  PointerType.mk pointeeType addrSpace
+  PointerType.mk' pointeeType addrSpace
+
+@[extern "papyrus_get_pointer_type"]
+private constant getPointerTypeRef
+  (pointeeType : @& TypeRef) (addrSpace : UInt32) : IO TypeRef
 
 namespace PointerType
+variable {addrSpace : AddressSpace}
 
-/-- Make a new pointer type to the given type in the default address space. -/
-def mk' (pointeeType : α) :=
-  PointerType.mk pointeeType AddressSpace.default
+/-- The address space of this pointer type. -/
+def addressSpace (self : PointerType α addrSpace) := addrSpace
 
-/-- Get a reference to the LLVM representation of this type. -/
-def getRef [ToTypeRef α] (self : PointerType α) : LLVM TypeRef := do
-  getPointerTypeRef (← toTypeRef self.pointeeType) self.addressSpace.index
+/--
+  Get a reference to the LLVM representation of this type.
+  It is the user's responsibility to ensure that the pointee type
+    and address space are valid.
+-/
+def getRef [ToTypeRef α] (self : PointerType α addrSpace) : LLVM TypeRef := do
+  getPointerTypeRef (← toTypeRef self.pointeeType) self.addressSpace.index.toUInt32
 
 end PointerType
 
-instance [ToTypeRef α] : ToTypeRef (PointerType α) := ⟨PointerType.getRef⟩
+instance [ToTypeRef α] {addrSpace} : ToTypeRef (PointerType α addrSpace) :=
+  ⟨PointerType.getRef⟩
 
--- Conveince methods for constructing pointer types
-def HalfType.pointer (self : HalfType) := pointerType self
-def FloatType.pointer (self : FloatType) := pointerType self
-def DoubleType.pointer (self : DoubleType) := pointerType self
-def IntegerType.pointer (self : DoubleType) := pointerType self
-def PointerType.pointer (self : DoubleType) := pointerType self
+--------------------------------------------------------------------------------
+-- Array Types
+--------------------------------------------------------------------------------
+
+structure ArrayType (α) (numElems : Nat) where
+  elementType : α
+
+/-- Make a new array type of the given type and the given size. -/
+def ArrayType.mk' (elementType : α) (numElems : Nat) : ArrayType α numElems :=
+  ArrayType.mk elementType
+
+/-- An array type of the given type and the given size. -/
+def arrayType (elementType : α) (numElems : Nat) :=
+  ArrayType.mk' elementType numElems
+
+@[extern "papyrus_get_array_type"]
+private constant getArrayTypeRef
+  (elemType : @& TypeRef) (numElems : UInt64) : IO TypeRef
+
+namespace ArrayType
+variable {numElems : Nat}
+
+/-- The number of elements in this type. -/
+def size (self : ArrayType α numElems) := numElems
+
+/--
+  Get a reference to the LLVM representation of this type.
+  It is the user's responsibility to ensure that the element type
+  and size are valid.
+-/
+def getRef [ToTypeRef α] (self : ArrayType α numElems) : LLVM TypeRef := do
+  getArrayTypeRef (← toTypeRef self.elementType) self.size.toUInt64
+
+end ArrayType
+
+instance [ToTypeRef α] {numElems} : ToTypeRef (ArrayType α numElems) :=
+  ⟨ArrayType.getRef⟩
+
+--------------------------------------------------------------------------------
+-- Vector Types
+--------------------------------------------------------------------------------
+
+structure VectorType (α) (elementQuantity : Nat) where
+  elementType : α
+
+@[extern "papyrus_get_fixed_vector_type"]
+private constant getFixedVectorTypeRef
+  (elemType : @& TypeRef) (numElems : UInt32) : IO TypeRef
+
+@[extern "papyrus_get_scalable_vector_type"]
+private constant getScalableVectorTypeRef
+  (elemType : @& TypeRef) (minNumElems : UInt32) : IO TypeRef
+
+--------------------------------------------------------------------------------
+-- Convience Methods
+--------------------------------------------------------------------------------
+
+-- # Pointer Types
+
+def HalfType.pointerType (self : HalfType) := PointerType.mk' self
+def BFloatType.pointerType (self : BFloatType) := PointerType.mk' self
+def FloatType.pointerType (self : FloatType) := PointerType.mk' self
+def DoubleType.pointerType (self : DoubleType) := PointerType.mk' self
+def X86FP80Type.pointerType (self : X86FP80Type) := PointerType.mk' self
+def FP128Type.pointerType (self : FP128Type) := PointerType.mk' self
+def PPCFP128Type.pointerType (self : PPCFP128Type) := PointerType.mk' self
+
+def IntegerType.pointerType {numBits} (self : IntegerType numBits) :=
+  PointerType.mk' self
+def PointerType.pointerType {addrSpace} (self : PointerType α addrSpace) :=
+  PointerType.mk' self
+def ArrayType.pointerType {numElems} (self : ArrayType α numElems) :=
+  PointerType.mk' self

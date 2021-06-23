@@ -28,7 +28,7 @@ llvm::Module* toModule(lean::object* obj) {
 }
 
 // Create a new Lean LLVM Module object with the given ID.
-extern "C" obj_res papyrus_module_new(b_obj_arg modIdObj, b_obj_arg ctxObj, obj_arg /* w */) {
+extern "C" obj_res papyrus_module_new(b_obj_arg modIdObj, obj_arg ctxObj, obj_arg /* w */) {
     auto ctx = toLLVMContext(ctxObj);
     auto mod = new llvm::Module(string_to_ref(modIdObj), *ctx);
     return io_result_mk_ok(mk_module(ctxObj, std::unique_ptr<llvm::Module>(mod)));

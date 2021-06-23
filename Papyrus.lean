@@ -39,6 +39,7 @@ def main : IO Unit := LLVM.run do
 
   -- Test Derived Types
   assertRefTypeID TypeID.Integer    (← (integerType 32).getRef)
-  assertRefTypeID TypeID.Pointer    (← doubleType.pointer.getRef)
+  assertRefTypeID TypeID.Pointer    (← doubleType.pointerType.getRef)
+  assertRefTypeID TypeID.Array      (← (arrayType doubleType 8).getRef)
 
   IO.println "Finished."

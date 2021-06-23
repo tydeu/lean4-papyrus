@@ -27,12 +27,17 @@ llvm::Type* toType(lean::object* obj) {
     return static_cast<OwnedExternal<llvm::Type>*>(lean_get_external_data(obj))->value;
 }
 
-// Get the owning LLVM context of the given type object.
-extern "C" obj_res papyrus_type_get_context(b_obj_arg typeObj, obj_arg /* w */) {
+// Get the owning LLVM context object of the given type object.
+lean::object* getTypeContext(lean::object* typeObj) {
     lean_assert(lean_get_external_class(typeObj) == getTypeClass());
     auto ctx = static_cast<OwnedExternal<llvm::Type>*>(lean_get_external_data(typeObj))->owner;
     lean_inc_ref(ctx);
-    return io_result_mk_ok(ctx);
+    return ctx;
+}
+
+// Get the owning LLVM context object of the given type object (in Lean).
+extern "C" obj_res papyrus_type_get_context(b_obj_arg typeObj, obj_arg /* w */) {
+    return io_result_mk_ok(getTypeContext(typeObj));
 }
 
 // Get the TypeID of the given type object.
@@ -45,31 +50,31 @@ extern "C" obj_res papyrus_type_get_id(b_obj_arg typeObj, obj_arg /* w */) {
 //------------------------------------------------------------------------------
 
 // Get a reference to the Void type for the given LLVM context.
-extern "C" obj_res papyrus_get_void_type(b_obj_arg ctxObj, obj_arg /* w */) {
+extern "C" obj_res papyrus_get_void_type(obj_arg ctxObj, obj_arg /* w */) {
     auto type = llvm::Type::getVoidTy(*toLLVMContext(ctxObj));
     return io_result_mk_ok(mk_type_ref(ctxObj, type));
 }
 
 // Get a reference to the Label type for the given LLVM context.
-extern "C" obj_res papyrus_get_label_type(b_obj_arg ctxObj, obj_arg /* w */) {
+extern "C" obj_res papyrus_get_label_type(obj_arg ctxObj, obj_arg /* w */) {
     auto type = llvm::Type::getLabelTy(*toLLVMContext(ctxObj));
     return io_result_mk_ok(mk_type_ref(ctxObj, type));
 }
 
 // Get a reference to the Metadata type for the given LLVM context.
-extern "C" obj_res papyrus_get_metadata_type(b_obj_arg ctxObj, obj_arg /* w */) {
+extern "C" obj_res papyrus_get_metadata_type(obj_arg ctxObj, obj_arg /* w */) {
     auto type = llvm::Type::getMetadataTy(*toLLVMContext(ctxObj));
     return io_result_mk_ok(mk_type_ref(ctxObj, type));
 }
 
 // Get a reference to the Token type for the given LLVM context.
-extern "C" obj_res papyrus_get_token_type(b_obj_arg ctxObj, obj_arg /* w */) {
+extern "C" obj_res papyrus_get_token_type(obj_arg ctxObj, obj_arg /* w */) {
     auto type = llvm::Type::getTokenTy(*toLLVMContext(ctxObj));
     return io_result_mk_ok(mk_type_ref(ctxObj, type));
 }
 
 // Get a reference to the X86_MMX type for the given LLVM context.
-extern "C" obj_res papyrus_get_x86_mmx_type(b_obj_arg ctxObj, obj_arg /* w */) {
+extern "C" obj_res papyrus_get_x86_mmx_type(obj_arg ctxObj, obj_arg /* w */) {
     auto type = llvm::Type::getX86_MMXTy(*toLLVMContext(ctxObj));
     return io_result_mk_ok(mk_type_ref(ctxObj, type));
 }
@@ -79,43 +84,43 @@ extern "C" obj_res papyrus_get_x86_mmx_type(b_obj_arg ctxObj, obj_arg /* w */) {
 //------------------------------------------------------------------------------
 
 // Get a reference to the Half type type for the given LLVM context.
-extern "C" obj_res papyrus_get_half_type(b_obj_arg ctxObj, obj_arg /* w */) {
+extern "C" obj_res papyrus_get_half_type(obj_arg ctxObj, obj_arg /* w */) {
     auto type = llvm::Type::getHalfTy(*toLLVMContext(ctxObj));
     return io_result_mk_ok(mk_type_ref(ctxObj, type));
 }
 
 // Get a reference to the BFloat type type for the given LLVM context.
-extern "C" obj_res papyrus_get_bfloat_type(b_obj_arg ctxObj, obj_arg /* w */) {
+extern "C" obj_res papyrus_get_bfloat_type(obj_arg ctxObj, obj_arg /* w */) {
     auto type = llvm::Type::getBFloatTy(*toLLVMContext(ctxObj));
     return io_result_mk_ok(mk_type_ref(ctxObj, type));
 }
 
 // Get a reference to the Float type type for the given LLVM context.
-extern "C" obj_res papyrus_get_float_type(b_obj_arg ctxObj, obj_arg /* w */) {
+extern "C" obj_res papyrus_get_float_type(obj_arg ctxObj, obj_arg /* w */) {
     auto type = llvm::Type::getFloatTy(*toLLVMContext(ctxObj));
     return io_result_mk_ok(mk_type_ref(ctxObj, type));
 }
 
 // Get a reference to the Double type type for the given LLVM context.
-extern "C" obj_res papyrus_get_double_type(b_obj_arg ctxObj, obj_arg /* w */) {
+extern "C" obj_res papyrus_get_double_type(obj_arg ctxObj, obj_arg /* w */) {
     auto type = llvm::Type::getDoubleTy(*toLLVMContext(ctxObj));
     return io_result_mk_ok(mk_type_ref(ctxObj, type));
 }
 
 // Get a reference to the X86_FP80 type type for the given LLVM context.
-extern "C" obj_res papyrus_get_x86_fp80_type(b_obj_arg ctxObj, obj_arg /* w */) {
+extern "C" obj_res papyrus_get_x86_fp80_type(obj_arg ctxObj, obj_arg /* w */) {
     auto type = llvm::Type::getX86_FP80Ty(*toLLVMContext(ctxObj));
     return io_result_mk_ok(mk_type_ref(ctxObj, type));
 }
 
 // Get a reference to the FP128 type type for the given LLVM context.
-extern "C" obj_res papyrus_get_fp128_type(b_obj_arg ctxObj, obj_arg /* w */) {
+extern "C" obj_res papyrus_get_fp128_type(obj_arg ctxObj, obj_arg /* w */) {
     auto type = llvm::Type::getFP128Ty(*toLLVMContext(ctxObj));
     return io_result_mk_ok(mk_type_ref(ctxObj, type));
 }
 
 // Get a reference to the PPC_FP128 type type for the given LLVM context.
-extern "C" obj_res papyrus_get_ppc_fp128_type(b_obj_arg ctxObj, obj_arg /* w */) {
+extern "C" obj_res papyrus_get_ppc_fp128_type(obj_arg ctxObj, obj_arg /* w */) {
     auto type = llvm::Type::getPPC_FP128Ty(*toLLVMContext(ctxObj));
     return io_result_mk_ok(mk_type_ref(ctxObj, type));
 }
@@ -127,46 +132,46 @@ extern "C" obj_res papyrus_get_ppc_fp128_type(b_obj_arg ctxObj, obj_arg /* w */)
 // Get a reference to the integer type of the given bit width
 // for the given LLVM context.
 extern "C" obj_res papyrus_get_integer_type(
-    b_obj_arg numBits, b_obj_arg ctxObj, obj_arg /* w */)
+    uint32_t numBits, obj_arg ctxObj, obj_arg /* w */)
 {
-    auto type = IntegerType::get(*toLLVMContext(ctxObj), unbox_uint32(numBits));
+    auto type = IntegerType::get(*toLLVMContext(ctxObj), numBits);
     return io_result_mk_ok(mk_type_ref(ctxObj, type));
 }
 
-// Get a reference to the pointer type  to the given pointee type
-// in the given address space for the given LLVM context.
+// Get a reference to the pointer type
+// to the given pointee type in the given address space.
 extern "C" obj_res papyrus_get_pointer_type(
-    b_obj_arg pointee, b_obj_arg addrSpace, b_obj_arg ctxObj, obj_arg /* w */)
+    b_obj_arg pointeeObj, uint32_t addrSpace, obj_arg /* w */)
 {
-    auto type = PointerType::get(toType(pointee), unbox_uint32(addrSpace));
-    return io_result_mk_ok(mk_type_ref(ctxObj, type));
+    auto type = PointerType::get(toType(pointeeObj), addrSpace);
+    return io_result_mk_ok(mk_type_ref(getTypeContext(pointeeObj), type));
 }
 
-// Get a reference to the array vector type with the given element type
-// and the given number of elements for the given LLVM context.
+// Get a reference to the array type
+// with the given element type and the given number of elements.
 extern "C" obj_res papyrus_get_array_type(
-    b_obj_arg elemType, b_obj_arg numElems, b_obj_arg ctxObj, obj_arg /* w */)
+    b_obj_arg elemTypeObj, uint64_t numElems, obj_arg /* w */)
 {
-    auto type = ArrayType::get(toType(elemType), unbox_uint64(numElems));
-    return io_result_mk_ok(mk_type_ref(ctxObj, type));
+    auto type = ArrayType::get(toType(elemTypeObj), numElems);
+    return io_result_mk_ok(mk_type_ref(getTypeContext(elemTypeObj), type));
 }
 
-// Get a reference to the fixed vector type with the given element type
-// and the given number of elements for the given LLVM context.
+// Get a reference to the fixed vector type
+// with the given element type and the given number of elements.
 extern "C" obj_res papyrus_get_fixed_vector_type(
-    b_obj_arg elemType, b_obj_arg numElems, b_obj_arg ctxObj, obj_arg /* w */)
+    b_obj_arg elemTypeObj, uint32_t numElems, obj_arg /* w */)
 {
-    auto type = FixedVectorType::get(toType(elemType), unbox_uint32(numElems));
-    return io_result_mk_ok(mk_type_ref(ctxObj, type));
+    auto type = FixedVectorType::get(toType(elemTypeObj), numElems);
+    return io_result_mk_ok(mk_type_ref(getTypeContext(elemTypeObj), type));
 }
 
-// Get a reference to the scalable vector type with the given element type
-// and the given minimum number of elements for the given LLVM context.
+// Get a reference to the scalable vector type
+// with the given element type and the given minimum number of elements.
 extern "C" obj_res papyrus_get_scalable_vector_type(
-    b_obj_arg elemType, b_obj_arg minNumElems, b_obj_arg ctxObj, obj_arg /* w */)
+    b_obj_arg elemTypeObj, uint32_t minNumElems, obj_arg /* w */)
 {
-    auto type = ScalableVectorType::get(toType(elemType), unbox_uint32(minNumElems));
-    return io_result_mk_ok(mk_type_ref(ctxObj, type));
+    auto type = ScalableVectorType::get(toType(elemTypeObj), minNumElems);
+    return io_result_mk_ok(mk_type_ref(getTypeContext(elemTypeObj), type));
 }
 
 
