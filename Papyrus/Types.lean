@@ -1,3 +1,4 @@
+import Lean.Parser
 import Papyrus.Context
 
 namespace Papyrus
@@ -69,124 +70,71 @@ class ToTypeRef (α) where
 export ToTypeRef (toTypeRef)
 
 --------------------------------------------------------------------------------
--- Special Types
+-- Primitive Types
 --------------------------------------------------------------------------------
+
+open Lean Parser Command in set_option hygiene false in
+/-- Macro for creating singleton Lean types for primitive LLVM types. -/
+scoped macro (name := externSingletonTypeDecl) doc:docComment
+"extern_singleton_type" impl:str typ:ident singl:ident : command => do
+  let getGlobalRef := mkIdentFrom typ <|
+    typ.getId.modifyBase fun name => s!"get{name.getRoot}Ref"
+  let getRef := mkIdentFrom typ <| typ.getId.modifyBase (. ++ `getRef)
+  `(
+    $doc:docComment
+    structure $typ deriving Inhabited
+
+    $doc:docComment
+    def $singl : $typ := arbitrary
+
+    @[extern $impl:strLit]
+    private constant $getGlobalRef : LLVM TypeRef
+
+    /-- Get a reference to the LLVM representation of this type. -/
+    def $getRef (_self : $typ) := $getGlobalRef
+
+    instance : ToTypeRef $typ := ⟨$getRef⟩
+  )
+
+-- # Special Types
 
 /-- An empty type. -/
-structure VoidType deriving Inhabited
-
-/-- The vold type singleton. -/
-def voidType : VoidType := arbitrary
-
-@[extern "papyrus_get_void_type"]
-private constant getVoidTypeRef : LLVM TypeRef
-
-/-- Get a reference to the LLVM representation of this type. -/
-def VoidType.getRef (_self : VoidType) := getVoidTypeRef
-
-instance : ToTypeRef VoidType := ⟨VoidType.getRef⟩
+extern_singleton_type "papyrus_get_void_type" VoidType voidType
 
 /-- A label type. -/
-structure LabelType deriving Inhabited
-
-/-- The label type singleton. -/
-def labelType : LabelType := arbitrary
-
-@[extern "papyrus_get_label_type"]
-private constant getLabelTypeRef : LLVM TypeRef
-
-/-- Get a reference to the LLVM representation of this type. -/
-def LabelType.getRef (_self : LabelType) := getLabelTypeRef
-
-instance : ToTypeRef LabelType := ⟨LabelType.getRef⟩
+extern_singleton_type "papyrus_get_label_type" LabelType labelType
 
 /-- A metadata type. -/
-structure MetadataType deriving Inhabited
-
-/-- The metadata type singleton. -/
-def metadataType : MetadataType := arbitrary
-
-@[extern "papyrus_get_metadata_type"]
-private constant getMetadataTypeRef : LLVM TypeRef
-
-/-- Get a reference to the LLVM representation of this type. -/
-def MetadataType.getRef (_self : MetadataType) := getMetadataTypeRef
-
-instance : ToTypeRef MetadataType := ⟨MetadataType.getRef⟩
+extern_singleton_type "papyrus_get_metadata_type" MetadataType metadataType
 
 /-- A token type. -/
-structure TokenType deriving Inhabited
+extern_singleton_type "papyrus_get_token_type" TokenType tokenType
 
-/-- The token type singleton. -/
-def tokenType : TokenType := arbitrary
+/-- A 64-bit X86 MMX vector type. -/
+extern_singleton_type "papyrus_get_x86_mmx_type" X86MMXType x86MMXType
 
-@[extern "papyrus_get_token_type"]
-private constant getTokenTypeRef : LLVM TypeRef
-
-/-- Get a reference to the LLVM representation of this type. -/
-def TokenType.getRef (_self : TokenType) := getTokenTypeRef
-
-instance : ToTypeRef TokenType := ⟨TokenType.getRef⟩
-
-/-- An 64-bit X86 MMX vector type. -/
-structure X86MMXType deriving Inhabited
-
-/-- The X86 MMX type singleton. -/
-def x86MMXType : X86MMXType := arbitrary
-
-@[extern "papyrus_get_x86_mmx_type"]
-private constant getX86MMXTypeRef : LLVM TypeRef
-
-/-- Get a reference to the LLVM representation of this type. -/
-def X86MMXType.getRef (_self : X86MMXType) := getX86MMXTypeRef
-
-instance : ToTypeRef X86MMXType := ⟨X86MMXType.getRef⟩
-
---------------------------------------------------------------------------------
--- Floating Point Types
---------------------------------------------------------------------------------
+-- # Floating Point Types
 
 /-- A 16-bit floating point type. -/
-structure HalfType deriving Inhabited
+extern_singleton_type "papyrus_get_half_type" HalfType halfType
 
-/-- The half type singleton. -/
-def halfType : HalfType := arbitrary
-
-@[extern "papyrus_get_half_type"]
-private constant getHalfTypeRef : LLVM TypeRef
-
-/-- Get a reference to the LLVM representation of this type. -/
-def HalfType.getRef (_self : HalfType) := getHalfTypeRef
-
-instance : ToTypeRef HalfType := ⟨HalfType.getRef⟩
+/-- A 16-bit (7-bit significand) floating point type. -/
+extern_singleton_type "papyrus_get_bfloat_type" BFloatType bfloatType
 
 /-- A 32-bit floating point type. -/
-structure FloatType deriving Inhabited
+extern_singleton_type "papyrus_get_float_type" FloatType floatType
 
-/-- The float type singleton. -/
-def floatType : FloatType := arbitrary
+/-- A 64-bit floating point type. -/
+extern_singleton_type "papyrus_get_double_type" DoubleType doubleType
 
-@[extern "papyrus_get_float_type"]
-private constant getFloatTypeRef : LLVM TypeRef
+/-- An X87 80-bit floating point type. -/
+extern_singleton_type "papyrus_get_x86_fp80_type" X86FP80Type x86FP80Type
 
-/-- Get a reference to the LLVM representation of this type. -/
-def FloatType.getRef (_self : FloatType) := getFloatTypeRef
+/-- A 128-bit (112-bit significand) floating point type. -/
+extern_singleton_type "papyrus_get_fp128_type" FP128Type fp128Type
 
-instance : ToTypeRef FloatType := ⟨FloatType.getRef⟩
-
-/-- The 64-bit floating point type. -/
-structure DoubleType deriving Inhabited
-
-/-- The double type singleton. -/
-def doubleType : DoubleType := arbitrary
-
-@[extern "papyrus_get_double_type"]
-private constant getDoubleTypeRef : LLVM TypeRef
-
-/-- Get a reference to the LLVM representation of this type. -/
-def DoubleType.getRef (_self : DoubleType) := getDoubleTypeRef
-
-instance : ToTypeRef DoubleType := ⟨DoubleType.getRef⟩
+/-- A PowerPC 128-bit floating point type. -/
+extern_singleton_type "papyrus_get_ppc_fp128_type" PPCFP128Type ppcFP128Type
 
 --------------------------------------------------------------------------------
 -- Integer Types
