@@ -40,13 +40,6 @@ extern "C" obj_res papyrus_type_get_id(b_obj_arg typeObj, obj_arg /* w */) {
     return io_result_mk_ok(lean_box(toType(typeObj)->getTypeID()));
 }
 
-// Get the subclass data of the given type object.
-extern "C" obj_res papyrus_type_get_data(b_obj_arg typeObj, obj_arg /* w */) {
-    // Hack: Exploit the fact that the bit width of an Integer type is the subclass data.
-    auto data = reinterpret_cast<IntegerType*>(toType(typeObj))->getBitWidth();
-    return io_result_mk_ok(lean_box_uint32(data));
-}
-
 //------------------------------------------------------------------------------
 // Primitive types
 //------------------------------------------------------------------------------
@@ -69,6 +62,26 @@ extern "C" obj_res papyrus_type_get_float(b_obj_arg ctxObj, obj_arg /* w */) {
 // Get the builtin double type for the given LLVM context.
 extern "C" obj_res papyrus_type_get_double(b_obj_arg ctxObj, obj_arg /* w */) {
     return io_result_mk_ok(mk_type(ctxObj, llvm::Type::getDoubleTy(*toLLVMContext(ctxObj))));
+}
+
+//------------------------------------------------------------------------------
+// Derived types
+//------------------------------------------------------------------------------
+
+// Get the integer type of given bit width for the given LLVM context.
+extern "C" obj_res papyrus_type_get_integer(
+    b_obj_arg numBits, b_obj_arg ctxObj, obj_arg /* w */)
+{
+    auto type = IntegerType::get(*toLLVMContext(ctxObj), unbox_uint32(numBits));
+    return io_result_mk_ok(mk_type(ctxObj, type));
+}
+
+//  Get a pointer type to `pointee` in the given address space for the given LLVM context.
+extern "C" obj_res papyrus_type_get_pointer(
+    b_obj_arg pointee, b_obj_arg addrSpace, b_obj_arg ctxObj, obj_arg /* w */)
+{
+    auto type = PointerType::get(toType(pointee), unbox_uint32(addrSpace));
+    return io_result_mk_ok(mk_type(ctxObj, type));
 }
 
 } // end namespace papyrus

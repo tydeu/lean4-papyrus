@@ -6,7 +6,7 @@ namespace Papyrus
 -- Type IDs
 --------------------------------------------------------------------------------
 
-/-- Identifiers for all of the base types for the LLVM type system. -/
+/-- Identifiers for all of the base types of the LLVM type system. -/
 inductive TypeID
 -- Primitive types
 | /-- 16-bit floating point type -/
@@ -29,8 +29,6 @@ inductive TypeID
 | Metadata
 | /-- MMX vectors (64 bits, X86 specific) -/
   X86_MMX
-| /-- AMX vectors (8192 bits, X86 specific) -/
-  X86_AMX
 | Token
 -- Derived types
 | /-- Arbitrary bit width integers -/
@@ -45,7 +43,7 @@ inductive TypeID
   ScalableVector
 
 --------------------------------------------------------------------------------
--- Basic Types
+-- Type References
 --------------------------------------------------------------------------------
 
 /-- A reference to the LLVM representation of a Type. -/
@@ -53,29 +51,203 @@ constant TypeRef : Type := Unit
 
 namespace TypeRef
 
+/-- Get the `TypeID` of this type. -/
 @[extern "papyrus_type_get_id"]
 constant getTypeID (self : TypeRef) : IO TypeID
 
-@[extern "papyrus_type_get_data"]
-constant getTypeData (self : TypeRef) : IO UInt32
-
+/-- Get the owning LLVM context of this type. -/
 @[extern "papyrus_type_get_context"]
 constant getContext (self : TypeRef) : IO ContextRef
 
 end TypeRef
 
+/-- General class for retrieving LLVM type representations. -/
+class ToTypeRef (α) where
+  toTypeRef : α → LLVM TypeRef
+
+export ToTypeRef (toTypeRef)
+
 --------------------------------------------------------------------------------
--- Primitive Types
+-- Special Types
 --------------------------------------------------------------------------------
+
+/-- An empty type. -/
+structure VoidType deriving Inhabited
+
+/-- The vold type singleton. -/
+def voidType : VoidType := arbitrary
 
 @[extern "papyrus_type_get_void"]
-constant getVoidType : LLVM TypeRef
+constant getVoidTypeRef : LLVM TypeRef
+
+/-- Get a reference to the LLVM representation of this type. -/
+def VoidType.getRef (_self : VoidType) := getVoidTypeRef
+
+instance : ToTypeRef VoidType := ⟨VoidType.getRef⟩
+
+--------------------------------------------------------------------------------
+-- Floating Point Types
+--------------------------------------------------------------------------------
+
+/-- A 16-bit floating point type. -/
+structure HalfType deriving Inhabited
+
+/-- The half type singleton. -/
+def halfType : HalfType := arbitrary
 
 @[extern "papyrus_type_get_half"]
-constant getHalfType : LLVM TypeRef
+private constant getHalfTypeRef : LLVM TypeRef
+
+/-- Get a reference to the LLVM representation of this type. -/
+def HalfType.getRef (_self : HalfType) := getHalfTypeRef
+
+instance : ToTypeRef HalfType := ⟨HalfType.getRef⟩
+
+/-- A 32-bit floating point type. -/
+structure FloatType deriving Inhabited
+
+/-- The float type singleton. -/
+def floatType : FloatType := arbitrary
 
 @[extern "papyrus_type_get_float"]
-constant getFloatType : LLVM TypeRef
+private constant getFloatTypeRef : LLVM TypeRef
+
+/-- Get a reference to the LLVM representation of this type. -/
+def FloatType.getRef (_self : FloatType) := getFloatTypeRef
+
+instance : ToTypeRef FloatType := ⟨FloatType.getRef⟩
+
+/-- The 64-bit floating point type. -/
+structure DoubleType deriving Inhabited
+
+/-- The double type singleton. -/
+def doubleType : DoubleType := arbitrary
 
 @[extern "papyrus_type_get_double"]
-constant getDoubleType : LLVM TypeRef
+private constant getDoubleTypeRef : LLVM TypeRef
+
+/-- Get a reference to the LLVM representation of this type. -/
+def DoubleType.getRef (_self : DoubleType) := getHalfTypeRef
+
+instance : ToTypeRef DoubleType := ⟨DoubleType.getRef⟩
+
+--------------------------------------------------------------------------------
+-- Integer Types
+--------------------------------------------------------------------------------
+
+@[extern "papyrus_type_get_integer"]
+private constant getIntegerTypeRef (numBits : @& UInt32) : LLVM TypeRef
+
+-- Minimum number of bits that can be specified.
+def IntegerType.MIN_INT_BITS : Nat := 1
+
+-- Maximum number of bits that can be specified.
+def IntegerType.MAX_INT_BITS : Nat := 16777215 -- (1 <<< 24) - 1
+
+structure IntegerType where
+  /-- The number of bits in this type. -/
+  bitWidth : UInt32
+  isGt : bitWidth.toNat >= IntegerType.MIN_INT_BITS
+  isLt : bitWidth.toNat <= IntegerType.MAX_INT_BITS
+
+/-- Create a new IntegerType, attempting to auto prove hypotheses by decide. -/
+def integerType
+  (bitWidth : UInt32)
+  (isGt : bitWidth.toNat >= IntegerType.MIN_INT_BITS := by decide)
+  (isLt : bitWidth.toNat <= IntegerType.MAX_INT_BITS := by decide)
+:=
+  IntegerType.mk bitWidth isGt isLt
+
+namespace IntegerType
+
+/-- Make a new IntegerType, attempting to auto prove hypotheses by decide. -/
+def mk'
+  (bitWidth : UInt32)
+  (isGt : bitWidth.toNat >= IntegerType.MIN_INT_BITS := by decide)
+  (isLt : bitWidth.toNat <= IntegerType.MAX_INT_BITS := by decide)
+:=
+  mk bitWidth isGt isLt
+
+/-- Get a reference to the LLVM representation of this type. -/
+def getRef (self : IntegerType) : LLVM TypeRef :=
+  getIntegerTypeRef self.bitWidth
+
+/--
+  A UInt64 bit mask with ones set for all the bits of this type
+  (or just every bit, if this type's bit width is greater than 64).
+-/
+def bitMask (self : IntegerType) : UInt64 :=
+  ~~~(0 : UInt64) >>> (64 - self.bitWidth.toUInt64)
+
+/--
+  Returns a UInt64 with just the most significant bit of this type set
+  (the sign bit, if the value is treated as a signed number).
+-/
+def signBit (self : IntegerType) : UInt64 :=
+  (1 : UInt64) <<< (self.bitWidth.toUInt64 - 1)
+
+/--
+  A bit mask with ones set for all the bits of this type.
+  For example, this is 0xFF for an 8 bit integer, 0xFFFF for i16, etc.
+-/
+def mask (self : IntegerType) : Nat :=
+  (1 <<< self.bitWidth.toNat) - 1
+
+end IntegerType
+
+instance : ToTypeRef IntegerType := ⟨IntegerType.getRef⟩
+
+--------------------------------------------------------------------------------
+-- Pointer Types
+--------------------------------------------------------------------------------
+
+@[extern "papyrus_type_get_pointer"]
+private constant getPointerTypeRef (pointee : TypeRef) (addrSpace : @& UInt32) : LLVM TypeRef
+
+/-- A numerically indexed address space. -/
+structure AddressSpace where
+  index : UInt32
+
+/-- The default address space (i.e., 0). -/
+def AddressSpace.default :=
+  AddressSpace.mk 0
+
+instance : Inhabited AddressSpace := ⟨AddressSpace.default⟩
+
+def AddressSpace.ofNat (n : Nat) :=
+  AddressSpace.mk (UInt32.ofNat n)
+
+instance {n} : OfNat AddressSpace n := ⟨AddressSpace.ofNat n⟩
+
+/-- A type for pointers to a given set of types. -/
+structure PointerType (α) where
+  pointeeType : α
+  addressSpace := AddressSpace.default
+
+/--
+  Create a new pointer type to the given type in the given address space
+  (or the default one).
+-/
+def pointerType (pointeeType : α) (addrSpace := AddressSpace.default) :=
+  PointerType.mk pointeeType addrSpace
+
+namespace PointerType
+
+/-- Make a new pointer type to the given type in the default address space. -/
+def mk' (pointeeType : α) :=
+  PointerType.mk pointeeType AddressSpace.default
+
+/-- Get a reference to the LLVM representation of this type. -/
+def getRef [ToTypeRef α] (self : PointerType α) : LLVM TypeRef := do
+  getPointerTypeRef (← toTypeRef self.pointeeType) self.addressSpace.index
+
+end PointerType
+
+instance [ToTypeRef α] : ToTypeRef (PointerType α) := ⟨PointerType.getRef⟩
+
+-- Conveince methods for constructing pointer types
+def HalfType.pointer (self : HalfType) := pointerType self
+def FloatType.pointer (self : FloatType) := pointerType self
+def DoubleType.pointer (self : DoubleType) := pointerType self
+def IntegerType.pointer (self : DoubleType) := pointerType self
+def PointerType.pointer (self : DoubleType) := pointerType self

@@ -5,6 +5,9 @@ open Papyrus
 
 deriving instance Repr for TypeID
 
+def printLLVMRefTypeID (ref : LLVM TypeRef) : LLVM PUnit := do
+  IO.println <| repr (←  (← ref).getTypeID)
+
 def main : IO Unit := LLVM.run do
 
   -- Test Module
@@ -14,7 +17,9 @@ def main : IO Unit := LLVM.run do
   IO.println (← mod.getModuleID)
 
   -- Test Types
-  IO.println <| repr (← (← getVoidType).getTypeID)
-  IO.println <| repr (← (← getHalfType).getTypeID)
-  IO.println <| repr (← (← getFloatType).getTypeID)
-  IO.println <| repr (← (← getDoubleType).getTypeID)
+  printLLVMRefTypeID voidType.getRef
+  printLLVMRefTypeID halfType.getRef
+  printLLVMRefTypeID floatType.getRef
+  printLLVMRefTypeID doubleType.getRef
+  printLLVMRefTypeID (integerType 32).getRef
+  printLLVMRefTypeID doubleType.pointer.getRef
