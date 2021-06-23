@@ -41,6 +41,7 @@ inductive TypeID
   FixedVector
 | /-- Scalable SIMD vector type -/
   ScalableVector
+deriving BEq, Repr
 
 --------------------------------------------------------------------------------
 -- Type References
@@ -77,13 +78,69 @@ structure VoidType deriving Inhabited
 /-- The vold type singleton. -/
 def voidType : VoidType := arbitrary
 
-@[extern "papyrus_type_get_void"]
-constant getVoidTypeRef : LLVM TypeRef
+@[extern "papyrus_get_void_type"]
+private constant getVoidTypeRef : LLVM TypeRef
 
 /-- Get a reference to the LLVM representation of this type. -/
 def VoidType.getRef (_self : VoidType) := getVoidTypeRef
 
 instance : ToTypeRef VoidType := ⟨VoidType.getRef⟩
+
+/-- A label type. -/
+structure LabelType deriving Inhabited
+
+/-- The label type singleton. -/
+def labelType : LabelType := arbitrary
+
+@[extern "papyrus_get_label_type"]
+private constant getLabelTypeRef : LLVM TypeRef
+
+/-- Get a reference to the LLVM representation of this type. -/
+def LabelType.getRef (_self : LabelType) := getLabelTypeRef
+
+instance : ToTypeRef LabelType := ⟨LabelType.getRef⟩
+
+/-- A metadata type. -/
+structure MetadataType deriving Inhabited
+
+/-- The metadata type singleton. -/
+def metadataType : MetadataType := arbitrary
+
+@[extern "papyrus_get_metadata_type"]
+private constant getMetadataTypeRef : LLVM TypeRef
+
+/-- Get a reference to the LLVM representation of this type. -/
+def MetadataType.getRef (_self : MetadataType) := getMetadataTypeRef
+
+instance : ToTypeRef MetadataType := ⟨MetadataType.getRef⟩
+
+/-- A token type. -/
+structure TokenType deriving Inhabited
+
+/-- The token type singleton. -/
+def tokenType : TokenType := arbitrary
+
+@[extern "papyrus_get_token_type"]
+private constant getTokenTypeRef : LLVM TypeRef
+
+/-- Get a reference to the LLVM representation of this type. -/
+def TokenType.getRef (_self : TokenType) := getTokenTypeRef
+
+instance : ToTypeRef TokenType := ⟨TokenType.getRef⟩
+
+/-- An 64-bit X86 MMX vector type. -/
+structure X86MMXType deriving Inhabited
+
+/-- The X86 MMX type singleton. -/
+def x86MMXType : X86MMXType := arbitrary
+
+@[extern "papyrus_get_x86_mmx_type"]
+private constant getX86MMXTypeRef : LLVM TypeRef
+
+/-- Get a reference to the LLVM representation of this type. -/
+def X86MMXType.getRef (_self : X86MMXType) := getX86MMXTypeRef
+
+instance : ToTypeRef X86MMXType := ⟨X86MMXType.getRef⟩
 
 --------------------------------------------------------------------------------
 -- Floating Point Types
@@ -95,7 +152,7 @@ structure HalfType deriving Inhabited
 /-- The half type singleton. -/
 def halfType : HalfType := arbitrary
 
-@[extern "papyrus_type_get_half"]
+@[extern "papyrus_get_half_type"]
 private constant getHalfTypeRef : LLVM TypeRef
 
 /-- Get a reference to the LLVM representation of this type. -/
@@ -109,7 +166,7 @@ structure FloatType deriving Inhabited
 /-- The float type singleton. -/
 def floatType : FloatType := arbitrary
 
-@[extern "papyrus_type_get_float"]
+@[extern "papyrus_get_float_type"]
 private constant getFloatTypeRef : LLVM TypeRef
 
 /-- Get a reference to the LLVM representation of this type. -/
@@ -123,11 +180,11 @@ structure DoubleType deriving Inhabited
 /-- The double type singleton. -/
 def doubleType : DoubleType := arbitrary
 
-@[extern "papyrus_type_get_double"]
+@[extern "papyrus_get_double_type"]
 private constant getDoubleTypeRef : LLVM TypeRef
 
 /-- Get a reference to the LLVM representation of this type. -/
-def DoubleType.getRef (_self : DoubleType) := getHalfTypeRef
+def DoubleType.getRef (_self : DoubleType) := getDoubleTypeRef
 
 instance : ToTypeRef DoubleType := ⟨DoubleType.getRef⟩
 
@@ -135,7 +192,7 @@ instance : ToTypeRef DoubleType := ⟨DoubleType.getRef⟩
 -- Integer Types
 --------------------------------------------------------------------------------
 
-@[extern "papyrus_type_get_integer"]
+@[extern "papyrus_get_integer_type"]
 private constant getIntegerTypeRef (numBits : @& UInt32) : LLVM TypeRef
 
 -- Minimum number of bits that can be specified.
@@ -201,7 +258,7 @@ instance : ToTypeRef IntegerType := ⟨IntegerType.getRef⟩
 -- Pointer Types
 --------------------------------------------------------------------------------
 
-@[extern "papyrus_type_get_pointer"]
+@[extern "papyrus_get_pointer_type"]
 private constant getPointerTypeRef (pointee : TypeRef) (addrSpace : @& UInt32) : LLVM TypeRef
 
 /-- A numerically indexed address space. -/

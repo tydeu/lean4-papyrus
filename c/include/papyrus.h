@@ -24,7 +24,7 @@ llvm::LLVMContext* toLLVMContext(lean::object* obj);
 lean::object* mk_module(lean::object* ctx, std::unique_ptr<llvm::Module> mod);
 llvm::Module* toModule(lean::object* obj);
 
-lean::object* mk_type(lean::object* ctx, llvm::Type* type);
+lean::object* mk_type_ref(lean::object* ctx, llvm::Type* type);
 llvm::Type* toType(lean::object* obj);
 
 //------------------------------------------------------------------------------
