@@ -14,17 +14,25 @@ namespace Papyrus
 
 -- # Pointer Types
 
-def HalfType.pointerType (self : HalfType) := PointerType.mk' self
-def BFloatType.pointerType (self : BFloatType) := PointerType.mk' self
-def FloatType.pointerType (self : FloatType) := PointerType.mk' self
-def DoubleType.pointerType (self : DoubleType) := PointerType.mk' self
-def X86FP80Type.pointerType (self : X86FP80Type) := PointerType.mk' self
-def FP128Type.pointerType (self : FP128Type) := PointerType.mk' self
-def PPCFP128Type.pointerType (self : PPCFP128Type) := PointerType.mk' self
-
+def HalfType.pointerType (self : HalfType) :=
+  Papyrus.pointerType self
+def BFloatType.pointerType (self : BFloatType) :=
+  Papyrus.pointerType self
+def FloatType.pointerType (self : FloatType) :=
+  Papyrus.pointerType self
+def DoubleType.pointerType (self : DoubleType) :=
+  Papyrus.pointerType self
+def X86FP80Type.pointerType (self : X86FP80Type) :=
+  Papyrus.pointerType self
+def FP128Type.pointerType (self : FP128Type) :=
+  Papyrus.pointerType self
+def PPCFP128Type.pointerType (self : PPCFP128Type) :=
+  Papyrus.pointerType self
 def IntegerType.pointerType {numBits} (self : IntegerType numBits) :=
-  PointerType.mk' self
+  Papyrus.pointerType self
 def PointerType.pointerType {addrSpace} (self : PointerType α addrSpace) :=
-  PointerType.mk' self
+  Papyrus.pointerType self
 def ArrayType.pointerType {numElems} (self : ArrayType α numElems) :=
-  PointerType.mk' self
+  Papyrus.pointerType self
+def VectorType.pointerType {elemQuant scalable} (self : VectorType α elemQuant scalable) :=
+  Papyrus.pointerType self

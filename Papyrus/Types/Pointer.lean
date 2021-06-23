@@ -28,18 +28,11 @@ structure PointerType (α) (addrSpace := AddressSpace.default) where
   pointeeType : α
 
 /--
-  Make a new pointer type to the given type
-  in the given address space (or the default one).
--/
-def PointerType.mk' (pointeeType : α) (addrSpace := AddressSpace.default) :=
-  (PointerType.mk pointeeType : PointerType α addrSpace)
-
-/--
   A pointer type to the given type
   in the given address space (or the default one).
 -/
 def pointerType (pointeeType : α) (addrSpace := AddressSpace.default) :=
-  PointerType.mk' pointeeType addrSpace
+  (PointerType.mk pointeeType : PointerType α addrSpace)
 
 @[extern "papyrus_get_pointer_type"]
 private constant getPointerTypeRef

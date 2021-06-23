@@ -5,13 +5,9 @@ namespace Papyrus
 /-- An arbirtrary precision integer type. -/
 structure IntegerType (numBits : Nat) deriving Inhabited
 
-/-- Make a new integer type with the given precision. -/
-def IntegerType.mk' (numBits : Nat) : IntegerType numBits :=
-  IntegerType.mk
-
 /-- An integer type of the given precision. -/
-def integerType (numBits : Nat) :=
-  IntegerType.mk' numBits
+def integerType (numBits : Nat) : IntegerType numBits :=
+  IntegerType.mk
 
 @[extern "papyrus_get_integer_type"]
 private constant getIntegerTypeRef (numBits : @& UInt32) : LLVM TypeRef

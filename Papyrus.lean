@@ -37,9 +37,15 @@ def main : IO Unit := LLVM.run do
   assertRefTypeID TypeID.FP128      (← fp128Type.getRef)
   assertRefTypeID TypeID.PPC_FP128  (← ppcFP128Type.getRef)
 
-  -- Test Derived Types
+  -- Test Basic Derived Types
   assertRefTypeID TypeID.Integer    (← (integerType 32).getRef)
   assertRefTypeID TypeID.Pointer    (← doubleType.pointerType.getRef)
   assertRefTypeID TypeID.Array      (← (arrayType doubleType 8).getRef)
+
+  -- Test Vector Types
+  assertRefTypeID TypeID.FixedVector
+    (← (fixedVectorType doubleType 8).getRef)
+  assertRefTypeID TypeID.ScalableVector
+    (← (scalableVectorType doubleType 8).getRef)
 
   IO.println "Finished."

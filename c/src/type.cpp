@@ -156,23 +156,13 @@ extern "C" obj_res papyrus_get_array_type(
     return io_result_mk_ok(mk_type_ref(getTypeContext(elemTypeObj), type));
 }
 
-// Get a reference to the fixed vector type
-// with the given element type and the given number of elements.
-extern "C" obj_res papyrus_get_fixed_vector_type(
-    b_obj_arg elemTypeObj, uint32_t numElems, obj_arg /* w */)
+// Get a reference to the vector type
+// with the given element type, element quantity, and scalability.
+extern "C" obj_res papyrus_get_vector_type(
+    b_obj_arg elemTypeObj, uint32_t numElems, uint8_t scalable, obj_arg /* w */)
 {
-    auto type = FixedVectorType::get(toType(elemTypeObj), numElems);
+    auto type = VectorType::get(toType(elemTypeObj), numElems, scalable);
     return io_result_mk_ok(mk_type_ref(getTypeContext(elemTypeObj), type));
 }
-
-// Get a reference to the scalable vector type
-// with the given element type and the given minimum number of elements.
-extern "C" obj_res papyrus_get_scalable_vector_type(
-    b_obj_arg elemTypeObj, uint32_t minNumElems, obj_arg /* w */)
-{
-    auto type = ScalableVectorType::get(toType(elemTypeObj), minNumElems);
-    return io_result_mk_ok(mk_type_ref(getTypeContext(elemTypeObj), type));
-}
-
 
 } // end namespace papyrus

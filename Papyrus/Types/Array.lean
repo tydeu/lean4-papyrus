@@ -6,13 +6,9 @@ namespace Papyrus
 structure ArrayType (α) (numElems : Nat) where
   elementType : α
 
-/-- Make a new array type of the given type and the given size. -/
-def ArrayType.mk' (elementType : α) (numElems : Nat) : ArrayType α numElems :=
+/-- An array type of the given type with the given size. -/
+def arrayType (elementType : α) (numElems : Nat) : ArrayType α numElems  :=
   ArrayType.mk elementType
-
-/-- An array type of the given type and the given size. -/
-def arrayType (elementType : α) (numElems : Nat) :=
-  ArrayType.mk' elementType numElems
 
 @[extern "papyrus_get_array_type"]
 private constant getArrayTypeRef
@@ -30,7 +26,7 @@ def size (self : ArrayType α numElems) := numElems
   and size are valid.
 -/
 def getRef [ToTypeRef α] (self : ArrayType α numElems) : LLVM TypeRef := do
-  getArrayTypeRef (← toTypeRef self.elementType) self.size.toUInt64
+  getArrayTypeRef (← toTypeRef self.elementType) numElems.toUInt64
 
 end ArrayType
 
