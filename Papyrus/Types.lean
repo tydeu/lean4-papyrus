@@ -3,6 +3,7 @@ import Papyrus.Types.TypeRef
 import Papyrus.Types.Primitive
 import Papyrus.Types.Integer
 import Papyrus.Types.Function
+import Papyrus.Types.Struct
 import Papyrus.Types.Pointer
 import Papyrus.Types.Array
 import Papyrus.Types.Vector
@@ -30,6 +31,14 @@ def FP128Type.pointerType (self : FP128Type) :=
 def PPCFP128Type.pointerType (self : PPCFP128Type) :=
   Papyrus.pointerType self
 def IntegerType.pointerType {numBits} (self : IntegerType numBits) :=
+  Papyrus.pointerType self
+def FunctionType.pointerType {varArgs} (self : FunctionType α β varArgs) :=
+  Papyrus.pointerType self
+def StructType.pointerType {name packed} (self : StructType name α packed) :=
+  Papyrus.pointerType self
+def OpaqueStructType.pointerType {name} (self : OpaqueStructType name) :=
+  Papyrus.pointerType self
+def LiteralStructType.pointerType {packed} (self : LiteralStructType α packed) :=
   Papyrus.pointerType self
 def PointerType.pointerType {addrSpace} (self : PointerType α addrSpace) :=
   Papyrus.pointerType self

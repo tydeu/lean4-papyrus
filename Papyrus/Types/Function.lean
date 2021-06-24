@@ -21,7 +21,7 @@ private constant getFunctionTypeRef
 namespace FunctionType
 variable {varArgs : Bool}
 
-/-- Does this type have variable arguments? -/
+/-- Does this function type have variable arguments? -/
 def isVarArgs (self : FunctionType α β varArgs) := varArgs
 
 /--

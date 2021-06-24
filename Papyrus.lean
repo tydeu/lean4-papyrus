@@ -48,6 +48,14 @@ def main : IO Unit := LLVM.run do
   assertRefTypeID TypeID.Function
     (← (functionType voidType (halfType, doubleType) true).getRef)
 
+  -- Test Struct Types
+  assertRefTypeID TypeID.Struct
+    (← (structType "foo" halfType true).getRef)
+  assertRefTypeID TypeID.Struct
+    (← (opaqueStructType "bar").getRef)
+  assertRefTypeID TypeID.Struct
+    (← (literalStructType (halfType, doubleType)).getRef)
+
   -- Test Vector Types
   assertRefTypeID TypeID.FixedVector
     (← (fixedVectorType doubleType 8).getRef)

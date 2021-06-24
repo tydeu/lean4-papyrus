@@ -126,7 +126,7 @@ extern "C" obj_res papyrus_get_ppc_fp128_type(obj_arg ctxObj, obj_arg /* w */) {
 }
 
 //------------------------------------------------------------------------------
-// Derived types
+// Basic derived types
 //------------------------------------------------------------------------------
 
 // Get a reference to the integer type of the given bit width
@@ -142,13 +142,13 @@ extern "C" obj_res papyrus_get_integer_type(
 extern "C" obj_res papyrus_get_function_type(
     b_obj_arg resultObj, b_obj_arg paramsObj, uint8_t isVarArgs, obj_arg /* w */)
 {
-    lean_array_object* paramsArrObj = lean_to_array(paramsObj);
-    size_t len = paramsArrObj->m_size;
-    llvm::Type* paramTypes[len];
+    lean_array_object* arrObj = lean_to_array(paramsObj);
+    size_t len = arrObj->m_size;
+    llvm::Type* types[len];
     for (size_t i = 0; i < len; i++) {
-        paramTypes[i] = toType(paramsArrObj->m_data[i]);
+        types[i] = toType(arrObj->m_data[i]);
     }
-    ArrayRef<llvm::Type*> params(paramTypes, len);
+    ArrayRef<llvm::Type*> params(types, len);
     auto type = FunctionType::get(toType(resultObj), params, isVarArgs);
     return io_result_mk_ok(mk_type_ref(getTypeContext(resultObj), type));
 }
@@ -174,10 +174,53 @@ extern "C" obj_res papyrus_get_array_type(
 // Get a reference to the vector type
 // with the given element type, element quantity, and scalability.
 extern "C" obj_res papyrus_get_vector_type(
-    b_obj_arg elemTypeObj, uint32_t numElems, uint8_t scalable, obj_arg /* w */)
+    b_obj_arg elemTypeObj, uint32_t numElems, uint8_t isScalable, obj_arg /* w */)
 {
-    auto type = VectorType::get(toType(elemTypeObj), numElems, scalable);
+    auto type = VectorType::get(toType(elemTypeObj), numElems, isScalable);
     return io_result_mk_ok(mk_type_ref(getTypeContext(elemTypeObj), type));
+}
+
+//------------------------------------------------------------------------------
+// Struct types
+//------------------------------------------------------------------------------
+
+// Get a reference to a complete struct type with the given elements and packing.
+extern "C" obj_res papyrus_get_struct_type(
+    b_obj_arg nameObj, b_obj_arg elemsObj, uint8_t isPacked, obj_arg ctxObj, obj_arg /* w */)
+{
+    lean_array_object* arrObj = lean_to_array(elemsObj);
+    size_t len = arrObj->m_size;
+    llvm::Type* types[len];
+    for (size_t i = 0; i < len; i++) {
+        types[i] = toType(arrObj->m_data[i]);
+    }
+    ArrayRef<llvm::Type*> elems(types, len);
+    auto type = StructType::create(*toLLVMContext(ctxObj),
+        elems, string_to_ref(nameObj), isPacked);
+    return io_result_mk_ok(mk_type_ref(ctxObj, type));
+}
+
+// Get a reference to a opaque struct type with the given name.
+extern "C" obj_res papyrus_get_opaque_struct_type(
+    b_obj_arg nameObj, obj_arg ctxObj, obj_arg /* w */)
+{
+    auto type = StructType::create(*toLLVMContext(ctxObj), string_to_ref(nameObj));
+    return io_result_mk_ok(mk_type_ref(ctxObj, type));
+}
+
+// Get a reference to the literal struct type with the given elements and packing.
+extern "C" obj_res papyrus_get_literal_struct_type(
+    b_obj_arg elemsObj, uint8_t isPacked, obj_arg ctxObj, obj_arg /* w */)
+{
+    lean_array_object* arrObj = lean_to_array(elemsObj);
+    size_t len = arrObj->m_size;
+    llvm::Type* types[len];
+    for (size_t i = 0; i < len; i++) {
+        types[i] = toType(arrObj->m_data[i]);
+    }
+    ArrayRef<llvm::Type*> elems(types, len);
+    auto type = StructType::get(*toLLVMContext(ctxObj), elems, isPacked);
+    return io_result_mk_ok(mk_type_ref(ctxObj, type));
 }
 
 } // end namespace papyrus
