@@ -10,7 +10,7 @@ abbrev LLVM := ReaderT ContextRef IO
 
 namespace LLVM
 
-def runWith (ctx : ContextRef) (self : LLVM α) : IO α :=
+def runIn (ctx : ContextRef) (self : LLVM α) : IO α :=
   self ctx
 
 def run (self : LLVM α) : IO α := do

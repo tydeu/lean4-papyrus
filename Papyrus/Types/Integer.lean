@@ -2,6 +2,8 @@ import Papyrus.Types.TypeRef
 
 namespace Papyrus
 
+-- # Integer Type
+
 /-- An arbirtrary precision integer type. -/
 structure IntegerType (numBits : Nat) deriving Inhabited
 
@@ -65,3 +67,23 @@ def mask (self : IntegerType numBits) : Nat :=
 end IntegerType
 
 instance {numBits} : ToTypeRef (IntegerType numBits) := ⟨IntegerType.getRef⟩
+
+-- # Specializations
+
+/-- A 1-bit integer type (e.g., a `bool`). -/
+def int1Type := integerType 1
+
+/-- An 8-bit integer type (e.g., a `byte` or `char`). -/
+def int8Type := integerType 8
+
+/-- A 16-bit integer type (e.g., a `short`). -/
+def int16Type := integerType 16
+
+/-- A 32-bit integer type (e.g., a `long`). -/
+def int32Type := integerType 32
+
+/-- A 64-bit integer type (e.g., a `long long`). -/
+def int64Type := integerType 64
+
+/-- A 128-bit integer type. -/
+def int128Type := integerType 128

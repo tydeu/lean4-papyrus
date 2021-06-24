@@ -37,29 +37,37 @@ def main : IO Unit := LLVM.run do
   assertRefTypeID TypeID.FP128      (← fp128Type.getRef)
   assertRefTypeID TypeID.PPC_FP128  (← ppcFP128Type.getRef)
 
-  -- Test Basic Derived Types
-  assertRefTypeID TypeID.Integer    (← (integerType 32).getRef)
-  assertRefTypeID TypeID.Pointer    (← doubleType.pointerType.getRef)
-  assertRefTypeID TypeID.Array      (← (arrayType doubleType 8).getRef)
+  -- Test Integer Types
+  assertRefTypeID TypeID.Integer    (← int1Type.getRef)
+  assertRefTypeID TypeID.Integer    (← int8Type.getRef)
+  assertRefTypeID TypeID.Integer    (← int16Type.getRef)
+  assertRefTypeID TypeID.Integer    (← int32Type.getRef)
+  assertRefTypeID TypeID.Integer    (← int64Type.getRef)
+  assertRefTypeID TypeID.Integer    (← int128Type.getRef)
+  assertRefTypeID TypeID.Integer    (← integerType 100 |>.getRef)
 
   -- Test Function Types
   assertRefTypeID TypeID.Function
-    (← (functionType voidType doubleType).getRef)
+    (← functionType voidType doubleType |>.getRef)
   assertRefTypeID TypeID.Function
-    (← (functionType voidType (halfType, doubleType) true).getRef)
+    (← functionType voidType (floatType, int1Type) true |>.getRef)
 
   -- Test Struct Types
   assertRefTypeID TypeID.Struct
-    (← (structType "foo" halfType true).getRef)
+    (← structType "foo" halfType true |>.getRef)
   assertRefTypeID TypeID.Struct
-    (← (opaqueStructType "bar").getRef)
+    (← opaqueStructType "bar" |>.getRef)
   assertRefTypeID TypeID.Struct
-    (← (literalStructType (halfType, doubleType)).getRef)
+    (← literalStructType (halfType, doubleType) |>.getRef)
 
   -- Test Vector Types
   assertRefTypeID TypeID.FixedVector
-    (← (fixedVectorType doubleType 8).getRef)
+    (← fixedVectorType doubleType 8 |>.getRef)
   assertRefTypeID TypeID.ScalableVector
-    (← (scalableVectorType doubleType 8).getRef)
+    (← scalableVectorType doubleType 8 |>.getRef)
+
+  -- Test Other Derived Types
+  assertRefTypeID TypeID.Pointer    (← doubleType.pointerType.getRef)
+  assertRefTypeID TypeID.Array      (← arrayType int8Type 8 |>.getRef)
 
   IO.println "Finished."

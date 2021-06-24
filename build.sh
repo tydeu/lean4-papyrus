@@ -1,6 +1,6 @@
 # Make C lib
 
-echo "building c"
+echo "building c lib"
 make -C c
 
 # Make Papyrus
