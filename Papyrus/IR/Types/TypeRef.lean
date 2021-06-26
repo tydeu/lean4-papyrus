@@ -4,8 +4,8 @@ import Papyrus.IR.Types.TypeID
 namespace Papyrus
 
 /--
-  A reference to the LLVM representation of a Type.
-  See https://llvm.org/doxygen/classllvm_1_1Type.html.
+  A reference to the LLVM representation of a
+  [Type](https://llvm.org/doxygen/classllvm_1_1Type.html).
 -/
 constant TypeRef : Type := Unit
 

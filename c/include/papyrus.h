@@ -48,7 +48,9 @@ llvm::Value* toValue(lean::object* valueRef);
 //------------------------------------------------------------------------------
 
 // A no-op foreach callback for external classes
-void nopForeach(void* p, lean::b_obj_arg a);
+static void nopForeach(void* /* p */, lean::b_obj_arg /* a */) {
+  return;
+}
 
 // Casts the pointer to the template type and invokes delete
 template<typename T>

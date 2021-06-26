@@ -1,7 +1,12 @@
 namespace Papyrus
 
+/--
+  A reference to the LLVM representation of a
+  [LLVMContext](https://llvm.org/doxygen/classllvm_1_1LLVMContext.html).
+-/
 constant ContextRef : Type := Unit
 
+/-- Create a new LLVM context. -/
 @[extern "papyrus_context_new"]
 constant ContextRef.new : IO ContextRef
 

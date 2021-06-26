@@ -1,11 +1,13 @@
 import Papyrus.Context
 import Papyrus.IR.Value
+import Papyrus.IR.Types.TypeRef
+import Papyrus.IR.Types.Integer
 
 namespace Papyrus
 
 /--
-  An external reference to the LLVM representation of a Constant.
-  See https://llvm.org/doxygen/classllvm_1_1Constant.html.
+  An external reference to the LLVM representation of a
+  [Constant](https://llvm.org/doxygen/classllvm_1_1Constant.html).
 -/
 def ConstantRef := UserRef
 
@@ -22,35 +24,84 @@ constant getAllOnesConstant (self : @& TypeRef) : IO ConstantRef
 end TypeRef
 
 /--
-  An external reference to the LLVM representation of a ConstantData.
-  See https://llvm.org/doxygen/classllvm_1_1ConstantData.html.
+  An external reference to the LLVM representation of a
+  [ConstantData](https://llvm.org/doxygen/classllvm_1_1ConstantData.html).
 -/
 def ConstantDataRef := ConstantRef
 
+--------------------------------------------------------------------------------
+-- Constant Word/Int/Nat
+--------------------------------------------------------------------------------
+
+-- # Constant Word
+
 /--
-  An external reference to the LLVM representation of a ConstantInt.
-  See https://llvm.org/doxygen/classllvm_1_1ConstantInt.html.
+  An external reference to the LLVM representation of a
+  [ConstantInt](https://llvm.org/doxygen/classllvm_1_1ConstantInt.html)
+  that is treated simply as a block of bits.
 -/
-def ConstantIntRef := ConstantDataRef
+def ConstantWordRef := ConstantDataRef
 
-namespace ConstantIntRef
+namespace ConstantWordRef
 
 /--
-  Get a reference to a constant integer of the given value with the given type.
+  Get the value of this constant as an `Int`.
+  That is, treat its bits as representing a native integer.
+-/
+@[extern "papyrus_constant_word_get_int_value"]
+constant getIntValue (self : @& ConstantWordRef) : IO Int
+
+/--
+  Get the value of this constant as a `Nat`.
+  That is, treat its bits as representing a native unsigned integer.
+-/
+@[extern "papyrus_constant_word_get_nat_value"]
+constant getNatValue (self : @& ConstantWordRef) : IO Nat
+
+end ConstantWordRef
+
+-- # Constant Int
+
+/--
+  An external reference to the LLVM representation of a
+  [ConstantInt](https://llvm.org/doxygen/classllvm_1_1ConstantInt.html)
+  that is treated as an `Int` (i.e., a signed native ).
+-/
+def ConstantIntRef := ConstantWordRef
+
+/-- Get the value of this constant (as an `Int`). -/
+def ConstantIntRef.getValue (self : ConstantIntRef) :=
+  ConstantWordRef.getIntValue self
+
+-- # Constant Nat
+
+/--
+  An external reference to the LLVM representation of a
+  [ConstantInt](https://llvm.org/doxygen/classllvm_1_1ConstantInt.html)
+  that is treated as a `Nat`.
+-/
+def ConstantNatRef := ConstantWordRef
+
+/-- Get the value of this constant (as a `Nat`). -/
+def ConstantNatRef.getValue (self : ConstantNatRef) :=
+  ConstantWordRef.getNatValue self
+
+-- # Integer Type -> ConstantInt/ConstantNat Convience Functions
+
+namespace IntegerTypeRef
+
+/--
+  Get a reference to a constant of this type with the given `Int` value.
   The value will be truncated and/or extended as necessary to make it fit.
 -/
 @[extern "papyrus_get_constant_int"]
-constant get (value : @& Int) (type : @& TypeRef) : LLVM ConstantIntRef
-
-/-- Get the Int value of this constant. -/
-@[extern "papyrus_constant_int_get_value"]
-constant getValue (self : @& ConstantIntRef) : IO Int
+constant getConstantInt (value : @& Int) (self : @& IntegerTypeRef) : IO ConstantIntRef
 
 /--
-  Get the Nat value of this constant.
-  That is, treat this constant as unsigned.
+  Get a reference to a constant of this type with the given `Nat` value.
+  The value will be truncated and/or extended as necessary to make it fit.
 -/
-@[extern "papyrus_constant_int_get_nat_value"]
-constant getNatValue (self : @& ConstantIntRef) : IO Nat
+@[extern "papyrus_get_constant_nat"]
+constant getConstantNat (value : @& Nat) (self : @& IntegerTypeRef) : IO ConstantNatRef
 
-end ConstantIntRef
+end IntegerTypeRef

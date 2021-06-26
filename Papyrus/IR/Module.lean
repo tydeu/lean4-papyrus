@@ -2,9 +2,12 @@ import Papyrus.Context
 
 namespace Papyrus
 
-structure Module where
-  moduleID : String
+-- # Module References
 
+/--
+  A reference to the LLVM representation of a
+  [Module](https://llvm.org/doxygen/classllvm_1_1Module.html).
+-/
 constant ModuleRef : Type := Unit
 
 namespace ModuleRef
@@ -19,6 +22,11 @@ constant getModuleID (self : @& ModuleRef) : IO String
 constant setModuleID (self : @& ModuleRef) (modID : @& String) : IO Unit
 
 end ModuleRef
+
+-- # Pure Modules
+
+structure Module where
+  moduleID : String
 
 namespace Module
 

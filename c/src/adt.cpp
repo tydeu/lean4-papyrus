@@ -11,10 +11,6 @@ using namespace llvm;
 
 namespace papyrus {
 
-void nopForeach(void* /* p */, b_obj_arg /* a */) {
-  return;
-}
-
 lean::object* mk_string(const llvm::StringRef& str) {
     size_t size  = str.size();
     size_t len = lean::utf8_strlen(str.data(), size);

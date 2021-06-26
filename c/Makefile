@@ -28,7 +28,7 @@ HDRS := \
 	papyrus.h
 
 SRCS := \
-	common.cpp\
+	adt.cpp\
   context.cpp\
   module.cpp\
 	type.cpp\

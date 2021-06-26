@@ -152,27 +152,26 @@ def testConstants : LLVM PUnit := do
 
   testcase "small positive constructed integer constant" do
     let val := 32
-    let const ← ConstantIntRef.get val int8TypeRef
+    let const ← int8TypeRef.getConstantInt val
     assertBEq val (← const.getNatValue)
     assertBEq val (← const.getValue)
 
   testcase "small negative constructed integer constant" do
-    let absVal := 32
-    let intVal := -(Int.ofNat 32)
-    let const ← ConstantIntRef.get intVal int8TypeRef
+    let absVal := 32; let intVal := -32
+    let const ← int8TypeRef.getConstantInt intVal
     assertBEq (2 ^ 8 - absVal) (← const.getNatValue)
     assertBEq intVal (← const.getValue)
 
   testcase "big positive constructed integer constant" do
     let val : Nat := 2 ^ 80 + 12
-    let const ← ConstantIntRef.get val int128TypeRef
+    let const ← int128TypeRef.getConstantInt val
     assertBEq (Int.ofNat val) (← const.getValue)
     assertBEq val (← const.getNatValue)
 
   testcase "big negative constructed integer constant" do
     let absVal := 2 ^ 80 + 12
     let intVal := -(Int.ofNat absVal)
-    let const ← ConstantIntRef.get intVal int128TypeRef
+    let const ← int128TypeRef.getConstantInt intVal
     assertBEq (Int.ofNat (2 ^ 128) - absVal) (← const.getNatValue)
     assertBEq intVal (← const.getValue)
 
