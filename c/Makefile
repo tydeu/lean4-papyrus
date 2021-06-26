@@ -32,6 +32,8 @@ SRCS := \
   context.cpp\
   module.cpp\
 	type.cpp\
+	value.cpp\
+	constant.cpp\
 
 LIB_OBJ := papyrus.o
 

@@ -16,20 +16,21 @@ static external_object_class* getLLVMContextClass() {
 }
 
 // Wrap an LLVMContext in a Lean object.
-lean::object* mk_context(LLVMContext* ctx) {
+lean::object* mk_context_ref(LLVMContext* ctx) {
     return lean_alloc_external(getLLVMContextClass(), ctx);;
 }
 
 // Get the LLVMContext wrapped in an object.
-LLVMContext* toLLVMContext(lean::object* obj) {
-    lean_assert(lean_get_external_class(obj) == getLLVMContextClass());
-    return static_cast<LLVMContext*>(lean_get_external_data(obj));
+LLVMContext* toLLVMContext(lean::object* ctxObj) {
+    auto external = lean_to_external(ctxObj);
+    assert(external->m_class == getLLVMContextClass());
+    return static_cast<LLVMContext*>(external->m_data);
 }
 
 // Create a new Lean LLVM Context object.
 extern "C" obj_res papyrus_context_new(obj_arg /* w */) {
     auto ctx = new LLVMContext();
-    return io_result_mk_ok(mk_context(new LLVMContext()));
+    return io_result_mk_ok(mk_context_ref(new LLVMContext()));
 }
 
 } // end namespace papyrus

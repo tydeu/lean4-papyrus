@@ -3,10 +3,13 @@
 
 // Forward declarations
 namespace llvm {
+    class APInt;
+    class Twine;
     class StringRef;
     class LLVMContext;
     class Module;
     class Type;
+    class Value;
 }
 
 namespace papyrus {
@@ -15,17 +18,28 @@ namespace papyrus {
 // LLVM interfaces
 //------------------------------------------------------------------------------
 
+lean::object* mk_nat(const llvm::APInt& ap);
+lean::object* mk_int(const llvm::APInt& ap);
+const llvm::APInt nat_to_ap(unsigned numBits, lean::object* obj);
+const llvm::APInt int_to_ap(unsigned numBits, lean::object* obj);
+
 lean::object* mk_string(const llvm::StringRef& str);
 const llvm::StringRef string_to_ref(lean::object* obj);
+const llvm::Twine string_to_twine(lean::object* obj);
 
-lean::object* mk_context(llvm::LLVMContext* ctx);
-llvm::LLVMContext* toLLVMContext(lean::object* obj);
+lean::object* mk_context_ref(llvm::LLVMContext* ctx);
+llvm::LLVMContext* toLLVMContext(lean::object* ctxObj);
 
-lean::object* mk_module(lean::object* ctx, std::unique_ptr<llvm::Module> mod);
-llvm::Module* toModule(lean::object* obj);
+lean::object* mk_module_ref(lean::object* ctx, std::unique_ptr<llvm::Module> mod);
+llvm::Module* toModule(lean::object* modObj);
 
 lean::object* mk_type_ref(lean::object* ctx, llvm::Type* type);
-llvm::Type* toType(lean::object* obj);
+lean::object* getTypeContext(lean::object* typeObj);
+llvm::Type* toType(lean::object* typeObj);
+
+lean::object* mk_value_ref(lean::object* ctx, llvm::Value* value);
+lean::object* getValueContext(lean::object* valueObj);
+llvm::Value* toValue(lean::object* valueObj);
 
 //------------------------------------------------------------------------------
 // Generic utilities

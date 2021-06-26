@@ -9,6 +9,10 @@ using namespace llvm;
 
 namespace papyrus {
 
+//------------------------------------------------------------------------------
+// Type references
+//------------------------------------------------------------------------------
+
 // The Lean object class for LLVM types.
 static external_object_class* getTypeClass() {
     // Use static to make this thread safe due to static initialization rule.
@@ -21,16 +25,21 @@ lean::object* mk_type_ref(lean::object* ctx, llvm::Type* ptr) {
     return lean_alloc_external(getTypeClass(), new OwnedExternal<llvm::Type>(ctx, ptr));
 }
 
+// Get the LLVM Type external wrapped in an object.
+OwnedExternal<llvm::Type>* toTypeExternal(lean::object* typeObj) {
+    auto external = lean_to_external(typeObj);
+    assert(external->m_class == getTypeClass());
+    return static_cast<OwnedExternal<llvm::Type>*>(external->m_data);
+}
+
 // Get the LLVM Type pointer wrapped in an object.
-llvm::Type* toType(lean::object* obj) {
-    lean_assert(lean_get_external_class(obj) == getTypeClass());
-    return static_cast<OwnedExternal<llvm::Type>*>(lean_get_external_data(obj))->value;
+llvm::Type* toType(lean::object* typeObj) {
+    return toTypeExternal(typeObj)->value;
 }
 
 // Get the owning LLVM context object of the given type object.
 lean::object* getTypeContext(lean::object* typeObj) {
-    lean_assert(lean_get_external_class(typeObj) == getTypeClass());
-    auto ctx = static_cast<OwnedExternal<llvm::Type>*>(lean_get_external_data(typeObj))->owner;
+    auto ctx = toTypeExternal(typeObj)->owner;
     lean_inc_ref(ctx);
     return ctx;
 }
