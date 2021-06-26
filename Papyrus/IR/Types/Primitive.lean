@@ -1,5 +1,5 @@
 import Lean.Parser
-import Papyrus.Types.TypeRef
+import Papyrus.IR.Types.TypeRef
 
 namespace Papyrus
 

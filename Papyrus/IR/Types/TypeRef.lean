@@ -1,5 +1,5 @@
 import Papyrus.Context
-import Papyrus.Types.TypeID
+import Papyrus.IR.Types.TypeID
 
 namespace Papyrus
 

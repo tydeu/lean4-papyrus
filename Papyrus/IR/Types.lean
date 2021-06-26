@@ -1,12 +1,12 @@
-import Papyrus.Types.TypeID
-import Papyrus.Types.TypeRef
-import Papyrus.Types.Primitive
-import Papyrus.Types.Integer
-import Papyrus.Types.Function
-import Papyrus.Types.Struct
-import Papyrus.Types.Pointer
-import Papyrus.Types.Array
-import Papyrus.Types.Vector
+import Papyrus.IR.Types.TypeID
+import Papyrus.IR.Types.TypeRef
+import Papyrus.IR.Types.Primitive
+import Papyrus.IR.Types.Integer
+import Papyrus.IR.Types.Function
+import Papyrus.IR.Types.Struct
+import Papyrus.IR.Types.Pointer
+import Papyrus.IR.Types.Array
+import Papyrus.IR.Types.Vector
 
 namespace Papyrus
 

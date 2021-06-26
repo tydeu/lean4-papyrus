@@ -1,6 +1,6 @@
-import Papyrus.Types
-import Papyrus.Values
-import Papyrus.Module
+import Papyrus.IR.Types
+import Papyrus.IR.Constants
+import Papyrus.IR.Module
 
 open Papyrus
 
