@@ -3,7 +3,10 @@ import Papyrus.Types.TypeID
 
 namespace Papyrus
 
-/-- A reference to the LLVM representation of a Type. -/
+/--
+  A reference to the LLVM representation of a Type.
+  See https://llvm.org/doxygen/classllvm_1_1Type.html.
+-/
 constant TypeRef : Type := Unit
 
 namespace TypeRef

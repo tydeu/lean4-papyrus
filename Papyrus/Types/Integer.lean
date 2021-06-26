@@ -2,7 +2,41 @@ import Papyrus.Types.TypeRef
 
 namespace Papyrus
 
--- # Integer Type
+-- # Integer Type Reference
+
+/--
+  A reference to the LLVM representation of an
+  [IntegerType](https://llvm.org/doxygen/classllvm_1_1IntegerType.html).
+-/
+def IntegerTypeRef := TypeRef
+
+namespace IntegerTypeRef
+
+/-- Minimum bit width of an LLVM integer type. -/
+def MIN_INT_BITS : UInt32 := 1
+
+/-- Maximum bit width of an LLVM integer type. -/
+def MAX_INT_BITS : UInt32 := 16777215 -- (1 <<< 24) - 1
+
+/-- Holds if the given bit width is valid for an LLVM integer type. -/
+def isValidBitWidth (bitWidth : UInt32) : Prop :=
+  bitWidth ≥ MIN_INT_BITS ∧ bitWidth ≤ MAX_INT_BITS
+
+/--
+  Get a reference to the LLVM integer type of the given width.
+  It is the user's responsible to ensure that the bit width of the type falls
+  within LLVM's requirements (i.e., that `isValidBitWidth numBits` holds).
+-/
+@[extern "papyrus_get_integer_type"]
+constant get (numBits : @& UInt32) : LLVM TypeRef
+
+/-- Get the width in bits of this type. -/
+@[extern "papyrus_integer_type_get_bit_width"]
+constant getBitWidth (self : @& IntegerTypeRef) : LLVM UInt32
+
+end IntegerTypeRef
+
+-- # Pure Integer Type
 
 /-- An arbirtrary precision integer type. -/
 structure IntegerType (numBits : Nat) deriving Inhabited
@@ -11,20 +45,7 @@ structure IntegerType (numBits : Nat) deriving Inhabited
 def integerType (numBits : Nat) : IntegerType numBits :=
   IntegerType.mk
 
-@[extern "papyrus_get_integer_type"]
-private constant getIntegerTypeRef (numBits : @& UInt32) : LLVM TypeRef
-
 namespace IntegerType
-
-/-- Minimum number of bits that can be specified. -/
-def MIN_INT_BITS : Nat := 1
-
-/-- Maximum number of bits that can be specified. -/
-def MAX_INT_BITS : Nat := 16777215 -- (1 <<< 24) - 1
-
-/-- Condition for a valid integer type. -/
-def isValidBitWidth (bitWidth : Nat) : Prop :=
-  bitWidth ≥ IntegerType.MIN_INT_BITS ∧ bitWidth ≤ IntegerType.MAX_INT_BITS
 
 variable {numBits : Nat}
 
@@ -33,10 +54,10 @@ variable {numBits : Nat}
   It is the user's responsible to ensure that the bit width of the type falls
   within the LLVM's requirements (i.e., that `isValidBitWidth numBits` holds).
 -/
-def getRef (self : IntegerType numBits) : LLVM TypeRef :=
-  getIntegerTypeRef numBits.toUInt32
+def getRef (self : IntegerType numBits) : LLVM IntegerTypeRef :=
+  IntegerTypeRef.get numBits.toUInt32
 
-/-- The number of bits in this type. -/
+/-- The width in bits of this type. -/
 def bitWidth (self : IntegerType numBits) := numBits
 
 /-- An integer type twice as wide as this type. -/

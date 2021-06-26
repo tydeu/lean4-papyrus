@@ -3,6 +3,7 @@ namespace Papyrus
 /-- A numerically indexed address space. -/
 structure AddressSpace where
   index : Nat
+  deriving BEq, Repr
 
 namespace AddressSpace
 

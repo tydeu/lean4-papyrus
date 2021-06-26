@@ -9,6 +9,7 @@ namespace llvm {
     class LLVMContext;
     class Module;
     class Type;
+    class IntegerType;
     class Value;
 }
 
@@ -28,18 +29,19 @@ const llvm::StringRef string_to_ref(lean::object* obj);
 const llvm::Twine string_to_twine(lean::object* obj);
 
 lean::object* mk_context_ref(llvm::LLVMContext* ctx);
-llvm::LLVMContext* toLLVMContext(lean::object* ctxObj);
+llvm::LLVMContext* toLLVMContext(lean::object* ctxRef);
 
-lean::object* mk_module_ref(lean::object* ctx, std::unique_ptr<llvm::Module> mod);
+lean::object* mk_module_ref(lean::object* ctxRef, std::unique_ptr<llvm::Module> mod);
 llvm::Module* toModule(lean::object* modObj);
 
-lean::object* mk_type_ref(lean::object* ctx, llvm::Type* type);
-lean::object* getTypeContext(lean::object* typeObj);
-llvm::Type* toType(lean::object* typeObj);
+lean::object* mk_type_ref(lean::object* ctxRef, llvm::Type* type);
+lean::object* getTypeContext(lean::object* typeRef);
+llvm::Type* toType(lean::object* typeRef);
+llvm::IntegerType* toIntegerType(lean::object* typeRef);
 
-lean::object* mk_value_ref(lean::object* ctx, llvm::Value* value);
-lean::object* getValueContext(lean::object* valueObj);
-llvm::Value* toValue(lean::object* valueObj);
+lean::object* mk_value_ref(lean::object* ctxRef, llvm::Value* value);
+lean::object* getValueContext(lean::object* valueRef);
+llvm::Value* toValue(lean::object* valueRef);
 
 //------------------------------------------------------------------------------
 // Generic utilities

@@ -21,8 +21,8 @@ lean::object* mk_context_ref(LLVMContext* ctx) {
 }
 
 // Get the LLVMContext wrapped in an object.
-LLVMContext* toLLVMContext(lean::object* ctxObj) {
-    auto external = lean_to_external(ctxObj);
+LLVMContext* toLLVMContext(lean::object* ctxRef) {
+    auto external = lean_to_external(ctxRef);
     assert(external->m_class == getLLVMContextClass());
     return static_cast<LLVMContext*>(external->m_data);
 }

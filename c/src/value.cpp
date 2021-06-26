@@ -27,20 +27,20 @@ lean::object* mk_value_ref(lean::object* ctx, llvm::Value* ptr) {
 }
 
 // Get the LLVM Value external wrapped in an object.
-OwnedExternal<llvm::Value>* toValueExternal(lean::object* valueObj) {
-    auto external = lean_to_external(valueObj);
+OwnedExternal<llvm::Value>* toValueExternal(lean::object* valueRef) {
+    auto external = lean_to_external(valueRef);
     lean_assert(external->m_class == getValueClass());
     return static_cast<OwnedExternal<llvm::Value>*>(external->m_data);
 }
 
 // Get the LLVM Value pointer wrapped in an object.
-llvm::Value* toValue(lean::object* valueObj) {
-    return toValueExternal(valueObj)->value;
+llvm::Value* toValue(lean::object* valueRef) {
+    return toValueExternal(valueRef)->value;
 }
 
-// Get the owning LLVM context object of the given value object.
-lean::object* getValueContext(lean::object* valueObj) {
-    auto ctx = toValueExternal(valueObj)->owner;
+// Get the owning LLVM context object of the given value.
+lean::object* getValueContext(lean::object* valueRef) {
+    auto ctx = toValueExternal(valueRef)->owner;
     lean_inc_ref(ctx);
     return ctx;
 }
@@ -49,34 +49,34 @@ lean::object* getValueContext(lean::object* valueObj) {
 // Basic functions
 //------------------------------------------------------------------------------
 
-// Get a reference to the type of the given value object.
-extern "C" obj_res papyrus_value_get_type(b_obj_arg valueObj, obj_arg /* w */) {
-    return io_result_mk_ok(mk_type_ref(getValueContext(valueObj), toValue(valueObj)->getType()));
+// Get a reference to the type of the given value.
+extern "C" obj_res papyrus_value_get_type(b_obj_arg valueRef, obj_arg /* w */) {
+    return io_result_mk_ok(mk_type_ref(getValueContext(valueRef), toValue(valueRef)->getType()));
 }
 
-// Get whether the the given value object has a name.
-extern "C" obj_res papyrus_value_has_name(b_obj_arg valueObj, obj_arg /* w */) {
-  return io_result_mk_ok(lean_box(toValue(valueObj)->hasName()));
+// Get whether the the given value has a name.
+extern "C" obj_res papyrus_value_has_name(b_obj_arg valueRef, obj_arg /* w */) {
+  return io_result_mk_ok(lean_box(toValue(valueRef)->hasName()));
 }
 
-// Get the name of the given value object (or the empty string if none).
-extern "C" obj_res papyrus_value_get_name(b_obj_arg valueObj, obj_arg /* w */) {
-    return io_result_mk_ok(mk_string(toValue(valueObj)->getName()));
+// Get the name of the given value (or the empty string if none).
+extern "C" obj_res papyrus_value_get_name(b_obj_arg valueRef, obj_arg /* w */) {
+    return io_result_mk_ok(mk_string(toValue(valueRef)->getName()));
 }
 
-// Set the name of the given value object.
+// Set the name of the given value.
 // An empty string will remove the value's name.
 extern "C" obj_res papyrus_value_set_name
-(b_obj_arg strObj, b_obj_arg valueObj, obj_arg /* w */)
+(b_obj_arg strObj, b_obj_arg valueRef, obj_arg /* w */)
 {
-    toValue(valueObj)->setName(string_to_twine(strObj));
+    toValue(valueRef)->setName(string_to_twine(strObj));
     return io_result_mk_ok(box(0));
 }
 
-// Dump the given value object for debugging (to standard error).
-extern "C" obj_res papyrus_value_dump(b_obj_arg valueObj, obj_arg /* w */) {
+// Dump the given value for debugging (to standard error).
+extern "C" obj_res papyrus_value_dump(b_obj_arg valueRef, obj_arg /* w */) {
     // simulates Value.dump() since it is not available in release builds.
-    toValue(valueObj)->print(llvm::errs(), true); llvm::errs() << "\n";
+    toValue(valueRef)->print(llvm::errs(), true); llvm::errs() << "\n";
     return io_result_mk_ok(box(0));
 }
 

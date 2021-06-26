@@ -34,7 +34,7 @@ def IntegerType.pointerType {numBits} (self : IntegerType numBits) :=
   Papyrus.pointerType self
 def FunctionType.pointerType {varArgs} (self : FunctionType α β varArgs) :=
   Papyrus.pointerType self
-def StructType.pointerType {name packed} (self : StructType name α packed) :=
+def CompleteStructType.pointerType {name packed} (self : CompleteStructType name α packed) :=
   Papyrus.pointerType self
 def OpaqueStructType.pointerType {name} (self : OpaqueStructType name) :=
   Papyrus.pointerType self

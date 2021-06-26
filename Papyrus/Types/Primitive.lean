@@ -18,7 +18,7 @@ scoped macro (name := externSingletonTypeDecl) doc:docComment
     def $singl : $typ := arbitrary
 
     @[extern $impl:strLit]
-    private constant $getGlobalRef : LLVM TypeRef
+    constant $getGlobalRef : LLVM TypeRef
 
     /-- Get a reference to the LLVM representation of this type. -/
     def $getRef (_self : $typ) := $getGlobalRef
