@@ -38,7 +38,13 @@ llvm::Type* toType(lean::object* typeRef) {
     return toTypeExternal(typeRef)->value;
 }
 
-// Get the owning LLVM context object of the given type reference.
+// Get the owning LLVM context object of the given value.
+lean::object* getBorrowedTypeContext(lean::object* valueRef) {
+    return toTypeExternal(valueRef)->owner;
+}
+
+// Get the owning LLVM context object of the given type reference
+// and increment its RC.
 lean::object* getTypeContext(lean::object* typeRef) {
     auto ctx = toTypeExternal(typeRef)->owner;
     lean_inc_ref(ctx);
@@ -46,11 +52,12 @@ lean::object* getTypeContext(lean::object* typeRef) {
 }
 
 // Covert an LLVM ArrayRef of types to a Lean Array of type references.
-lean::object* packTypes(lean::object* ctxRef, const llvm::ArrayRef<llvm::Type*>& arr) {
+lean::object* packTypes(b_obj_arg ctxRef, const llvm::ArrayRef<llvm::Type*>& arr) {
     size_t len = arr.size();
     lean_object* obj = lean::alloc_array(len, len);
     lean_array_object* arrObj = lean_to_array(obj);
     for (size_t i = 0; i < len; i++) {
+        lean_inc_ref(ctxRef);
         arrObj->m_data[i] = mk_type_ref(ctxRef, arr[i]);
     }
     return obj;
@@ -211,7 +218,7 @@ extern "C" obj_res papyrus_function_type_get_return_type(b_obj_arg typeRef, obj_
 // Get an array of references to the parameter types of the given function type.
 extern "C" obj_res papyrus_function_type_get_parameter_types(b_obj_arg typeRef, obj_arg /* w */) {
     auto paramTypes = toFunctionType(typeRef)->params();
-    return io_result_mk_ok(packTypes(getTypeContext(typeRef), paramTypes));
+    return io_result_mk_ok(packTypes(getBorrowedTypeContext(typeRef), paramTypes));
 }
 
 // Get whether the function type reference accpets variable arguments.
@@ -315,7 +322,7 @@ extern "C" obj_res papyrus_struct_type_set_name
 // Get an array of references to the element types of the given struct type.
 extern "C" obj_res papyrus_struct_type_get_element_types(b_obj_arg typeRef, obj_arg /* w */) {
     auto elementTypes = toStructType(typeRef)->elements();
-    return io_result_mk_ok(packTypes(getTypeContext(typeRef), elementTypes));
+    return io_result_mk_ok(packTypes(getBorrowedTypeContext(typeRef), elementTypes));
 }
 
 // Get whether the given struct type is packed.
