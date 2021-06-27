@@ -1,5 +1,6 @@
 import Papyrus.IR.Types
 import Papyrus.IR.Constants
+import Papyrus.IR.Instructions
 import Papyrus.IR.Module
 
 open Papyrus
@@ -26,7 +27,7 @@ def testcase (name : String) [Monad m] [MonadLiftT IO m] (action : m PUnit) : m 
 
 def testModule : LLVM PUnit := do
 
-  testcase "omodule naming" do
+  testcase "module naming" do
     let mod ← ModuleRef.new "hello"
     assertBEq "hello" (← mod.getModuleID)
     mod.setModuleID "world"
@@ -176,6 +177,26 @@ def testConstants : LLVM PUnit := do
     assertBEq intVal (← const.getValue)
 
 --------------------------------------------------------------------------------
+-- Instruction Tests
+--------------------------------------------------------------------------------
+
+def testInstructions : LLVM PUnit := do
+
+  testcase "empty return instruction" do
+    let inst ← ReturnInstRef.create none
+    unless (← inst.getReturnValue).isNone do
+      IO.eprintln "got return value when expecting none"
+
+  testcase "nonempty return instruction" do
+    let val := 1
+    let const ← (← int32Type.getRef).getConstantInt val
+    let inst ← ReturnInstRef.create <| some const
+    let some retVal ← inst.getReturnValue
+      | IO.eprintln "got unexpected empty return value"
+    let retInt : ConstantIntRef := retVal
+    assertBEq val (← retInt.getValue)
+
+--------------------------------------------------------------------------------
 -- Test Runner
 --------------------------------------------------------------------------------
 
@@ -183,6 +204,7 @@ def main : IO PUnit := LLVM.run do
 
   testTypes
   testConstants
+  testInstructions
   testModule
 
   IO.println "All tests finished."
