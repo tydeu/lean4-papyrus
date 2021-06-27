@@ -2,7 +2,6 @@
 
 #include <lean/io.h>
 #include <llvm/IR/BasicBlock.h>
-#include <llvm/IR/Function.h>
 
 using namespace lean;
 using namespace llvm;
@@ -18,10 +17,7 @@ llvm::BasicBlock* toBasicBlock(lean::object* bbRef) {
 extern "C" obj_res papyrus_create_basic_block
 (b_obj_arg nameObj, obj_arg ctxRef, obj_arg /* w */)
 {
-    auto voidTy = Type::getVoidTy(*toLLVMContext(ctxRef));
-    auto fn = Function::Create(FunctionType::get(voidTy, false),
-        GlobalValue::ExternalLinkage, "test_fn");
-    auto bb = BasicBlock::Create(*toLLVMContext(ctxRef), string_to_ref(nameObj), fn);
+    auto bb = BasicBlock::Create(*toLLVMContext(ctxRef), string_to_ref(nameObj));
     return io_result_mk_ok(mk_value_ref(ctxRef, bb));
 }
 
