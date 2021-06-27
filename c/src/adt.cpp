@@ -3,7 +3,6 @@
 #include <lean/utf8.h>
 #include <llvm/ADT/ArrayRef.h>
 #include <llvm/ADT/StringRef.h>
-#include <llvm/ADT/Twine.h>
 #include <llvm/ADT/APInt.h>
 
 using namespace lean;
@@ -25,10 +24,6 @@ lean::object* mk_string(const llvm::StringRef& str) {
 const llvm::StringRef string_to_ref(lean::object* obj) {
   auto strObj = lean_to_string(obj);
   return llvm::StringRef(strObj->m_data, strObj->m_size - 1);
-}
-
-const llvm::Twine string_to_twine(lean::object* obj) {
-  return llvm::Twine(string_to_ref(obj));
 }
 
 #define LEAN_SMALL_NAT_BITS (CHAR_BIT*sizeof(size_t)-1)

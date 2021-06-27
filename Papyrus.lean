@@ -1,6 +1,7 @@
 import Papyrus.IR.Types
 import Papyrus.IR.Constants
 import Papyrus.IR.Instructions
+import Papyrus.IR.BasicBlock
 import Papyrus.IR.Module
 
 open Papyrus
@@ -197,6 +198,30 @@ def testInstructions : LLVM PUnit := do
     assertBEq val (← retInt.getValue)
 
 --------------------------------------------------------------------------------
+-- Basic Block Test
+--------------------------------------------------------------------------------
+
+def testBasicBlock : LLVM PUnit := do
+
+  testcase "basic block" do
+    let name := "foo"
+    let bb ← BasicBlockRef.create name
+    assertBEq name (← bb.getName)
+    let val := 1
+    let const ← (← int32Type.getRef).getConstantInt val
+    let inst ← ReturnInstRef.create <| some const
+    bb.addInstruction inst
+    let insts ← bb.getInstructions
+    if h : insts.size = 1 then
+      let fst : ReturnInstRef ← insts.get (Fin.mk 0 (by simp [h]))
+      let some retVal ← inst.getReturnValue
+        | IO.eprintln "got unexpected empty return value"
+      let retInt : ConstantIntRef := retVal
+      assertBEq val (← retInt.getValue)
+    else
+      IO.eprintln "got no instructions when expecting 1"
+
+--------------------------------------------------------------------------------
 -- Test Runner
 --------------------------------------------------------------------------------
 
@@ -205,6 +230,7 @@ def main : IO PUnit := LLVM.run do
   testTypes
   testConstants
   testInstructions
+  testBasicBlock
   testModule
 
   IO.println "All tests finished."

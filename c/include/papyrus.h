@@ -11,6 +11,7 @@ namespace llvm {
     class Type;
     class IntegerType;
     class Value;
+    class Instruction;
 }
 
 namespace papyrus {
@@ -26,7 +27,6 @@ const llvm::APInt int_to_ap(unsigned numBits, lean::object* obj);
 
 lean::object* mk_string(const llvm::StringRef& str);
 const llvm::StringRef string_to_ref(lean::object* obj);
-const llvm::Twine string_to_twine(lean::object* obj);
 
 lean::object* mk_context_ref(llvm::LLVMContext* ctx);
 llvm::LLVMContext* toLLVMContext(lean::object* ctxRef);
@@ -41,7 +41,9 @@ llvm::IntegerType* toIntegerType(lean::object* typeRef);
 
 lean::object* mk_value_ref(lean::object* ctxRef, llvm::Value* value);
 lean::object* getValueContext(lean::object* valueRef);
+lean::object* getBorrowedValueContext(lean::object* valueRef);
 llvm::Value* toValue(lean::object* valueRef);
+llvm::Instruction* toInstruction(lean::object* instRef);
 
 //------------------------------------------------------------------------------
 // Generic utilities

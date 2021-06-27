@@ -8,6 +8,11 @@ using namespace llvm;
 
 namespace papyrus {
 
+// Get the LLVM Instruction pointer wrapped in an object.
+llvm::Instruction* toInstruction(lean::object* instRef) {
+    return llvm::cast<Instruction>(toValue(instRef));
+}
+
 //------------------------------------------------------------------------------
 // Return instructions
 //------------------------------------------------------------------------------

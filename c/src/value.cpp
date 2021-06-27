@@ -39,6 +39,11 @@ llvm::Value* toValue(lean::object* valueRef) {
 }
 
 // Get the owning LLVM context object of the given value.
+lean::object* getBorrowedValueContext(lean::object* valueRef) {
+    return toValueExternal(valueRef)->owner;
+}
+
+// Get the owning LLVM context object of the given value and increments its RC.
 lean::object* getValueContext(lean::object* valueRef) {
     auto ctx = toValueExternal(valueRef)->owner;
     lean_inc_ref(ctx);
@@ -69,7 +74,7 @@ extern "C" obj_res papyrus_value_get_name(b_obj_arg valueRef, obj_arg /* w */) {
 extern "C" obj_res papyrus_value_set_name
 (b_obj_arg strObj, b_obj_arg valueRef, obj_arg /* w */)
 {
-    toValue(valueRef)->setName(string_to_twine(strObj));
+    toValue(valueRef)->setName(string_to_ref(strObj));
     return io_result_mk_ok(box(0));
 }
 
