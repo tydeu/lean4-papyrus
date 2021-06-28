@@ -29,8 +29,10 @@ HDRS := \
 
 SRCS := \
 	adt.cpp\
+	memory_buffer.cpp\
   context.cpp\
   module.cpp\
+	bitcode.cpp\
 	type.cpp\
 	value.cpp\
 	constant.cpp\

@@ -255,15 +255,10 @@ def testModule : LLVM PUnit := do
     assertBEq name2 (← mod.getModuleID)
 
   testcase "single function module" do
-    let fnName := "main"
+    let fnName := "foo"
     let mod ← ModuleRef.new "test"
-    let fnTy ← functionType int32Type () |>.getRef
+    let fnTy ← functionType voidType () |>.getRef
     let fn ← FunctionRef.create fnTy fnName
-    let bb ← BasicBlockRef.create "entry"
-    let const ← (← int32Type.getRef).getConstantInt 1
-    let inst ← ReturnInstRef.create <| some const
-    bb.appendInstruction inst
-    fn.appendBasicBlock bb
     mod.appendFunction fn
     let fns ← mod.getFunctions
     if h : fns.size = 1 then
@@ -272,6 +267,24 @@ def testModule : LLVM PUnit := do
     else
       assertFail s!"expected 1 function in module, got {fns.size}"
 
+  testcase "test write module bitcode" do
+
+    -- Construct Module
+    let exitCode := 101
+    let mod ← ModuleRef.new "test"
+    let fnTy ← functionType int32Type () |>.getRef
+    let fn ← FunctionRef.create fnTy "main"
+    let bb ← BasicBlockRef.create "entry"
+    let const ← (← int32Type.getRef).getConstantInt exitCode
+    let inst ← ReturnInstRef.create <| some const
+    bb.appendInstruction inst
+    fn.appendBasicBlock bb
+    mod.appendFunction fn
+
+    -- Output It
+    let outDir : System.FilePath := "out"
+    IO.FS.createDirAll outDir
+    mod.writeBitcodeToFile <| outDir / "exit.bc"
 --------------------------------------------------------------------------------
 -- Test Runner
 --------------------------------------------------------------------------------

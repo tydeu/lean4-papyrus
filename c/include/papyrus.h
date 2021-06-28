@@ -4,8 +4,8 @@
 // Forward declarations
 namespace llvm {
     class APInt;
-    class Twine;
     class StringRef;
+    class MemoryBuffer;
     class LLVMContext;
     class Module;
     class Type;
@@ -30,6 +30,8 @@ const llvm::APInt int_to_ap(unsigned numBits, lean::object* obj);
 
 lean::object* mk_string(const llvm::StringRef& str);
 const llvm::StringRef string_to_ref(lean::object* obj);
+
+llvm::MemoryBuffer* toMemoryBuffer(lean::object* bufRef);
 
 lean::object* mk_context_ref(llvm::LLVMContext* ctx);
 llvm::LLVMContext* toLLVMContext(lean::object* ctxRef);
