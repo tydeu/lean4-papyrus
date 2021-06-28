@@ -92,7 +92,7 @@ def isValidBitWidth (bitWidth : UInt32) : Prop :=
   within LLVM's requirements (i.e., that `isValidBitWidth numBits` holds).
 -/
 @[extern "papyrus_get_integer_type"]
-constant get (numBits : @& UInt32) : LLVM TypeRef
+constant get (numBits : @& UInt32) : LLVM IntegerTypeRef
 
 /-- Get the width in bits of this type. -/
 @[extern "papyrus_integer_type_get_bit_width"]
@@ -314,13 +314,9 @@ constant get (elemType : @& TypeRef) (numElems : UInt64) : IO ArrayTypeRef
 @[extern "papyrus_array_type_get_element_type"]
 constant getElementType (self : @& ArrayTypeRef) : IO TypeRef
 
-/-- Get the raw number of elements in this array type. -/
+/-- Get the number of elements in this array type . -/
 @[extern "papyrus_array_type_get_num_elements"]
-constant getRawSize (self : @& ArrayTypeRef) : IO UInt64
-
-/-- Get the number of elements in this array type (as a `Nat`).. -/
-@[extern "papyrus_array_type_get_num_elements"]
-constant getSize (self : @& ArrayTypeRef) : IO Nat
+constant getSize (self : @& ArrayTypeRef) : IO UInt64
 
 end ArrayTypeRef
 
@@ -349,17 +345,13 @@ constant get (elemType : @& TypeRef) (elemQuant : UInt32)
 @[extern "papyrus_vector_type_get_element_type"]
 constant getElementType (self : @& VectorTypeRef) : IO TypeRef
 
-/-- Get the raw minimum number of elemnts of this vector type. -/
-@[extern "papyrus_vector_type_get_element_quantity"]
-constant getRawMinSize (self : @& VectorTypeRef) : IO UInt32
-
 /--
-  Get the minimum number of elemnts of this vector type (as a `Nat`).
+  Get the minimum number of elements of this vector type.
   For non-scalable vectors, this is exactly this number of elements.
   For scalable vectors, there is a runtime multiple of this number.
 -/
 @[extern "papyrus_vector_type_get_element_quantity"]
-constant getMinSize (self : @& VectorTypeRef) : IO Nat
+constant getMinSize (self : @& VectorTypeRef) : IO UInt32
 
 /-- Get whether this vector type is scalable. -/
 @[extern "papyrus_vector_type_is_scalable"]
@@ -385,11 +377,7 @@ namespace FixedVectorTypeRef
 def  get (elemType : TypeRef) (numElems : UInt32) :=
   VectorTypeRef.get elemType numElems false
 
-/-- Get the raw number of elements in this vector type. -/
-def getRawSize (self : @& FixedVectorTypeRef) :=
-  VectorTypeRef.getRawMinSize self
-
-/-- Get the number of elements in this vector type (as a `Nat`).. -/
+/-- Get the number of elements in this vector type. -/
 def getSize (self : @& FixedVectorTypeRef) :=
   VectorTypeRef.getMinSize self
 

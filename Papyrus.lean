@@ -1,4 +1,4 @@
-import Papyrus.IR.Types
+import Papyrus.IR.TypeRefs
 import Papyrus.IR.Constants
 import Papyrus.IR.Instructions
 import Papyrus.IR.BasicBlock
@@ -22,11 +22,11 @@ def assertFalse (actual : Bool) : IO PUnit := do
   if actual then
     assertFail "expected false, got got"
 
-def assertEq [Repr α] [DecidableEq α] (expected : α) (actual : α) : IO PUnit := do
+def assertEq [Repr α] [DecidableEq α] (expected actual : α) : IO PUnit := do
   unless expected = actual do
     assertFail s!"expected '{repr expected}', got '{repr actual}'"
 
-def assertBEq [Repr α] [BEq α] (expected : α) (actual : α) : IO PUnit := do
+def assertBEq [Repr α] [BEq α] (expected actual : α) : IO PUnit := do
   unless expected == actual do
     assertFail s!"expected '{repr expected}', got '{repr actual}'"
 
@@ -41,98 +41,111 @@ def testcase (name : String) [Monad m] [MonadLiftT IO m] (action : m PUnit) : m 
 def printRefTypeID (ref : TypeRef) : IO PUnit := do
   IO.println <| repr (← ref.getTypeID)
 
-def assertRefTypeID (expectedID : TypeID) (ref : TypeRef) : IO PUnit := do
-  assertBEq expectedID (← ref.getTypeID)
-
-def assertIntTypeRoundtrips (type : IntegerType n) : LLVM PUnit := do
-  let ref ← type.getRef
-  assertBEq TypeID.integer (← ref.getTypeID)
-  assertBEq n (← ref.getBitWidth).toNat
+def assertBEqRefArray (expected actual : Array TypeRef) : IO PUnit := do
+  assertBEq expected.size actual.size
+  for (expectedElem, actualElem) in Array.zip expected actual do
+    assertBEq (← expectedElem.getTypeID) (← actualElem.getTypeID)
 
 def assertFunTypeRoundtrips
-[ToTypeRef r] [ToTypeRefArray p] (type : FunctionType r p a)
+(retType : TypeRef) (paramTypes : Array TypeRef) (isVarArg : Bool)
 : LLVM PUnit := do
-  let ref ← type.getRef
+  let ref ← FunctionTypeRef.get retType paramTypes isVarArg
   assertBEq TypeID.function (← ref.getTypeID)
-  assertBEq (← (← toTypeRef type.resultType).getTypeID) (← (← ref.getReturnType).getTypeID)
-  assertBEq (← toTypeRefArray type.parameterTypes).size (← ref.getParameterTypes).size
-  assertBEq type.isVarArg (← ref.isVarArg)
+  assertBEq (← retType.getTypeID) (← (← ref.getReturnType).getTypeID)
+  assertBEqRefArray paramTypes (← ref.getParameterTypes)
+  assertBEq isVarArg (← ref.isVarArg)
 
-def assertVectorTypeRoundtrips [ToTypeRef e] (type : VectorType e n s) : LLVM PUnit := do
-  let ref ← type.getRef
-  assertBEq (ite type.isScalable TypeID.scalableVector TypeID.fixedVector) (← ref.getTypeID)
-  assertBEq (← (← toTypeRef type.elementType).getTypeID) (← (← ref.getElementType).getTypeID)
-  assertBEq type.minSize (← ref.getMinSize)
-  assertBEq type.isScalable (← ref.isScalable)
+def assertVectorTypeRoundtrips
+(elementType : TypeRef) (minSize : UInt32) (isScalable : Bool)
+: LLVM PUnit := do
+  let ref ← VectorTypeRef.get elementType minSize isScalable
+  let expectedId := if isScalable then TypeID.scalableVector else TypeID.fixedVector
+  assertBEq expectedId (← ref.getTypeID)
+  assertBEq (← elementType.getTypeID) (← (← ref.getElementType).getTypeID)
+  assertBEq minSize (← ref.getMinSize)
+  assertBEq isScalable (← ref.isScalable)
 
 def testTypes : LLVM PUnit := do
 
   testcase "special types" do
-    assertRefTypeID TypeID.void       (← voidType.getRef)
-    assertRefTypeID TypeID.label      (← labelType.getRef)
-    assertRefTypeID TypeID.metadata   (← metadataType.getRef)
-    assertRefTypeID TypeID.token      (← tokenType.getRef)
-    assertRefTypeID TypeID.x86MMX     (← x86MMXType.getRef)
-    assertRefTypeID TypeID.x86AMX     (← x86AMXType.getRef)
+    assertBEq TypeID.void       (← (← getVoidTypeRef).getTypeID)
+    assertBEq TypeID.label      (← (← getLabelTypeRef).getTypeID)
+    assertBEq TypeID.metadata   (← (← getMetadataTypeRef).getTypeID)
+    assertBEq TypeID.token      (← (← getTokenTypeRef).getTypeID)
+    assertBEq TypeID.x86MMX     (← (← getX86MMXTypeRef).getTypeID)
+    assertBEq TypeID.x86AMX     (← (← getX86AMXTypeRef).getTypeID)
 
   testcase "floating point types" do
-    assertRefTypeID TypeID.half       (← halfType.getRef)
-    assertRefTypeID TypeID.bfloat     (← bfloatType.getRef)
-    assertRefTypeID TypeID.float      (← floatType.getRef)
-    assertRefTypeID TypeID.double     (← doubleType.getRef)
-    assertRefTypeID TypeID.x86FP80    (← x86FP80Type.getRef)
-    assertRefTypeID TypeID.fp128      (← fp128Type.getRef)
-    assertRefTypeID TypeID.ppcFP128   (← ppcFP128Type.getRef)
+    assertBEq TypeID.half       (← (← getHalfTypeRef).getTypeID)
+    assertBEq TypeID.bfloat     (← (← getBFloatTypeRef).getTypeID)
+    assertBEq TypeID.float      (← (← getFloatTypeRef).getTypeID)
+    assertBEq TypeID.double     (← (← getDoubleTypeRef).getTypeID)
+    assertBEq TypeID.x86FP80    (← (← getX86FP80TypeRef).getTypeID)
+    assertBEq TypeID.fp128      (← (← getFP128TypeRef).getTypeID)
+    assertBEq TypeID.ppcFP128   (← (← getPPCFP128TypeRef).getTypeID)
 
   testcase "integer types" do
-    assertIntTypeRoundtrips int1Type
-    assertIntTypeRoundtrips int8Type
-    assertIntTypeRoundtrips int16Type
-    assertIntTypeRoundtrips int32Type
-    assertIntTypeRoundtrips int64Type
-    assertIntTypeRoundtrips int128Type
-    assertIntTypeRoundtrips <| integerType 100
+    let n := 100
+    let ref ← IntegerTypeRef.get n
+    assertBEq TypeID.integer (← ref.getTypeID)
+    assertBEq n (← ref.getBitWidth)
 
   testcase "function types" do
-    assertFunTypeRoundtrips <| functionType voidType doubleType
-    assertFunTypeRoundtrips <| functionType voidType (floatType, int1Type) true
+    let retType ← getVoidTypeRef
+    let paramAType ← getDoubleTypeRef
+    let paramBType ← IntegerTypeRef.get 100
+    assertFunTypeRoundtrips retType #[paramAType] false
+    assertFunTypeRoundtrips retType #[paramBType, paramAType] true
 
   testcase "pointer types" do
-    let ref ← doubleType.pointerType.getRef
-    assertRefTypeID TypeID.pointer ref
-    assertRefTypeID TypeID.double (← ref.getPointeeType)
+    let pointeeType ← getDoubleTypeRef
+    let ref ← PointerTypeRef.get pointeeType
+    assertBEq TypeID.pointer (← ref.getTypeID)
+    assertBEq (← pointeeType.getTypeID) (← (← ref.getPointeeType).getTypeID)
     assertBEq AddressSpace.default (← ref.getAddressSpace)
 
   testcase "literal struct types" do
-    let ref ← literalStructType (halfType, doubleType) |>.getRef
-    assertRefTypeID TypeID.struct ref
-    assertBEq 2 (← ref.getElementTypes).size
+    let elemTypes := #[← getHalfTypeRef, ← getDoubleTypeRef]
+    let ref ← LiteralStructTypeRef.get elemTypes
+    assertBEq TypeID.struct (← ref.getTypeID)
+    assertBEq true (← ref.isLiteral)
+    assertBEq false (← ref.isOpaque)
+    assertBEqRefArray elemTypes (← ref.getElementTypes)
     assertBEq false (← ref.isPacked)
 
   testcase "complete struct types" do
     let name := "foo"
-    let ref ← completeStructType name halfType true |>.getRef
-    assertRefTypeID TypeID.struct ref
+    let elemTypes := #[← getFloatTypeRef]
+    let ref ← IdentifiedStructTypeRef.create name elemTypes true
+    assertBEq TypeID.struct (← ref.getTypeID)
     assertBEq name (← ref.getName)
-    assertBEq 1 (← ref.getElementTypes).size
+    assertBEq false (← ref.isLiteral)
+    assertBEq false (← ref.isOpaque)
+    assertBEqRefArray elemTypes (← ref.getElementTypes)
     assertBEq true (← ref.isPacked)
 
   testcase "opaque struct types" do
     let name := "bar"
-    let ref ← opaqueStructType name |>.getRef
-    assertRefTypeID TypeID.struct ref
+    let ref ← IdentifiedStructTypeRef.createOpaque name
+    assertBEq TypeID.struct (← ref.getTypeID)
     assertBEq name (← ref.getName)
+    assertBEq false (← ref.isLiteral)
+    assertBEq true (← ref.isOpaque)
+    assertBEq 0 (← ref.getElementTypes).size
+    assertBEq false (← ref.isPacked)
 
   testcase "array types" do
     let size := 8
-    let ref ← arrayType halfType size |>.getRef
-    assertRefTypeID TypeID.array ref
-    assertRefTypeID TypeID.half (← ref.getElementType)
+    let elemType ← IntegerTypeRef.get 30
+    let ref ← ArrayTypeRef.get elemType size
+    assertBEq TypeID.array (← ref.getTypeID)
+    assertBEq (← elemType.getTypeID) (← (← ref.getElementType).getTypeID)
     assertBEq size (← ref.getSize)
 
   testcase "vector types" do
-    assertVectorTypeRoundtrips <| fixedVectorType doubleType 8
-    assertVectorTypeRoundtrips <| scalableVectorType floatType 8
+    let elemType ← getDoubleTypeRef
+    assertVectorTypeRoundtrips elemType 8 false
+    assertVectorTypeRoundtrips elemType 16 true
 
 --------------------------------------------------------------------------------
 -- Constant Tests
@@ -140,8 +153,8 @@ def testTypes : LLVM PUnit := do
 
 def testConstants : LLVM PUnit := do
 
-  let int8TypeRef ← int8Type.getRef
-  let int128TypeRef ← int128Type.getRef
+  let int8TypeRef ← IntegerTypeRef.get 8
+  let int128TypeRef ← IntegerTypeRef.get 128
 
   testcase "big null integer constant" do
     let const : ConstantIntRef ← int128TypeRef.getNullConstant
@@ -184,6 +197,8 @@ def testConstants : LLVM PUnit := do
 
 def testInstructions : LLVM PUnit := do
 
+  let intTypeRef ← IntegerTypeRef.get 32
+
   testcase "empty return instruction" do
     let inst ← ReturnInstRef.create none
     unless (← inst.getReturnValue).isNone do
@@ -191,7 +206,7 @@ def testInstructions : LLVM PUnit := do
 
   testcase "nonempty return instruction" do
     let val := 1
-    let const ← (← int32Type.getRef).getConstantInt val
+    let const ← intTypeRef.getConstantInt val
     let inst ← ReturnInstRef.create <| some const
     let some retVal ← inst.getReturnValue
       | assertFail "got unexpected empty return value"
@@ -224,9 +239,11 @@ def testBasicBlock : LLVM PUnit := do
 
 def testFunction : LLVM PUnit := do
 
+  let voidTypeRef ← getVoidTypeRef
+
   testcase "empty function" do
     let name := "foo"
-    let fnTy ← functionType voidType int64Type |>.getRef
+    let fnTy ← FunctionTypeRef.get voidTypeRef #[]
     let fn ← FunctionRef.create fnTy name
     assertBEq name (← fn.getName)
     assertBEq Linkage.external (← fn.getLinkage)
@@ -237,7 +254,7 @@ def testFunction : LLVM PUnit := do
 
   testcase "single block function" do
     let bbName := "foo"
-    let fnTy ← functionType voidType () |>.getRef
+    let fnTy ← FunctionTypeRef.get voidTypeRef #[]
     let fn ← FunctionRef.create fnTy "test"
     let bb ← BasicBlockRef.create bbName
     fn.appendBasicBlock bb
@@ -254,6 +271,9 @@ def testFunction : LLVM PUnit := do
 
 def testModule : LLVM PUnit := do
 
+  let voidTypeRef ← getVoidTypeRef
+  let intTypeRef ← IntegerTypeRef.get 32
+
   testcase "module renaming" do
     let name1 := "foo"
     let mod ← ModuleRef.new name1
@@ -265,7 +285,7 @@ def testModule : LLVM PUnit := do
   testcase "single function module" do
     let fnName := "foo"
     let mod ← ModuleRef.new "test"
-    let fnTy ← functionType voidType () |>.getRef
+    let fnTy ← FunctionTypeRef.get voidTypeRef #[]
     let fn ← FunctionRef.create fnTy fnName
     mod.appendFunction fn
     let fns ← mod.getFunctions
@@ -279,10 +299,10 @@ def testModule : LLVM PUnit := do
     -- Construct Module
     let exitCode := 101
     let mod ← ModuleRef.new "test"
-    let fnTy ← functionType int32Type () |>.getRef
+    let fnTy ← FunctionTypeRef.get intTypeRef #[]
     let fn ← FunctionRef.create fnTy "main"
     let bb ← BasicBlockRef.create "entry"
-    let const ← (← int32Type.getRef).getConstantInt exitCode
+    let const ← intTypeRef.getConstantInt exitCode
     let inst ← ReturnInstRef.create <| some const
     bb.appendInstruction inst
     fn.appendBasicBlock bb

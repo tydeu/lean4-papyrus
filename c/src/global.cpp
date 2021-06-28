@@ -102,7 +102,7 @@ extern "C" obj_res papyrus_global_value_set_address_significance
 
 // Get the address space of a global value.
 extern "C" obj_res papyrus_global_value_get_address_space(b_obj_arg gblRef, obj_arg /* w */) {
-    return io_result_mk_ok(box(toGlobalValue(gblRef)->getAddressSpace()));
+    return io_result_mk_ok(box_uint32(toGlobalValue(gblRef)->getAddressSpace()));
 }
 
 //------------------------------------------------------------------------------
@@ -136,7 +136,7 @@ extern "C" obj_res papyrus_global_object_set_section
 // Get the explicit power of two alignment of a global object (or 0 if undefined).
 extern "C" obj_res papyrus_global_object_get_align(b_obj_arg gblRef, obj_arg /* w */) {
     auto align = toGlobalObject(gblRef)->getAlign();
-    return io_result_mk_ok(box(align ? align->value() : 0));
+    return io_result_mk_ok(box_uint64(align ? align->value() : 0));
 }
 
 // Set the explicit power of two alignment of a global object.

@@ -259,7 +259,7 @@ extern "C" obj_res papyrus_pointer_type_get_pointee_type(b_obj_arg typeRef, obj_
 
 // Get the index of the address space of the given pointer type.
 extern "C" obj_res papyrus_pointer_type_get_address_space(b_obj_arg typeRef, obj_arg /* w */) {
-    return io_result_mk_ok(box(toPointerType(typeRef)->getAddressSpace()));
+    return io_result_mk_ok(box_uint32(toPointerType(typeRef)->getAddressSpace()));
 }
 
 //------------------------------------------------------------------------------
@@ -372,7 +372,7 @@ extern "C" obj_res papyrus_array_type_get_element_type(b_obj_arg typeRef, obj_ar
 
 // Get the number of elements of the given array type.
 extern "C" obj_res papyrus_array_type_get_num_elements(b_obj_arg typeRef, obj_arg /* w */) {
-    return io_result_mk_ok(box(toArrayType(typeRef)->getNumElements()));
+    return io_result_mk_ok(box_uint64(toArrayType(typeRef)->getNumElements()));
 }
 
 //------------------------------------------------------------------------------
@@ -401,12 +401,12 @@ extern "C" obj_res papyrus_vector_type_get_element_type(b_obj_arg typeRef, obj_a
 
 // Get the number of element quantity of the given vector type.
 extern "C" obj_res papyrus_vector_type_get_element_quantity(b_obj_arg typeRef, obj_arg /* w */) {
-    return io_result_mk_ok(box(toVectorType(typeRef)->getElementCount().getKnownMinValue()));
+    return io_result_mk_ok(box_uint32(toVectorType(typeRef)->getElementCount().getKnownMinValue()));
 }
 
 // Get whether this vector type is scalable.
 extern "C" obj_res papyrus_vector_type_is_scalable(b_obj_arg typeRef, obj_arg /* w */) {
-    return io_result_mk_ok(box(toVectorType(typeRef)->getElementCount().isScalable()));
+    return io_result_mk_ok(box_uint32(toVectorType(typeRef)->getElementCount().isScalable()));
 }
 
 } // end namespace papyrus

@@ -20,27 +20,3 @@ constant getTypeID (self : TypeRef) : IO TypeID
 constant getContext (self : TypeRef) : IO ContextRef
 
 end TypeRef
-
-/-- General class for retrieving LLVM type representations. -/
-class ToTypeRef (α) where
-  toTypeRef : α → LLVM TypeRef
-
-export ToTypeRef (toTypeRef)
-
-/-- General class for retrieving arrays of LLVM type representations. -/
-class ToTypeRefArray (α : Type) where
-  toTypeRefArray : α → LLVM (Array TypeRef)
-
-export ToTypeRefArray (toTypeRefArray)
-
-instance : ToTypeRefArray PUnit where
-  toTypeRefArray _ := Array.empty
-
-instance [ToTypeRef α] : ToTypeRefArray α where
-  toTypeRefArray a := do #[← toTypeRef a]
-
-instance [ToTypeRef α] : ToTypeRefArray (Array α) where
-  toTypeRefArray := Array.mapM toTypeRef
-
-instance [ToTypeRefArray α] [ToTypeRefArray β] : ToTypeRefArray (α × β) where
-  toTypeRefArray p := do pure <| (← toTypeRefArray p.1) ++ (← toTypeRefArray p.2)

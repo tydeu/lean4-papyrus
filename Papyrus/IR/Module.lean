@@ -72,15 +72,3 @@ constant verify (self : @& ModuleRef) : IO Bool
 constant dump (self : @& ModuleRef) : IO PUnit
 
 end ModuleRef
-
--- # Pure Modules
-
-structure Module where
-  moduleID : String
-
-namespace Module
-
-def mkRef (self : Module) : LLVM ModuleRef :=
-  ModuleRef.new self.moduleID
-
-end Module
