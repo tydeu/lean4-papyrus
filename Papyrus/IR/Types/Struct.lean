@@ -22,6 +22,14 @@ constant isLiteral (self : @& StructTypeRef) : IO Bool
 @[extern "papyrus_struct_type_is_opaque"]
 constant isOpaque (self : @& StructTypeRef) : IO Bool
 
+/-- Get an array of references to the element types of this *non-opaque* struct type. -/
+@[extern "papyrus_struct_type_get_element_types"]
+constant getElementsTypes (self : @& StructTypeRef) : IO (Array TypeRef)
+
+/-- Get whether this struct type is non-opaque and packed. -/
+@[extern "papyrus_struct_type_is_packed"]
+constant isPacked (self : @& StructTypeRef) : IO Bool
+
 end StructTypeRef
 
 -- # Literal Struct Type References
@@ -29,6 +37,9 @@ end StructTypeRef
 /--
   A reference to the LLVM representation of a literal
   [StructType](https://llvm.org/doxygen/classllvm_1_1StructType.html).
+
+  Literal struct types (e.g., `{ i32, i32 }`) are uniqued structurally,
+    and must always have a body when created.
 -/
 def LiteralStructTypeRef := StructTypeRef
 
@@ -40,84 +51,47 @@ namespace LiteralStructTypeRef
   It is the user's responsibility to ensure they are valid.
 -/
 @[extern "papyrus_get_literal_struct_type"]
-constant get (elemTypes : @& Array TypeRef) (isPacked := false) : LLVM LiteralStructTypeRef
-
-/-- Get an array of references to the elements types of this struct type. -/
-@[extern "papyrus_struct_type_get_element_types"]
-constant getElementsTypes (self : @& LiteralStructTypeRef) : IO (Array TypeRef)
-
-/-- Get whether this struct type is packed. -/
-@[extern "papyrus_struct_type_is_packed"]
-constant isPacked (self : @& LiteralStructTypeRef) : IO Bool
+constant get (elemTypes : @& Array TypeRef) (isPacked := false)
+  : LLVM LiteralStructTypeRef
 
 end LiteralStructTypeRef
 
--- # Opaque Struct Type References
+-- # Identified Struct Type References
 
 /--
-  A reference to the LLVM representation of an opaque namable
+  A reference to the LLVM representation of a identified
   [StructType](https://llvm.org/doxygen/classllvm_1_1StructType.html).
--/
-def OpaqueStructTypeRef := StructTypeRef
 
-namespace OpaqueStructTypeRef
+  Identified structs may optionally have a name and are not uniqued.
+  The names for identified structs are managed at the context level,
+    so there can only be a single identified struct with a given name in
+    a particular context.
+  Identified structs may also optionally be opaque (have no body specified).
+-/
+def IdentifiedStructTypeRef := StructTypeRef
+
+namespace IdentifiedStructTypeRef
 
 /--
-  Get a reference to a new LLVM opaque struct type with the given name
-  (or none if the name string is empty).
--/
-@[extern "papyrus_create_opaque_struct_type"]
-constant create (name : @& String) : LLVM OpaqueStructTypeRef
-
-/-- Get the name of this struct type (or the emptry string if none). -/
-@[extern "papyrus_struct_type_get_name"]
-constant getName (self : @& OpaqueStructTypeRef) : IO String
-
-/--
-  Set the name of this struct type.
-  Passing the empty string will remove the type's name.
-  The name may also have a suffix appended if it a collides with another
-  in the same context.
--/
-@[extern "papyrus_struct_type_set_name"]
-constant setName (name : @& String) (self : @& OpaqueStructTypeRef) : IO PUnit
-
-/-- Removes the name of this struct type. -/
-def removeName (self : OpaqueStructTypeRef) := setName "" self
-
-/--
-  Set the body of this opaque struct type,
-  making it a now a complete struct type.
--/
-@[extern "papyrus_opaque_struct_type_set_body"]
-constant setBody (elemTypes : @& Array TypeRef) (self : @& OpaqueStructTypeRef)
-  (isPacked := false)  : IO PUnit
-
-end OpaqueStructTypeRef
-
--- # Complete Struct Type References
-
-/--
-  A reference to the LLVM representation of an complete namable (non-literal)
-  [StructType](https://llvm.org/doxygen/classllvm_1_1StructType.html).
--/
-def CompleteStructTypeRef := StructTypeRef
-
-namespace CompleteStructTypeRef
-
-/--
-  Get a reference to a new LLVM struct type
+  Create a new struct type
     with the given name, element types, and packing.
   It is the user's responsibility to ensure they are valid.
   Passing the empty name string will leave the type unnamed.
 -/
 @[extern "papyrus_create_complete_struct_type"]
 private constant create (name : @& String) (elementTypes : @& Array TypeRef)
-  (packed := false) : LLVM CompleteStructTypeRef
+  (packed := false) : LLVM IdentifiedStructTypeRef
 
-/-- Get the name of this struct type (or the emptry string if none). -/
+/--
+  Create a new opaque struct type with the given name
+  (or none if the name string is empty).
+-/
+@[extern "papyrus_create_opaque_struct_type"]
+constant createOpaque (name : @& String) : LLVM IdentifiedStructTypeRef
+
+/-- Get the name of this struct type (or the empty string if none). -/
 @[extern "papyrus_struct_type_get_name"]
-constant getName (self : @& CompleteStructTypeRef) : IO String
+constant getName (self : @& IdentifiedStructTypeRef) : IO String
 
 /--
   Set the name of this struct type.
@@ -126,20 +100,20 @@ constant getName (self : @& CompleteStructTypeRef) : IO String
   in the same context.
 -/
 @[extern "papyrus_struct_type_set_name"]
-constant setName (name : @& String) (self : @& CompleteStructTypeRef) : IO PUnit
+constant setName (name : @& String) (self : @& IdentifiedStructTypeRef) : IO PUnit
 
 /-- Removes the name of this struct type. -/
-def removeName (self : CompleteStructTypeRef) := setName "" self
+def removeName (self : IdentifiedStructTypeRef) := setName "" self
 
-/-- Get an array of references to the elements types of this struct type. -/
-@[extern "papyrus_struct_type_get_element_types"]
-constant getElementsTypes (self : @& CompleteStructTypeRef) : IO (Array TypeRef)
+/--
+  Set the body of this *opaque* struct type,
+  making it a now a complete struct type.
+-/
+@[extern "papyrus_opaque_struct_type_set_body"]
+constant setBody (elemTypes : @& Array TypeRef) (self : @& IdentifiedStructTypeRef)
+  (isPacked := false)  : IO PUnit
 
-/-- Get whether this struct type is packed. -/
-@[extern "papyrus_struct_type_is_packed"]
-constant isPacked (self : @& CompleteStructTypeRef) : IO Bool
-
-end CompleteStructTypeRef
+end IdentifiedStructTypeRef
 
 --------------------------------------------------------------------------------
 -- Pure Struct Types
@@ -203,8 +177,8 @@ def isPacked (self : CompleteStructType name β packed) := packed
   Get a reference to the LLVM representation of this type.
   It is the user's responsibility to ensure that the element types are valid.
 -/
-def getRef [ToTypeRefArray α] (self : CompleteStructType name α packed) : LLVM CompleteStructTypeRef := do
-  CompleteStructTypeRef.create name (← toTypeRefArray self.elementTypes) packed
+def getRef [ToTypeRefArray α] (self : CompleteStructType name α packed) : LLVM IdentifiedStructTypeRef := do
+  IdentifiedStructTypeRef.create name (← toTypeRefArray self.elementTypes) packed
 
 end CompleteStructType
 
@@ -235,8 +209,8 @@ def setBody (elemTypes : Array TypeRef) (self : OpaqueStructType name) (isPacked
   completeStructType name elemTypes isPacked
 
 /-- Get a reference to the LLVM representation of this type. -/
-def getRef (self : OpaqueStructType name) : LLVM OpaqueStructTypeRef := do
-  OpaqueStructTypeRef.create name
+def getRef (self : OpaqueStructType name) : LLVM IdentifiedStructTypeRef := do
+  IdentifiedStructTypeRef.createOpaque name
 
 end OpaqueStructType
 
