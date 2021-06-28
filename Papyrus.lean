@@ -11,13 +11,16 @@ open Papyrus
 -- General Test Helpers
 --------------------------------------------------------------------------------
 
+def assertFail (msg : String) : IO PUnit:= do
+  IO.eprintln msg
+
 def assertEq [Repr α] [DecidableEq α] (expected : α) (actual : α) : IO PUnit := do
   unless expected = actual do
-    IO.eprintln s!"expected '{repr expected}', got '{repr actual}'"
+    assertFail s!"expected '{repr expected}', got '{repr actual}'"
 
 def assertBEq [Repr α] [BEq α] (expected : α) (actual : α) : IO PUnit := do
   unless expected == actual do
-    IO.eprintln s!"expected '{repr expected}', got '{repr actual}'"
+    assertFail s!"expected '{repr expected}', got '{repr actual}'"
 
 def testcase (name : String) [Monad m] [MonadLiftT IO m] (action : m PUnit) : m PUnit := do
   IO.println s!"Running test '{name}' ..."
@@ -176,14 +179,14 @@ def testInstructions : LLVM PUnit := do
   testcase "empty return instruction" do
     let inst ← ReturnInstRef.create none
     unless (← inst.getReturnValue).isNone do
-      IO.eprintln "got return value when expecting none"
+      assertFail "got return value when expecting none"
 
   testcase "nonempty return instruction" do
     let val := 1
     let const ← (← int32Type.getRef).getConstantInt val
     let inst ← ReturnInstRef.create <| some const
     let some retVal ← inst.getReturnValue
-      | IO.eprintln "got unexpected empty return value"
+      | assertFail "got unexpected empty return value"
     let retInt : ConstantIntRef := retVal
     assertBEq val (← retInt.getValue)
 
@@ -197,19 +200,15 @@ def testBasicBlock : LLVM PUnit := do
     let name := "foo"
     let bb ← BasicBlockRef.create name
     assertBEq name (← bb.getName)
-    let val := 1
-    let const ← (← int32Type.getRef).getConstantInt val
-    let inst ← ReturnInstRef.create <| some const
+    let inst ← ReturnInstRef.create <| none
     bb.appendInstruction inst
-    let insts ← bb.getInstructions
-    if h : insts.size = 1 then
-      let fst : ReturnInstRef ← insts.get (Fin.mk 0 (by simp [h]))
-      let some retVal ← inst.getReturnValue
-        | IO.eprintln "got unexpected empty return value"
-      let retInt : ConstantIntRef := retVal
-      assertBEq val (← retInt.getValue)
+    let is ← bb.getInstructions
+    if h : is.size = 1 then
+      let inst : ReturnInstRef ← is.get (Fin.mk 0 (by simp [h]))
+      unless (← inst.getReturnValue).isNone do
+        assertFail "got return value when expecting none"
     else
-      IO.eprintln "got no instructions when expecting 1"
+      assertFail s!"expected 1 instruction in basic block, got {is.size}"
 
 --------------------------------------------------------------------------------
 -- Function Test
@@ -228,6 +227,19 @@ def testFunction : LLVM PUnit := do
     assertBEq AddressSignificance.global (← fn.getAddressSignificance)
     assertBEq AddressSpace.default (← fn.getAddressSpace)
 
+  testcase "single block function" do
+    let bbName := "foo"
+    let fnTy ← functionType voidType () |>.getRef
+    let fn ← FunctionRef.create fnTy "test"
+    let bb ← BasicBlockRef.create bbName
+    fn.appendBasicBlock bb
+    let bbs ← fn.getBasicBlocks
+    if h : bbs.size = 1 then
+      let bb : FunctionRef ← bbs.get (Fin.mk 0 (by simp [h]))
+      assertBEq bbName (← bb.getName)
+    else
+      assertFail s!"expected 1 basic block in function, got {bbs.size}"
+
 --------------------------------------------------------------------------------
 -- Module Tests
 --------------------------------------------------------------------------------
@@ -242,20 +254,23 @@ def testModule : LLVM PUnit := do
     mod.setModuleID name2
     assertBEq name2 (← mod.getModuleID)
 
-  testcase "simple exiting module" do
-    let modName := "exit"
-    let mod ← ModuleRef.new modName
+  testcase "single function module" do
+    let fnName := "main"
+    let mod ← ModuleRef.new "test"
     let fnTy ← functionType int32Type () |>.getRef
-    let fn ← FunctionRef.create fnTy "main"
-    let exitCode := 1
-    let bbName := "entry"
-    let bb ← BasicBlockRef.create bbName
-    let const ← (← int32Type.getRef).getConstantInt exitCode
+    let fn ← FunctionRef.create fnTy fnName
+    let bb ← BasicBlockRef.create "entry"
+    let const ← (← int32Type.getRef).getConstantInt 1
     let inst ← ReturnInstRef.create <| some const
     bb.appendInstruction inst
     fn.appendBasicBlock bb
     mod.appendFunction fn
-    mod.dump
+    let fns ← mod.getFunctions
+    if h : fns.size = 1 then
+      let fn : FunctionRef ← fns.get (Fin.mk 0 (by simp [h]))
+      assertBEq fnName (← fn.getName)
+    else
+      assertFail s!"expected 1 function in module, got {fns.size}"
 
 --------------------------------------------------------------------------------
 -- Test Runner
