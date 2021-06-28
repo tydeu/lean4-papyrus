@@ -33,6 +33,9 @@ class ToTypeRefArray (α : Type) where
 
 export ToTypeRefArray (toTypeRefArray)
 
+instance : ToTypeRefArray PUnit where
+  toTypeRefArray _ := Array.empty
+
 instance [ToTypeRef α] : ToTypeRefArray α where
   toTypeRefArray a := do #[← toTypeRef a]
 

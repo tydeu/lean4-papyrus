@@ -2,6 +2,7 @@ import Papyrus.Context
 import Papyrus.IR.Globals
 import Papyrus.IR.AddressSpace
 import Papyrus.IR.Types.Function
+import Papyrus.IR.BasicBlock
 
 namespace Papyrus
 
@@ -28,5 +29,13 @@ constant createRaw (type : @& FunctionTypeRef) (name : @& String)
 def create (type : @& FunctionTypeRef) (name : @& String := "")
   (linkage := Linkage.external) (addrSpace := AddressSpace.default) :=
   createRaw type name linkage addrSpace.toUInt32
+
+/-- Get the array of references to the basic blocks of this function. -/
+@[extern "papyrus_function_get_basic_blocks"]
+constant getBasicBlocks (self : @& FunctionRef) : IO (Array BasicBlockRef)
+
+/-- Add a basic block to the end of this function. -/
+@[extern "papyrus_function_append_basic_block"]
+constant appendBasicBlock (bb : @& BasicBlockRef) (self : @& FunctionRef) : IO PUnit
 
 end FunctionRef

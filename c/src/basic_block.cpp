@@ -34,7 +34,7 @@ extern "C" obj_res papyrus_basic_block_get_instructions(b_obj_arg bbRef, obj_arg
 }
 
 // Add the given instruction to the end of the given basic block.
-extern "C" obj_res papyrus_basic_block_add_instruction
+extern "C" obj_res papyrus_basic_block_append_instruction
 (b_obj_arg instRef, b_obj_arg bbRef, obj_arg /* w */)
 {
     toBasicBlock(bbRef)->getInstList().push_back(toInstruction(instRef));

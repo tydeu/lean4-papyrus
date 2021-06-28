@@ -24,18 +24,6 @@ def testcase (name : String) [Monad m] [MonadLiftT IO m] (action : m PUnit) : m 
   action
 
 --------------------------------------------------------------------------------
--- Basic Module Test
---------------------------------------------------------------------------------
-
-def testModule : LLVM PUnit := do
-
-  testcase "module naming" do
-    let mod ← ModuleRef.new "hello"
-    assertBEq "hello" (← mod.getModuleID)
-    mod.setModuleID "world"
-    assertBEq "world" (← mod.getModuleID)
-
---------------------------------------------------------------------------------
 -- Type Tests
 --------------------------------------------------------------------------------
 
@@ -211,7 +199,7 @@ def testBasicBlock : LLVM PUnit := do
     let val := 1
     let const ← (← int32Type.getRef).getConstantInt val
     let inst ← ReturnInstRef.create <| some const
-    bb.addInstruction inst
+    bb.appendInstruction inst
     let insts ← bb.getInstructions
     if h : insts.size = 1 then
       let fst : ReturnInstRef ← insts.get (Fin.mk 0 (by simp [h]))
@@ -238,6 +226,35 @@ def testFunction : LLVM PUnit := do
     assertBEq DLLStorageClass.default (← fn.getDLLStorageClass)
     assertBEq AddressSignificance.global (← fn.getAddressSignificance)
     assertBEq AddressSpace.default (← fn.getAddressSpace)
+
+--------------------------------------------------------------------------------
+-- Module Tests
+--------------------------------------------------------------------------------
+
+def testModule : LLVM PUnit := do
+
+  testcase "module renaming" do
+    let name1 := "foo"
+    let mod ← ModuleRef.new name1
+    assertBEq name1 (← mod.getModuleID)
+    let name2 := "bar"
+    mod.setModuleID name2
+    assertBEq name2 (← mod.getModuleID)
+
+  testcase "simple exiting module" do
+    let modName := "exit"
+    let mod ← ModuleRef.new modName
+    let fnTy ← functionType int32Type () |>.getRef
+    let fn ← FunctionRef.create fnTy "main"
+    let exitCode := 1
+    let bbName := "entry"
+    let bb ← BasicBlockRef.create bbName
+    let const ← (← int32Type.getRef).getConstantInt exitCode
+    let inst ← ReturnInstRef.create <| some const
+    bb.appendInstruction inst
+    fn.appendBasicBlock bb
+    mod.appendFunction fn
+    mod.dump
 
 --------------------------------------------------------------------------------
 -- Test Runner

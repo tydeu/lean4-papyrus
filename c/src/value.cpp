@@ -80,7 +80,7 @@ extern "C" obj_res papyrus_value_set_name
 
 // Dump the given value for debugging (to standard error).
 extern "C" obj_res papyrus_value_dump(b_obj_arg valueRef, obj_arg /* w */) {
-    // simulates Value.dump() since it is not available in release builds.
+    // simulates Value.dump() since it is not available in release builds
     toValue(valueRef)->print(llvm::errs(), true); llvm::errs() << "\n";
     return io_result_mk_ok(box(0));
 }

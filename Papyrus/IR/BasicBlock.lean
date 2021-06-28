@@ -22,7 +22,7 @@ constant create (name : @& String) : LLVM BasicBlockRef
 constant getInstructions (self : @& BasicBlockRef) : IO (Array InstructionRef)
 
 /-- Add an instruction to the end of the basic block. -/
-@[extern "papyrus_basic_block_add_instruction"]
-constant addInstruction (inst : @& InstructionRef) (self : @& BasicBlockRef) : IO PUnit
+@[extern "papyrus_basic_block_append_instruction"]
+constant appendInstruction (inst : @& InstructionRef) (self : @& BasicBlockRef) : IO PUnit
 
 end BasicBlockRef

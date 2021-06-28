@@ -13,6 +13,8 @@ namespace llvm {
     class FunctionType;
     class Value;
     class Instruction;
+    class BasicBlock;
+    class Function;
 }
 
 namespace papyrus {
@@ -46,6 +48,8 @@ lean::object* getValueContext(lean::object* valueRef);
 lean::object* getBorrowedValueContext(lean::object* valueRef);
 llvm::Value* toValue(lean::object* valueRef);
 llvm::Instruction* toInstruction(lean::object* instRef);
+llvm::BasicBlock* toBasicBlock(lean::object* bbRef);
+llvm::Function* toFunction(lean::object* funRef);
 
 //------------------------------------------------------------------------------
 // Generic utilities
