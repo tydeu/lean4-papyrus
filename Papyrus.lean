@@ -2,6 +2,7 @@ import Papyrus.IR.Types
 import Papyrus.IR.Constants
 import Papyrus.IR.Instructions
 import Papyrus.IR.BasicBlock
+import Papyrus.IR.Function
 import Papyrus.IR.Module
 
 open Papyrus
@@ -222,6 +223,23 @@ def testBasicBlock : LLVM PUnit := do
       IO.eprintln "got no instructions when expecting 1"
 
 --------------------------------------------------------------------------------
+-- Function Test
+--------------------------------------------------------------------------------
+
+def testFunction : LLVM PUnit := do
+
+  testcase "empty function" do
+    let name := "foo"
+    let fnTy ← functionType voidType int64Type |>.getRef
+    let fn ← FunctionRef.create fnTy name
+    assertBEq name (← fn.getName)
+    assertBEq Linkage.external (← fn.getLinkage)
+    assertBEq Visibility.default (← fn.getVisibility)
+    assertBEq DLLStorageClass.default (← fn.getDLLStorageClass)
+    assertBEq AddressSignificance.global (← fn.getAddressSignificance)
+    assertBEq AddressSpace.default (← fn.getAddressSpace)
+
+--------------------------------------------------------------------------------
 -- Test Runner
 --------------------------------------------------------------------------------
 
@@ -231,6 +249,7 @@ def main : IO PUnit := LLVM.run do
   testConstants
   testInstructions
   testBasicBlock
+  testFunction
   testModule
 
   IO.println "All tests finished."

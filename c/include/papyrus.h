@@ -10,6 +10,7 @@ namespace llvm {
     class Module;
     class Type;
     class IntegerType;
+    class FunctionType;
     class Value;
     class Instruction;
 }
@@ -38,6 +39,7 @@ lean::object* mk_type_ref(lean::object* ctxRef, llvm::Type* type);
 lean::object* getTypeContext(lean::object* typeRef);
 llvm::Type* toType(lean::object* typeRef);
 llvm::IntegerType* toIntegerType(lean::object* typeRef);
+llvm::FunctionType* toFunctionType(lean::object* typeRef);
 
 lean::object* mk_value_ref(lean::object* ctxRef, llvm::Value* value);
 lean::object* getValueContext(lean::object* valueRef);

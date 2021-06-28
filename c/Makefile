@@ -36,6 +36,8 @@ SRCS := \
 	constant.cpp\
 	instruction.cpp\
 	basic_block.cpp\
+	global.cpp\
+	function.cpp\
 
 LIB_OBJ := papyrus.o
 

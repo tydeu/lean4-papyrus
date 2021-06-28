@@ -1,4 +1,4 @@
-import Papyrus.AddressSpace
+import Papyrus.IR.AddressSpace
 import Papyrus.IR.Types.TypeRef
 
 namespace Papyrus
@@ -27,7 +27,7 @@ constant getRaw (pointeeType : @& TypeRef) (addrSpace : UInt32) : IO PointerType
   It is the user's responsibility to ensure they are valid.
 -/
 def get (pointeeType : TypeRef) (addrSpace := AddressSpace.default) : IO PointerTypeRef :=
-  getRaw pointeeType addrSpace.index.toUInt32
+  getRaw pointeeType addrSpace.toUInt32
 
 /-- Get a reference to the type pointed to by this type. -/
 @[extern "papyrus_pointer_type_get_pointee_type"]
