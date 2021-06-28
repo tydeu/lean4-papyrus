@@ -2,6 +2,7 @@
 
 #include <lean/io.h>
 #include <llvm/IR/Module.h>
+#include <llvm/IR/Verifier.h>
 #include <llvm/Support/raw_ostream.h>
 
 using namespace lean;
@@ -82,6 +83,11 @@ extern "C" obj_res papyrus_module_append_function
 {
     toModule(modRef)->getFunctionList().push_back(toFunction(funRef));
     return io_result_mk_ok(box(0));
+}
+
+// Check the given module for errors (returns true if any errors are found).
+extern "C" obj_res papyrus_module_verify(b_obj_arg modRef, obj_arg /* w */) {
+    return io_result_mk_ok(box(llvm::verifyModule(*toModule(modRef))));
 }
 
 // Dump the given module for debugging (to standard error).

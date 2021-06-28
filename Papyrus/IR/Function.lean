@@ -38,4 +38,8 @@ constant getBasicBlocks (self : @& FunctionRef) : IO (Array BasicBlockRef)
 @[extern "papyrus_function_append_basic_block"]
 constant appendBasicBlock (bb : @& BasicBlockRef) (self : @& FunctionRef) : IO PUnit
 
+/-- Check the function for errors (returns *true* if any errors are found). -/
+@[extern "papyrus_function_verify"]
+constant verify (self : @& FunctionRef) : IO Bool
+
 end FunctionRef

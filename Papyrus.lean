@@ -11,8 +11,16 @@ open Papyrus
 -- General Test Helpers
 --------------------------------------------------------------------------------
 
-def assertFail (msg : String) : IO PUnit:= do
+def assertFail (msg : String) : IO PUnit := do
   IO.eprintln msg
+
+def assertTrue (actual : Bool) : IO PUnit :=
+  unless actual do
+    assertFail "expected true, got false"
+
+def assertFalse (actual : Bool) : IO PUnit := do
+  if actual then
+    assertFail "expected false, got got"
 
 def assertEq [Repr α] [DecidableEq α] (expected : α) (actual : α) : IO PUnit := do
   unless expected = actual do
@@ -267,8 +275,7 @@ def testModule : LLVM PUnit := do
     else
       assertFail s!"expected 1 function in module, got {fns.size}"
 
-  testcase "test write module bitcode" do
-
+  testcase "simple module verify & write bitcode" do
     -- Construct Module
     let exitCode := 101
     let mod ← ModuleRef.new "test"
@@ -280,11 +287,12 @@ def testModule : LLVM PUnit := do
     bb.appendInstruction inst
     fn.appendBasicBlock bb
     mod.appendFunction fn
-
-    -- Output It
+    -- Verify & Output It
+    assertFalse (← mod.verify)
     let outDir : System.FilePath := "out"
     IO.FS.createDirAll outDir
     mod.writeBitcodeToFile <| outDir / "exit.bc"
+
 --------------------------------------------------------------------------------
 -- Test Runner
 --------------------------------------------------------------------------------

@@ -63,6 +63,10 @@ constant getFunctions (self : @& ModuleRef) : IO (Array FunctionRef)
 @[extern "papyrus_module_append_function"]
 constant appendFunction (fn : @& FunctionRef) (self : @& ModuleRef) : IO PUnit
 
+/-- Check the module for errors (returns *true* if any errors are found). -/
+@[extern "papyrus_module_verify"]
+constant verify (self : @& ModuleRef) : IO Bool
+
 /-- Print the IR of this value to standard error for debugging. -/
 @[extern "papyrus_module_dump"]
 constant dump (self : @& ModuleRef) : IO PUnit

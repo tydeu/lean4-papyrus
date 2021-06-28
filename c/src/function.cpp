@@ -2,6 +2,7 @@
 
 #include <lean/io.h>
 #include <llvm/IR/Function.h>
+#include <llvm/IR/Verifier.h>
 
 using namespace lean;
 using namespace llvm;
@@ -42,5 +43,9 @@ extern "C" obj_res papyrus_function_append_basic_block
     return io_result_mk_ok(box(0));
 }
 
+// Check the given function for errors (returns true if any errors are found).
+extern "C" obj_res papyrus_function_verify(b_obj_arg funRef, obj_arg /* w */) {
+    return io_result_mk_ok(box(llvm::verifyFunction(*toFunction(funRef))));
+}
 
 } // end namespace papyrus
