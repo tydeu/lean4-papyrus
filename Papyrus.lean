@@ -35,21 +35,21 @@ def assertRefTypeID (expectedID : TypeID) (ref : TypeRef) : IO PUnit := do
 
 def assertIntTypeRoundtrips (type : IntegerType n) : LLVM PUnit := do
   let ref ← type.getRef
-  assertBEq TypeID.Integer (← ref.getTypeID)
+  assertBEq TypeID.integer (← ref.getTypeID)
   assertBEq n (← ref.getBitWidth).toNat
 
 def assertFunTypeRoundtrips
 [ToTypeRef r] [ToTypeRefArray p] (type : FunctionType r p a)
 : LLVM PUnit := do
   let ref ← type.getRef
-  assertBEq TypeID.Function (← ref.getTypeID)
+  assertBEq TypeID.function (← ref.getTypeID)
   assertBEq (← (← toTypeRef type.resultType).getTypeID) (← (← ref.getReturnType).getTypeID)
   assertBEq (← toTypeRefArray type.parameterTypes).size (← ref.getParameterTypes).size
   assertBEq type.isVarArg (← ref.isVarArg)
 
 def assertVectorTypeRoundtrips [ToTypeRef e] (type : VectorType e n s) : LLVM PUnit := do
   let ref ← type.getRef
-  assertBEq (ite type.isScalable TypeID.ScalableVector TypeID.FixedVector) (← ref.getTypeID)
+  assertBEq (ite type.isScalable TypeID.scalableVector TypeID.fixedVector) (← ref.getTypeID)
   assertBEq (← (← toTypeRef type.elementType).getTypeID) (← (← ref.getElementType).getTypeID)
   assertBEq type.minSize (← ref.getMinSize)
   assertBEq type.isScalable (← ref.isScalable)
@@ -57,20 +57,20 @@ def assertVectorTypeRoundtrips [ToTypeRef e] (type : VectorType e n s) : LLVM PU
 def testTypes : LLVM PUnit := do
 
   testcase "special types" do
-    assertRefTypeID TypeID.Void       (← voidType.getRef)
-    assertRefTypeID TypeID.Label      (← labelType.getRef)
-    assertRefTypeID TypeID.Metadata   (← metadataType.getRef)
-    assertRefTypeID TypeID.Token      (← tokenType.getRef)
-    assertRefTypeID TypeID.X86_MMX    (← x86MMXType.getRef)
+    assertRefTypeID TypeID.void       (← voidType.getRef)
+    assertRefTypeID TypeID.label      (← labelType.getRef)
+    assertRefTypeID TypeID.metadata   (← metadataType.getRef)
+    assertRefTypeID TypeID.token      (← tokenType.getRef)
+    assertRefTypeID TypeID.x86MMX     (← x86MMXType.getRef)
 
   testcase "floating point types" do
-    assertRefTypeID TypeID.Half       (← halfType.getRef)
-    assertRefTypeID TypeID.BFloat     (← bfloatType.getRef)
-    assertRefTypeID TypeID.Float      (← floatType.getRef)
-    assertRefTypeID TypeID.Double     (← doubleType.getRef)
-    assertRefTypeID TypeID.X86_FP80   (← x86FP80Type.getRef)
-    assertRefTypeID TypeID.FP128      (← fp128Type.getRef)
-    assertRefTypeID TypeID.PPC_FP128  (← ppcFP128Type.getRef)
+    assertRefTypeID TypeID.half       (← halfType.getRef)
+    assertRefTypeID TypeID.bfloat     (← bfloatType.getRef)
+    assertRefTypeID TypeID.float      (← floatType.getRef)
+    assertRefTypeID TypeID.double     (← doubleType.getRef)
+    assertRefTypeID TypeID.x86FP80    (← x86FP80Type.getRef)
+    assertRefTypeID TypeID.fp128      (← fp128Type.getRef)
+    assertRefTypeID TypeID.ppcFP128   (← ppcFP128Type.getRef)
 
   testcase "integer types" do
     assertIntTypeRoundtrips int1Type
@@ -87,35 +87,35 @@ def testTypes : LLVM PUnit := do
 
   testcase "pointer types" do
     let ref ← doubleType.pointerType.getRef
-    assertRefTypeID TypeID.Pointer ref
-    assertRefTypeID TypeID.Double (← ref.getPointeeType)
+    assertRefTypeID TypeID.pointer ref
+    assertRefTypeID TypeID.double (← ref.getPointeeType)
     assertBEq AddressSpace.default (← ref.getAddressSpace)
 
   testcase "literal struct types" do
     let ref ← literalStructType (halfType, doubleType) |>.getRef
-    assertRefTypeID TypeID.Struct ref
-    assertBEq 2 (← ref.getElementsTypes).size
+    assertRefTypeID TypeID.struct ref
+    assertBEq 2 (← ref.getElementTypes).size
     assertBEq false (← ref.isPacked)
 
   testcase "complete struct types" do
     let name := "foo"
     let ref ← completeStructType name halfType true |>.getRef
-    assertRefTypeID TypeID.Struct ref
+    assertRefTypeID TypeID.struct ref
     assertBEq name (← ref.getName)
-    assertBEq 1 (← ref.getElementsTypes).size
+    assertBEq 1 (← ref.getElementTypes).size
     assertBEq true (← ref.isPacked)
 
   testcase "opaque struct types" do
     let name := "bar"
     let ref ← opaqueStructType name |>.getRef
-    assertRefTypeID TypeID.Struct ref
+    assertRefTypeID TypeID.struct ref
     assertBEq name (← ref.getName)
 
   testcase "array types" do
     let size := 8
     let ref ← arrayType halfType size |>.getRef
-    assertRefTypeID TypeID.Array ref
-    assertRefTypeID TypeID.Half (← ref.getElementType)
+    assertRefTypeID TypeID.array ref
+    assertRefTypeID TypeID.half (← ref.getElementType)
     assertBEq size (← ref.getSize)
 
   testcase "vector types" do

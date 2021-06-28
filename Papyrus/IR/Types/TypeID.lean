@@ -1,38 +1,45 @@
 namespace Papyrus
 
-/-- Identifiers for all of the base types of the LLVM type system. -/
+/-- Identifiers for all of the base types of the LLVM (v11) type system. -/
 inductive TypeID
+
 -- Primitive types
+
 | /-- 16-bit floating point type -/
-  Half
+  half
 | /-- 16-bit floating point type (7-bit significand) -/
-  BFloat
+  bfloat
 | /-- 32-bit floating point type -/
-  Float
+  float
 | /-- 64-bit floating point type -/
-  Double
+  double
 | /-- 80-bit floating point type (X87) -/
-  X86_FP80
+  x86FP80
 | /-- 128-bit floating point type (112-bit significand) -/
-  FP128
+  fp128
 | /-- 128-bit floating point type -/
-  PPC_FP128
+  ppcFP128
 | /-- type with no size -/
-  Void
-| Label
-| Metadata
+  void
+| label
+| metadata
 | /-- MMX vectors (64 bits, X86 specific) -/
-  X86_MMX
-| Token
+  x86MMX
+| token
+
 -- Derived types
+
 | /-- Arbitrary bit width integers -/
-  Integer
-| Function
-| Pointer
-| Struct
-| Array
+  integer
+| function
+| pointer
+| struct
+| array
 | /-- Fixed width SIMD vector type -/
-  FixedVector
+  fixedVector
 | /-- Scalable SIMD vector type -/
-  ScalableVector
+  scalableVector
+
 deriving BEq, Repr
+
+attribute [unbox] TypeID

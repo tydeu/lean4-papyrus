@@ -24,7 +24,7 @@ constant isOpaque (self : @& StructTypeRef) : IO Bool
 
 /-- Get an array of references to the element types of this *non-opaque* struct type. -/
 @[extern "papyrus_struct_type_get_element_types"]
-constant getElementsTypes (self : @& StructTypeRef) : IO (Array TypeRef)
+constant getElementTypes (self : @& StructTypeRef) : IO (Array TypeRef)
 
 /-- Get whether this struct type is non-opaque and packed. -/
 @[extern "papyrus_struct_type_is_packed"]
