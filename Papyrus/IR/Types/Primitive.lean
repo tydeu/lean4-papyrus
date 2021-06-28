@@ -40,6 +40,9 @@ extern_singleton_type TokenType tokenType
 /-- A 64-bit X86 MMX vector type. -/
 extern_singleton_type X86MMXType x86MMXType
 
+/-- A 8192-bit X86 AMX vector type. -/
+extern_singleton_type X86AMXType x86AMXType
+
 -- # Floating Point Types
 
 /-- A 16-bit floating point type. -/

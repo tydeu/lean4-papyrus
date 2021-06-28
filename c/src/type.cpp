@@ -4,6 +4,7 @@
 #include <llvm/IR/Type.h>
 #include <llvm/IR/DerivedTypes.h>
 #include <llvm/Support/TypeSize.h>
+#include <llvm/ADT/APFloat.h>
 
 using namespace lean;
 using namespace llvm;
@@ -122,47 +123,53 @@ extern "C" obj_res papyrus_get_x86_mmx_type(obj_arg ctxRef, obj_arg /* w */) {
     return io_result_mk_ok(mk_type_ref(ctxRef, type));
 }
 
+// Get a reference to the X86_AMX type for the given LLVM context.
+extern "C" obj_res papyrus_get_x86_amx_type(obj_arg ctxRef, obj_arg /* w */) {
+    auto type = llvm::Type::getX86_AMXTy(*toLLVMContext(ctxRef));
+    return io_result_mk_ok(mk_type_ref(ctxRef, type));
+}
+
 //------------------------------------------------------------------------------
 // Floating point types
 //------------------------------------------------------------------------------
 
-// Get a reference to the Half type type for the given LLVM context.
+// Get a reference to the Half type for the given LLVM context.
 extern "C" obj_res papyrus_get_half_type(obj_arg ctxRef, obj_arg /* w */) {
     auto type = llvm::Type::getHalfTy(*toLLVMContext(ctxRef));
     return io_result_mk_ok(mk_type_ref(ctxRef, type));
 }
 
-// Get a reference to the BFloat type type for the given LLVM context.
+// Get a reference to the BFloat type for the given LLVM context.
 extern "C" obj_res papyrus_get_bfloat_type(obj_arg ctxRef, obj_arg /* w */) {
     auto type = llvm::Type::getBFloatTy(*toLLVMContext(ctxRef));
     return io_result_mk_ok(mk_type_ref(ctxRef, type));
 }
 
-// Get a reference to the Float type type for the given LLVM context.
+// Get a reference to the Float type  for the given LLVM context.
 extern "C" obj_res papyrus_get_float_type(obj_arg ctxRef, obj_arg /* w */) {
     auto type = llvm::Type::getFloatTy(*toLLVMContext(ctxRef));
     return io_result_mk_ok(mk_type_ref(ctxRef, type));
 }
 
-// Get a reference to the Double type type for the given LLVM context.
+// Get a reference to the Double type for the given LLVM context.
 extern "C" obj_res papyrus_get_double_type(obj_arg ctxRef, obj_arg /* w */) {
     auto type = llvm::Type::getDoubleTy(*toLLVMContext(ctxRef));
     return io_result_mk_ok(mk_type_ref(ctxRef, type));
 }
 
-// Get a reference to the X86_FP80 type type for the given LLVM context.
+// Get a reference to the X86_FP80 type for the given LLVM context.
 extern "C" obj_res papyrus_get_x86_fp80_type(obj_arg ctxRef, obj_arg /* w */) {
     auto type = llvm::Type::getX86_FP80Ty(*toLLVMContext(ctxRef));
     return io_result_mk_ok(mk_type_ref(ctxRef, type));
 }
 
-// Get a reference to the FP128 type type for the given LLVM context.
+// Get a reference to the FP128 type for the given LLVM context.
 extern "C" obj_res papyrus_get_fp128_type(obj_arg ctxRef, obj_arg /* w */) {
     auto type = llvm::Type::getFP128Ty(*toLLVMContext(ctxRef));
     return io_result_mk_ok(mk_type_ref(ctxRef, type));
 }
 
-// Get a reference to the PPC_FP128 type type for the given LLVM context.
+// Get a reference to the PPC_FP128 type for the given LLVM context.
 extern "C" obj_res papyrus_get_ppc_fp128_type(obj_arg ctxRef, obj_arg /* w */) {
     auto type = llvm::Type::getPPC_FP128Ty(*toLLVMContext(ctxRef));
     return io_result_mk_ok(mk_type_ref(ctxRef, type));
@@ -394,12 +401,12 @@ extern "C" obj_res papyrus_vector_type_get_element_type(b_obj_arg typeRef, obj_a
 
 // Get the number of element quantity of the given vector type.
 extern "C" obj_res papyrus_vector_type_get_element_quantity(b_obj_arg typeRef, obj_arg /* w */) {
-    return io_result_mk_ok(box(toVectorType(typeRef)->getElementCount().Min));
+    return io_result_mk_ok(box(toVectorType(typeRef)->getElementCount().getKnownMinValue()));
 }
 
 // Get whether this vector type is scalable.
 extern "C" obj_res papyrus_vector_type_is_scalable(b_obj_arg typeRef, obj_arg /* w */) {
-    return io_result_mk_ok(box(toVectorType(typeRef)->getElementCount().Scalable));
+    return io_result_mk_ok(box(toVectorType(typeRef)->getElementCount().isScalable()));
 }
 
 } // end namespace papyrus

@@ -62,6 +62,7 @@ def testTypes : LLVM PUnit := do
     assertRefTypeID TypeID.metadata   (← metadataType.getRef)
     assertRefTypeID TypeID.token      (← tokenType.getRef)
     assertRefTypeID TypeID.x86MMX     (← x86MMXType.getRef)
+    assertRefTypeID TypeID.x86AMX     (← x86AMXType.getRef)
 
   testcase "floating point types" do
     assertRefTypeID TypeID.half       (← halfType.getRef)

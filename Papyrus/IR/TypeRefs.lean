@@ -30,6 +30,10 @@ constant getTokenTypeRef : LLVM TypeRef
 @[extern "papyrus_get_x86_mmx_type"]
 constant getX86MMXTypeRef : LLVM TypeRef
 
+/-- A 8192-bit X86 AMX vector type. -/
+@[extern "papyrus_get_x86_amx_type"]
+constant getX86AMXTypeRef : LLVM TypeRef
+
 -- # Floating Point Types
 
 /-- A 16-bit floating point type. -/
