@@ -51,6 +51,14 @@ def FixedVectorTypeRef := VectorTypeRef
 
 namespace FixedVectorTypeRef
 
+/--
+  Get a reference to the fixed LLVM vector type of
+    the given element type and number of elements.
+  It is the user's responsibility to ensure they are valid.
+-/
+def  get (elemType : TypeRef) (numElems : UInt32) :=
+  VectorTypeRef.get elemType numElems false
+
 /-- Get the raw number of elements in this vector type. -/
 def getRawSize (self : @& FixedVectorTypeRef) :=
   VectorTypeRef.getRawMinSize self
@@ -66,6 +74,18 @@ end FixedVectorTypeRef
   [ScalableVectorType](https://llvm.org/doxygen/classllvm_1_1ScalableVectorType.html).
 -/
 def ScalableVectorTypeRef := VectorTypeRef
+
+namespace ScalableVectorTypeRef
+
+/--
+  Get a reference to the scalable LLVM vector type of
+    the given element type and minimum number of elements.
+  It is the user's responsibility to ensure they are valid.
+-/
+def  get (elemType : TypeRef) (minNumElems : UInt32) :=
+  VectorTypeRef.get elemType minNumElems true
+
+end ScalableVectorTypeRef
 
 -- # Pure Vector Types
 

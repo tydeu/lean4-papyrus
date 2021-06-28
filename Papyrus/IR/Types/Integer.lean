@@ -32,7 +32,7 @@ constant get (numBits : @& UInt32) : LLVM TypeRef
 
 /-- Get the width in bits of this type. -/
 @[extern "papyrus_integer_type_get_bit_width"]
-constant getBitWidth (self : @& IntegerTypeRef) : LLVM UInt32
+constant getBitWidth (self : @& IntegerTypeRef) : IO UInt32
 
 end IntegerTypeRef
 

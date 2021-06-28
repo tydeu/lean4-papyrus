@@ -2,9 +2,7 @@ namespace Papyrus
 
 /-- Identifiers for all of the base types of the LLVM (v11) type system. -/
 inductive TypeID
-
 -- Primitive types
-
 | /-- 16-bit floating point type -/
   half
 | /-- 16-bit floating point type (7-bit significand) -/
@@ -26,9 +24,7 @@ inductive TypeID
 | /-- MMX vectors (64 bits, X86 specific) -/
   x86MMX
 | token
-
 -- Derived types
-
 | /-- Arbitrary bit width integers -/
   integer
 | function

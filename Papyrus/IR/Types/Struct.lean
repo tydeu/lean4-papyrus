@@ -79,7 +79,7 @@ namespace IdentifiedStructTypeRef
   Passing the empty name string will leave the type unnamed.
 -/
 @[extern "papyrus_create_complete_struct_type"]
-private constant create (name : @& String) (elementTypes : @& Array TypeRef)
+constant create (name : @& String) (elementTypes : @& Array TypeRef)
   (packed := false) : LLVM IdentifiedStructTypeRef
 
 /--
