@@ -1,5 +1,3 @@
-import Papyrus.IR.Types.TypeID
-import Papyrus.IR.Types.TypeRef
 import Papyrus.IR.Types.Primitive
 import Papyrus.IR.Types.Integer
 import Papyrus.IR.Types.Function

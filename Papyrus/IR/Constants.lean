@@ -1,7 +1,6 @@
 import Papyrus.Context
 import Papyrus.IR.Value
-import Papyrus.IR.Types.TypeRef
-import Papyrus.IR.Types.Integer
+import Papyrus.IR.TypeRefs
 
 namespace Papyrus
 

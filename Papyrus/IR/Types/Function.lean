@@ -1,43 +1,8 @@
-import Papyrus.IR.Types.TypeRef
+import Papyrus.IR.TypeRefs
 
 namespace Papyrus
 
--- # Function Type Reference
-
-/--
-  A reference to the LLVM representation of a
-  [FunctionType](https://llvm.org/doxygen/classllvm_1_1FunctionType.html).
--/
-def FunctionTypeRef := TypeRef
-
-namespace FunctionTypeRef
-
-/--
-  Get a reference to the LLVM function type with
-    the given result and parameter types.
-  It is the user's responsibility to ensure that they are valid.
--/
-@[extern "papyrus_get_function_type"]
-constant get (result : @& TypeRef) (params : @& Array TypeRef)
-  (isVarArg := false) : IO FunctionTypeRef
-
-/-- Get a reference to the return type of this function type. -/
-@[extern "papyrus_function_type_get_return_type"]
-constant getReturnType (self : @& FunctionTypeRef) : IO TypeRef
-
-/-- Get an array of references to the parameter types of this function type. -/
-@[extern "papyrus_function_type_get_parameter_types"]
-constant getParameterTypes (self : @& FunctionTypeRef) : IO (Array TypeRef)
-
-/-- Get whether this function type accepts variable arguments. -/
-@[extern "papyrus_function_type_is_var_arg"]
-constant isVarArg (self : @& FunctionTypeRef) : IO Bool
-
-end FunctionTypeRef
-
--- # Pure Function Type
-
-/-- A fumction type. -/
+/-- A function type. -/
 structure FunctionType (α) (β) (varArgs : Bool) where
   resultType : α
   parameterTypes : β

@@ -1,5 +1,5 @@
 import Papyrus.Context
-import Papyrus.IR.Types.TypeRef
+import Papyrus.IR.TypeRef
 
 namespace Papyrus
 
@@ -19,7 +19,7 @@ constant getType (self : @& ValueRef) : IO TypeRef
 @[extern "papyrus_value_has_name"]
 constant hasName (self : @& ValueRef) : IO Bool
 
-/-- Get the name of this value (or the emptry string if none). -/
+/-- Get the name of this value (or the empty string if none). -/
 @[extern "papyrus_value_get_name"]
 constant getName (self : @& ValueRef) : IO String
 

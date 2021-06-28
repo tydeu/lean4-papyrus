@@ -1,8 +1,8 @@
 import Papyrus.Context
 import Papyrus.IR.Globals
 import Papyrus.IR.AddressSpace
-import Papyrus.IR.Types.Function
 import Papyrus.IR.BasicBlock
+import Papyrus.IR.TypeRefs
 
 namespace Papyrus
 

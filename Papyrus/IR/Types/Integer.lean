@@ -1,44 +1,8 @@
-import Papyrus.IR.Types.TypeRef
+import Papyrus.IR.TypeRefs
 
 namespace Papyrus
 
--- # Integer Type Reference
-
-/--
-  A reference to the LLVM representation of an
-  [IntegerType](https://llvm.org/doxygen/classllvm_1_1IntegerType.html).
--/
-def IntegerTypeRef := TypeRef
-
-namespace IntegerTypeRef
-
-/-- Minimum bit width of an LLVM integer type. -/
-def MIN_INT_BITS : UInt32 := 1
-
-/-- Maximum bit width of an LLVM integer type. -/
-def MAX_INT_BITS : UInt32 := 16777215 -- (1 <<< 24) - 1
-
-/-- Holds if the given bit width is valid for an LLVM integer type. -/
-def isValidBitWidth (bitWidth : UInt32) : Prop :=
-  bitWidth ≥ MIN_INT_BITS ∧ bitWidth ≤ MAX_INT_BITS
-
-/--
-  Get a reference to the LLVM integer type of the given width.
-  It is the user's responsible to ensure that the bit width of the type falls
-  within LLVM's requirements (i.e., that `isValidBitWidth numBits` holds).
--/
-@[extern "papyrus_get_integer_type"]
-constant get (numBits : @& UInt32) : LLVM TypeRef
-
-/-- Get the width in bits of this type. -/
-@[extern "papyrus_integer_type_get_bit_width"]
-constant getBitWidth (self : @& IntegerTypeRef) : IO UInt32
-
-end IntegerTypeRef
-
--- # Pure Integer Type
-
-/-- An arbirtrary precision integer type. -/
+/-- An arbitrary precision integer type. -/
 structure IntegerType (numBits : Nat) deriving Inhabited
 
 /-- An integer type of the given precision. -/
