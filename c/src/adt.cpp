@@ -11,14 +11,14 @@ using namespace llvm;
 namespace papyrus {
 
 lean::object* mk_string(const llvm::StringRef& str) {
-    size_t size  = str.size();
-    size_t len = lean::utf8_strlen(str.data(), size);
-    size_t realSize = size + 1;
-    lean::object* obj = lean_alloc_string(realSize, realSize, len);
-    char* data = lean_to_string(obj)->m_data;
-    memcpy(data, str.data(), size);
-    data[size] = 0;
-    return obj;
+  size_t size  = str.size();
+  size_t len = lean::utf8_strlen(str.data(), size);
+  size_t realSize = size + 1;
+  lean::object* obj = lean_alloc_string(realSize, realSize, len);
+  char* data = lean_to_string(obj)->m_data;
+  memcpy(data, str.data(), size);
+  data[size] = 0;
+  return obj;
 }
 
 const llvm::StringRef string_to_ref(lean::object* obj) {

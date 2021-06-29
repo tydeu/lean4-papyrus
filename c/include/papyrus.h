@@ -3,18 +3,18 @@
 
 // Forward declarations
 namespace llvm {
-    class APInt;
-    class StringRef;
-    class MemoryBuffer;
-    class LLVMContext;
-    class Module;
-    class Type;
-    class IntegerType;
-    class FunctionType;
-    class Value;
-    class Instruction;
-    class BasicBlock;
-    class Function;
+	class APInt;
+	class StringRef;
+	class MemoryBuffer;
+	class LLVMContext;
+	class Module;
+	class Type;
+	class IntegerType;
+	class FunctionType;
+	class Value;
+	class Instruction;
+	class BasicBlock;
+	class Function;
 }
 
 namespace papyrus {
@@ -65,14 +65,14 @@ static void nopForeach(void* /* p */, lean::b_obj_arg /* a */) {
 // Casts the pointer to the template type and invokes delete
 template<typename T>
 void deletePointer(void* p) {
-    delete static_cast<T*>(p);
+	delete static_cast<T*>(p);
 }
 
 // Register a class whose external data is a pointer to type `T`
 // and whose finalizer just calls delete on the pointer with that type.
 template<typename T>
 lean::external_object_class* registerDeleteClass() {
-    return lean_register_external_class(&deletePointer<T>, &nopForeach);
+	return lean_register_external_class(&deletePointer<T>, &nopForeach);
 }
 
 // An external object that is also weakly contained within some other object.
@@ -82,36 +82,36 @@ lean::external_object_class* registerDeleteClass() {
 // itself from its container upon deletion.
 template<typename T>
 struct ContainedExternal {
-    ContainedExternal(lean::object* container, std::unique_ptr<T> value)
-	    : container(container), value(std::move(value)) {}
+	ContainedExternal(lean::object* container, std::unique_ptr<T> value)
+		: container(container), value(std::move(value)) {}
 
-    ContainedExternal(const ContainedExternal&) = delete;
+	ContainedExternal(const ContainedExternal&) = delete;
 
-    ~ContainedExternal() {
-        value = nullptr;
-        lean_dec_ref(container);
-    }
+	~ContainedExternal() {
+		value = nullptr;
+		lean_dec_ref(container);
+	}
 
-    // Lean object for the container.
-    lean::object* container;
+	// Lean object for the container.
+	lean::object* container;
 
-    // The handle for the external value.
-    // Deleted upon garbage collection of this object.
-    std::unique_ptr<T> value;
+	// The handle for the external value.
+	// Deleted upon garbage collection of this object.
+	std::unique_ptr<T> value;
 };
 
 // A foreach for contained externals that applies its argument to the container.
 template<typename T>
 void containedExternalForeach(void * p, lean::b_obj_arg a) {
-    auto d = static_cast<ContainedExternal<T>*>(p);
-    lean_apply_1(a, d->container);
+	auto d = static_cast<ContainedExternal<T>*>(p);
+	lean_apply_1(a, d->container);
 }
 
 // Register a class whose lifetime is extends another objects.
 // It holds a reference to the container while alive and releases it when finalized.
 template<typename T>
 lean::external_object_class* registerContainedClass() {
-    return lean_register_external_class(&deletePointer<ContainedExternal<T>>, &containedExternalForeach<T>);
+	return lean_register_external_class(&deletePointer<ContainedExternal<T>>, &containedExternalForeach<T>);
 }
 
 // An external object that is owned by some other object.
@@ -120,39 +120,39 @@ lean::external_object_class* registerContainedClass() {
 // The external value will *not* be deleted when the object is garbadge collected.
 template<typename T>
 struct OwnedExternal {
-    OwnedExternal(lean::object* owner, T* value)
-        : owner(owner), value(value) {}
+	OwnedExternal(lean::object* owner, T* value)
+		: owner(owner), value(value) {}
 
-    OwnedExternal(const OwnedExternal& other)
-        : owner(other.owner), value(other.value)
-    {
-        lean_inc_ref(owner);
-    };
+	OwnedExternal(const OwnedExternal& other)
+		: owner(other.owner), value(other.value)
+	{
+		lean_inc_ref(owner);
+	};
 
-    ~OwnedExternal() {
-        lean_dec_ref(owner);
-    }
+	~OwnedExternal() {
+		lean_dec_ref(owner);
+	}
 
-     // Lean object for the owner.
-    lean::object* owner;
+	 // Lean object for the owner.
+	lean::object* owner;
 
-    // The handle for the external value.
-    // The owner is responsible for deleting it.
-    T* value;
+	// The handle for the external value.
+	// The owner is responsible for deleting it.
+	T* value;
 };
 
 // A foreach for owned externals that applies its argument to the container.
 template<typename T>
 void ownedExternalForeach(void *p, lean::b_obj_arg a) {
-    auto d = static_cast<OwnedExternal<T>*>(p);
-    lean_apply_1(a, d->owner);
+	auto d = static_cast<OwnedExternal<T>*>(p);
+	lean_apply_1(a, d->owner);
 }
 
 // Register a class whose lifetime is controlled by another object.
 // It holds a reference to the owner while alive and releases it when finalized.
 template<typename T>
 lean::external_object_class* registerOwnedClass() {
-    return lean_register_external_class(&deletePointer<OwnedExternal<T>>, &ownedExternalForeach<T>);
+	return lean_register_external_class(&deletePointer<OwnedExternal<T>>, &ownedExternalForeach<T>);
 }
 
 } // end namespace papyrus
