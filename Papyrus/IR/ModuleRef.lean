@@ -1,21 +1,8 @@
 import Papyrus.Context
+import Papyrus.MemoryBufferRef
 import Papyrus.IR.FunctionRef
 
 namespace Papyrus
-
--- # Memory Buffer References
-
-/--
-  A reference to the LLVM representation of a
-  [MemoryBuffer](https://llvm.org/doxygen/classllvm_1_1Module.html).
--/
-constant MemoryBufferRef : Type := Unit
-
-/-- Construct a memory buffer from a file. -/
-@[extern "papyrus_memory_buffer_from_file"]
-constant MemoryBufferRef.fromFile (file : @& System.FilePath) : IO MemoryBufferRef
-
--- # Module References
 
 /--
   A reference to the LLVM representation of a

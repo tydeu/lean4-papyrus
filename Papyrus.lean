@@ -201,14 +201,14 @@ def testInstructions : LLVM PUnit := do
   let intTypeRef ← IntegerTypeRef.get 32
 
   testcase "empty return instruction" do
-    let inst ← ReturnInstRef.create none
+    let inst ← ReturnInstRef.createEmpty
     unless (← inst.getReturnValue).isNone do
       assertFail "got return value when expecting none"
 
   testcase "nonempty return instruction" do
     let val := 1
     let const ← intTypeRef.getConstantInt val
-    let inst ← ReturnInstRef.create <| some const
+    let inst ← ReturnInstRef.create const
     let some retVal ← inst.getReturnValue
       | assertFail "got unexpected empty return value"
     let retInt : ConstantIntRef := retVal
@@ -224,7 +224,7 @@ def testBasicBlock : LLVM PUnit := do
     let name := "foo"
     let bb ← BasicBlockRef.create name
     assertBEq name (← bb.getName)
-    let inst ← ReturnInstRef.create <| none
+    let inst ← ReturnInstRef.createEmpty
     bb.appendInstruction inst
     let is ← bb.getInstructions
     if h : is.size = 1 then
@@ -304,7 +304,7 @@ def testModule : LLVM PUnit := do
     let fn ← FunctionRef.create fnTy "main"
     let bb ← BasicBlockRef.create "entry"
     let const ← intTypeRef.getConstantInt exitCode
-    let inst ← ReturnInstRef.create <| some const
+    let inst ← ReturnInstRef.create const
     bb.appendInstruction inst
     fn.appendBasicBlock bb
     mod.appendFunction fn

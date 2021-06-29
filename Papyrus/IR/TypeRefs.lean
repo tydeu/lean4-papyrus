@@ -253,7 +253,7 @@ namespace IdentifiedStructTypeRef
   It is the user's responsibility to ensure they are valid.
   Passing the empty name string will leave the type unnamed.
 -/
-@[extern "papyrus_create_complete_struct_type"]
+@[extern "papyrus_struct_type_create"]
 constant create (name : @& String) (elementTypes : @& Array TypeRef)
   (packed := false) : LLVM IdentifiedStructTypeRef
 
@@ -261,7 +261,7 @@ constant create (name : @& String) (elementTypes : @& Array TypeRef)
   Create a new opaque struct type with the given name
   (or none if the name string is empty).
 -/
-@[extern "papyrus_create_opaque_struct_type"]
+@[extern "papyrus_opaque_struct_type_create"]
 constant createOpaque (name : @& String) : LLVM IdentifiedStructTypeRef
 
 /-- Get the name of this struct type (or the empty string if none). -/

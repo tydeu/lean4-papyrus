@@ -13,7 +13,7 @@ def BasicBlockRef := ValueRef
 namespace BasicBlockRef
 
 /-- Create a new unlinked basic block with given label/name (or none if empty). -/
-@[extern "papyrus_create_basic_block"]
+@[extern "papyrus_basic_block_create"]
 constant create (name : @& String) : LLVM BasicBlockRef
 
 /-- Get the array of references to the instructions of this basic block. -/

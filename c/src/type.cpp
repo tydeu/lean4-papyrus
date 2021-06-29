@@ -282,7 +282,7 @@ extern "C" obj_res papyrus_get_literal_struct_type
 
 // Get a reference to a new opaque struct type with the given name
 // (or none if the name string is empty).
-extern "C" obj_res papyrus_create_opaque_struct_type
+extern "C" obj_res papyrus_opaque_struct_type_create
 (b_obj_arg nameObj, obj_arg ctxRef, obj_arg /* w */)
 {
     auto type = StructType::create(*toLLVMContext(ctxRef), string_to_ref(nameObj));
@@ -291,7 +291,7 @@ extern "C" obj_res papyrus_create_opaque_struct_type
 
 // Get a reference to a new complete struct type with the given elements and packing.
 // The type is uniquely identified by the given name if the string is nonempty.
-extern "C" obj_res papyrus_create_complete_struct_type
+extern "C" obj_res papyrus_struct_type_create
 (b_obj_arg nameObj, b_obj_arg elemsObj, uint8_t isPacked, obj_arg ctxRef, obj_arg /* w */)
 {
     unpackTypes(elemsObj, elems);

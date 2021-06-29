@@ -15,7 +15,7 @@ llvm::Function* toFunction(lean::object* funRef) {
 }
 
 // Get a reference to a newly created function.
-extern "C" obj_res papyrus_create_function
+extern "C" obj_res papyrus_function_create
 (b_obj_arg typeRef, b_obj_arg nameObj, uint8 linkage, uint32 addrSpace, obj_arg /* w */)
 {
     auto* fun = Function::Create(toFunctionType(typeRef),

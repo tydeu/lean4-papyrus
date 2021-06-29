@@ -18,7 +18,7 @@ namespace FunctionRef
   Create a new unlinked function with the given type, the optional given name,
     and the given linkage in the given raw address space.
 -/
-@[extern "papyrus_create_function"]
+@[extern "papyrus_function_create"]
 constant createRaw (type : @& FunctionTypeRef) (name : @& String)
   (linkage : @& Linkage) (addrSpace : UInt32) : IO FunctionRef
 

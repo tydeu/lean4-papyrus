@@ -14,7 +14,7 @@ llvm::BasicBlock* toBasicBlock(lean::object* bbRef) {
 }
 
 // Get a reference to a newly created basic block.
-extern "C" obj_res papyrus_create_basic_block
+extern "C" obj_res papyrus_basic_block_create
 (b_obj_arg nameObj, obj_arg ctxRef, obj_arg /* w */)
 {
     auto bb = BasicBlock::Create(*toLLVMContext(ctxRef), string_to_ref(nameObj));

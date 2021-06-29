@@ -23,12 +23,16 @@ llvm::ReturnInst* toReturnInst(lean::object* instRef) {
 }
 
 // Get a reference to a newly created return instruction.
-extern "C" obj_res papyrus_create_return_inst
+extern "C" obj_res papyrus_return_inst_create
 (b_obj_arg retValObj, obj_arg ctxRef, obj_arg /* w */)
 {
-    llvm::Value* retVal = lean_is_scalar(retValObj) ? nullptr :
-        toValue(lean_ctor_get(retValObj, 0));
-    auto inst = ReturnInst::Create(*toLLVMContext(ctxRef), retVal);
+    auto inst = ReturnInst::Create(*toLLVMContext(ctxRef), toValue(retValObj));
+    return io_result_mk_ok(mk_value_ref(ctxRef, inst));
+}
+
+// Get a reference to a newly created empty return instruction.
+extern "C" obj_res papyrus_return_inst_create_empty(obj_arg ctxRef, obj_arg /* w */) {
+    auto inst = ReturnInst::Create(*toLLVMContext(ctxRef));
     return io_result_mk_ok(mk_value_ref(ctxRef, inst));
 }
 
