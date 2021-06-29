@@ -7,7 +7,7 @@ make -C c
 
 LLVM_CONFIG=llvm-config
 LLVM_COMPONENTS="core bitreader bitwriter"
-PAPYRUS_C_LIB="c/build/papyrus.o"
+PAPYRUS_C_LIB="c/build/libPapyrusC.a"
 
 LLVM_LIBDIR=$($LLVM_CONFIG --libdir)
 LLVM_LINK_FLAGS=$($LLVM_CONFIG --ldflags)

@@ -17,6 +17,7 @@ LLVM_CXX_FLAGS := $(shell $(LLVM_CONFIG) --cxxflags)
 MKPATH := mkdir -p
 RMPATH := rm -rf
 
+AR := ar
 CXX	:= c++
 EXTRA_CXX_FLAGS := -O1
 
@@ -41,7 +42,7 @@ SRCS := \
 	global.cpp\
 	function.cpp\
 
-LIB_OBJ := papyrus.o
+LIB := libPapyrusC.a
 
 OBJ_FILES := $(addprefix $(OUT_DIR)/,$(SRCS:.cpp=.o))
 HDR_FILES := $(addprefix $(HDR_DIR)/,$(HDRS))
@@ -50,13 +51,13 @@ HDR_FILES := $(addprefix $(HDR_DIR)/,$(HDRS))
 
 all: lib
 
-lib: $(OUT_DIR)/$(LIB_OBJ)
+lib: $(OUT_DIR)/$(LIB)
 
 $(OUT_DIR):
 	$(MKPATH) $@
 
-$(OUT_DIR)/$(LIB_OBJ) : $(OBJ_FILES) | $(OUT_DIR)
-	$(CXX) -r -o $@ $^
+$(OUT_DIR)/$(LIB) : $(OBJ_FILES) | $(OUT_DIR)
+	${AR} rcs $@ $^
 
 $(OUT_DIR)/%.o : $(SRC_DIR)/%.cpp $(HDR_FILES) | $(OUT_DIR)
 	$(CXX) -o $@ -c $< -I$(HDR_DIR) -I$(LEAN_INCLUDE) $(LLVM_CXX_FLAGS) $(EXTRA_CXX_FLAGS)
