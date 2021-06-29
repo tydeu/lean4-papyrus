@@ -1,13 +1,8 @@
 import Papyrus.Context
-import Papyrus.IR.Value
+import Papyrus.IR.ValueRef
+import Papyrus.IR.InstructionRef
 
 namespace Papyrus
-
-/--
-  An external reference to the LLVM representation of an
-  [Instruction](https://llvm.org/doxygen/classllvm_1_1Instruction.html).
--/
-def InstructionRef := UserRef
 
 /--
   An external reference to the LLVM representation of a

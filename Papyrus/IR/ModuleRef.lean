@@ -1,5 +1,5 @@
 import Papyrus.Context
-import Papyrus.IR.Function
+import Papyrus.IR.FunctionRef
 
 namespace Papyrus
 

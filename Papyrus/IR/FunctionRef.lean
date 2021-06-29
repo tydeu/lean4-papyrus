@@ -1,7 +1,7 @@
 import Papyrus.Context
-import Papyrus.IR.Globals
 import Papyrus.IR.AddressSpace
-import Papyrus.IR.BasicBlock
+import Papyrus.IR.BasicBlockRef
+import Papyrus.IR.GlobalRefs
 import Papyrus.IR.TypeRefs
 
 namespace Papyrus

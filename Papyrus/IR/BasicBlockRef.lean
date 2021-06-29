@@ -1,6 +1,6 @@
 import Papyrus.Context
-import Papyrus.IR.Value
-import Papyrus.IR.Instructions
+import Papyrus.IR.ValueRef
+import Papyrus.IR.InstructionRef
 
 namespace Papyrus
 

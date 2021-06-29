@@ -1,14 +1,8 @@
 import Papyrus.Context
-import Papyrus.IR.Value
 import Papyrus.IR.TypeRefs
+import Papyrus.IR.ConstantRef
 
 namespace Papyrus
-
-/--
-  An external reference to the LLVM representation of a
-  [Constant](https://llvm.org/doxygen/classllvm_1_1Constant.html).
--/
-def ConstantRef := UserRef
 
 namespace TypeRef
 
@@ -85,7 +79,7 @@ def ConstantNatRef := ConstantWordRef
 def ConstantNatRef.getValue (self : ConstantNatRef) :=
   ConstantWordRef.getNatValue self
 
--- # Integer Type -> ConstantInt/ConstantNat Convience Functions
+-- # Integer Type -> ConstantInt/ConstantNat Convenience Functions
 
 namespace IntegerTypeRef
 

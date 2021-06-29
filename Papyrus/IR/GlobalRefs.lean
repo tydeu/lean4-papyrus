@@ -1,5 +1,5 @@
 import Papyrus.Context
-import Papyrus.IR.Constants
+import Papyrus.IR.ConstantRef
 import Papyrus.IR.AddressSpace
 
 namespace Papyrus
