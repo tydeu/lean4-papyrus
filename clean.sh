@@ -1,3 +1,3 @@
 rm -rf build
-cd c
-make clean
+make -C c clean
+make -C test clean
