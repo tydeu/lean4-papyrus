@@ -30,6 +30,10 @@ def create (type : @& FunctionTypeRef) (name : @& String := "")
   (linkage := Linkage.external) (addrSpace := AddressSpace.default) :=
   createRaw type name linkage addrSpace.toUInt32
 
+/-- Get the type of this function.  -/
+def getType (self : @& GlobalValueRef) : IO FunctionTypeRef :=
+  GlobalValueRef.getType self
+
 /-- Get the array of references to the basic blocks of this function. -/
 @[extern "papyrus_function_get_basic_blocks"]
 constant getBasicBlocks (self : @& FunctionRef) : IO (Array BasicBlockRef)

@@ -37,6 +37,10 @@ def ConstantWordRef := ConstantDataRef
 
 namespace ConstantWordRef
 
+/-- Get the integer type of this constant.  -/
+def getType (self : @& ConstantWordRef) : IO IntegerTypeRef :=
+  ValueRef.getType self
+
 /--
   Get the value of this constant as an `Int`.
   That is, treat its bits as representing a native integer.

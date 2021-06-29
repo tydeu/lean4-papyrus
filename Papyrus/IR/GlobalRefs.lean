@@ -1,4 +1,5 @@
 import Papyrus.Context
+import Papyrus.IR.TypeRefs
 import Papyrus.IR.ConstantRef
 import Papyrus.IR.AddressSpace
 
@@ -13,6 +14,17 @@ namespace Papyrus
 def GlobalValueRef := ConstantRef
 
 namespace GlobalValueRef
+
+/--
+  Get the pointer type of this global.
+  Since globals are always pointers in LLVM, this is the global's actual type.
+-/
+def getPointerType (self : @& GlobalValueRef) : IO PointerTypeRef :=
+  ValueRef.getType self
+
+/-- Get the type of this global's value.  -/
+def getType (self : @& GlobalValueRef) : IO TypeRef := do
+  (← self.getPointerType).getPointeeType
 
 /-- Get the raw numeric address space of this global. -/
 @[extern "papyrus_global_value_get_address_space"]
