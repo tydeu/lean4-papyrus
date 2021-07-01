@@ -23,7 +23,7 @@ def assertTrue (actual : Bool) : IO PUnit :=
 
 def assertFalse (actual : Bool) : IO PUnit := do
   if actual then
-    assertFail "expected false, got got"
+    assertFail "expected false, got true"
 
 def assertEq [Repr α] [DecidableEq α] (expected actual : α) : IO PUnit := do
   unless expected = actual do
@@ -304,7 +304,7 @@ def testModule : LLVM PUnit := do
     let mod ← ModuleRef.new "test"
     let fnTy ← FunctionTypeRef.get intTypeRef #[]
     let fn ← FunctionRef.create fnTy "main"
-    let bb ← BasicBlockRef.create "entry"
+    let bb ← BasicBlockRef.create
     let const ← intTypeRef.getConstantInt exitCode
     let inst ← ReturnInstRef.create const
     bb.appendInstruction inst

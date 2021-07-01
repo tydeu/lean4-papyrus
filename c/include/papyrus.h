@@ -57,10 +57,6 @@ llvm::Function* toFunction(lean::object* funRef);
 lean::object* mk_generic_value(llvm::GenericValue* val);
 llvm::GenericValue* toGenericValue(lean::object* valRef);
 
-//------------------------------------------------------------------------------
-// Generic utilities
-//------------------------------------------------------------------------------
-
 // Covert a Lean Array of references to an LLVM ArrayRef of objects.
 // Defined as a macro because it needs to dynamically allocate to the user's stack.
 #define LEAN_ARRAY_TO_REF(ELEM_TYPE, CONVERTER, OBJ, REF) \
@@ -71,6 +67,10 @@ llvm::GenericValue* toGenericValue(lean::object* valRef);
 		REF##_data[i] = CONVERTER(OBJ##_arr->m_data[i]); \
 	} \
 	ArrayRef<ELEM_TYPE> REF(REF##_data, OBJ##_len)
+
+//------------------------------------------------------------------------------
+// Generic utilities
+//------------------------------------------------------------------------------
 
 // A no-op foreach callback for external classes
 static void nopForeach(void* /* p */, lean::b_obj_arg /* a */) {

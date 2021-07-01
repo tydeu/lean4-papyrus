@@ -66,14 +66,7 @@ lean::object* packTypes(b_obj_arg ctxRef, const llvm::ArrayRef<llvm::Type*>& arr
 
 // Covert a Lean Array of type references to an LLVM ArrayRef of types.
 // Defined as a macro because it needs to dynamically allocate to the user's stack.
-#define unpackTypes(OBJ, REF) \
-	lean_array_object* OBJ##_arrObj = lean_to_array(OBJ); \
-	size_t OBJ##_len = OBJ##_arrObj->m_size; \
-	llvm::Type* OBJ##_types[OBJ##_len]; \
-	for (size_t i = 0; i < OBJ##_len; i++) { \
-		OBJ##_types[i] = toType(OBJ##_arrObj->m_data[i]); \
-	} \
-	ArrayRef<llvm::Type*> REF(OBJ##_types, OBJ##_len)
+#define LEAN_UNPACK_TYPES(OBJ, REF) LEAN_ARRAY_TO_REF(Type*, toType, OBJ, REF)
 
 //------------------------------------------------------------------------------
 // Basic functions
@@ -211,7 +204,7 @@ llvm::FunctionType* toFunctionType(lean::object* typeRef) {
 extern "C" obj_res papyrus_get_function_type
 (b_obj_arg resultObj, b_obj_arg paramsObj, uint8_t isVarArg, obj_arg /* w */)
 {
-	unpackTypes(paramsObj, params);
+	LEAN_UNPACK_TYPES(paramsObj, params);
 	auto type = FunctionType::get(toType(resultObj), params, isVarArg);
 	return io_result_mk_ok(mk_type_ref(getTypeContext(resultObj), type));
 }
@@ -275,7 +268,7 @@ llvm::StructType* toStructType(lean::object* typeRef) {
 extern "C" obj_res papyrus_get_literal_struct_type
 (b_obj_arg elemsObj, uint8_t isPacked, obj_arg ctxRef, obj_arg /* w */)
 {
-	unpackTypes(elemsObj, elems);
+	LEAN_UNPACK_TYPES(elemsObj, elems);
 	auto type = StructType::get(*toLLVMContext(ctxRef), elems, isPacked);
 	return io_result_mk_ok(mk_type_ref(ctxRef, type));
 }
@@ -294,7 +287,7 @@ extern "C" obj_res papyrus_opaque_struct_type_create
 extern "C" obj_res papyrus_struct_type_create
 (b_obj_arg nameObj, b_obj_arg elemsObj, uint8_t isPacked, obj_arg ctxRef, obj_arg /* w */)
 {
-	unpackTypes(elemsObj, elems);
+	LEAN_UNPACK_TYPES(elemsObj, elems);
 	auto type = StructType::create(*toLLVMContext(ctxRef),
 		elems, string_to_ref(nameObj), isPacked);
 	return io_result_mk_ok(mk_type_ref(ctxRef, type));
@@ -341,7 +334,7 @@ extern "C" obj_res papyrus_struct_type_is_packed(b_obj_arg typeRef, obj_arg /* w
 extern "C" obj_res papyrus_opaque_struct_type_set_body
 (b_obj_arg elemsObj, uint8_t isPacked, b_obj_arg typeRef, obj_arg /* w */)
 {
-	unpackTypes(elemsObj, elems);
+	LEAN_UNPACK_TYPES(elemsObj, elems);
 	toStructType(typeRef)->setBody(elems, isPacked);
 	return io_result_mk_ok(box(0));
 }
