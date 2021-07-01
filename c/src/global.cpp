@@ -121,7 +121,7 @@ extern "C" obj_res papyrus_global_object_has_section(b_obj_arg gblRef, obj_arg /
 
 // Get the explicit linker section of a global object (or the empty string if none).
 extern "C" obj_res papyrus_global_object_get_section(b_obj_arg gblRef, obj_arg /* w */) {
-	return io_result_mk_ok(mk_string(toGlobalObject(gblRef)->getSection()));
+	return io_result_mk_ok(mkStringFromRef(toGlobalObject(gblRef)->getSection()));
 }
 
 // Set the explicit linker section of a global object.
@@ -129,7 +129,7 @@ extern "C" obj_res papyrus_global_object_get_section(b_obj_arg gblRef, obj_arg /
 extern "C" obj_res papyrus_global_object_set_section
 	(b_obj_arg strObj, b_obj_arg gblRef, obj_arg /* w */)
 {
-	toGlobalObject(gblRef)->setSection(string_to_ref(strObj));
+	toGlobalObject(gblRef)->setSection(refOfString(strObj));
 	return io_result_mk_ok(box(0));
 }
 

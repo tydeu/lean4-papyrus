@@ -19,8 +19,8 @@ extern "C" obj_res papyrus_function_create
 (b_obj_arg typeRef, b_obj_arg nameObj, uint8 linkage, uint32 addrSpace, obj_arg /* w */)
 {
 	auto* fun = Function::Create(toFunctionType(typeRef),
-	  static_cast<GlobalValue::LinkageTypes>(linkage), addrSpace, string_to_ref(nameObj));
-	return io_result_mk_ok(mk_value_ref(getTypeContext(typeRef), fun));
+	  static_cast<GlobalValue::LinkageTypes>(linkage), addrSpace, refOfString(nameObj));
+	return io_result_mk_ok(mkValueRef(getTypeContext(typeRef), fun));
 }
 
 // Get an array of references to the basic blocks of the given function.
@@ -30,7 +30,7 @@ extern "C" obj_res papyrus_function_get_basic_blocks(b_obj_arg funRef, obj_arg /
 	lean_object* arr = lean::alloc_array(0, 8);
 	for (BasicBlock& bb : bbs) {
 		lean_inc_ref(ctxRef);
-		arr = lean_array_push(arr, mk_value_ref(ctxRef, &bb));
+		arr = lean_array_push(arr, mkValueRef(ctxRef, &bb));
 	}
 	return io_result_mk_ok(arr);
 }

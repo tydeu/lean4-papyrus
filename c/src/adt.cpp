@@ -10,7 +10,7 @@ using namespace llvm;
 
 namespace papyrus {
 
-lean::object* mk_string(const llvm::StringRef& str) {
+lean::object* mkStringFromRef(const llvm::StringRef& str) {
   size_t size  = str.size();
   size_t len = lean::utf8_strlen(str.data(), size);
   size_t realSize = size + 1;
@@ -21,7 +21,7 @@ lean::object* mk_string(const llvm::StringRef& str) {
   return obj;
 }
 
-const llvm::StringRef string_to_ref(lean::object* obj) {
+const llvm::StringRef refOfString(lean::object* obj) {
   auto strObj = lean_to_string(obj);
   return llvm::StringRef(strObj->m_data, strObj->m_size - 1);
 }
@@ -29,7 +29,7 @@ const llvm::StringRef string_to_ref(lean::object* obj) {
 #define LEAN_SMALL_NAT_BITS (CHAR_BIT*sizeof(size_t)-1)
 #define LEAN_SMALL_INT_BITS (sizeof(void*) == 8 ? (CHAR_BIT*sizeof(int)-1) : 30)
 
-lean::object* mk_nat(const llvm::APInt& ap) {
+lean::object* mkNatFromAP(const llvm::APInt& ap) {
   if (LEAN_LIKELY(ap.getActiveBits() <= LEAN_SMALL_NAT_BITS)) {
     return lean_box(ap.getZExtValue());
   } else {
@@ -42,7 +42,7 @@ lean::object* mk_nat(const llvm::APInt& ap) {
   }
 }
 
-lean::object* mk_int(const llvm::APInt& ap) {
+lean::object* mkIntFromAP(const llvm::APInt& ap) {
   if (LEAN_LIKELY(ap.getMinSignedBits() <= LEAN_SMALL_INT_BITS)) {
     return lean_box((unsigned)((int)ap.getSExtValue()));
   } else {
@@ -71,7 +71,7 @@ const llvm::APInt mpz_obj_to_ap_nat(unsigned numBits, const lean::mpz& z) {
   return llvm::APInt(numBits, wordsRef);
 }
 
-const llvm::APInt nat_to_ap(unsigned numBits, lean::object* obj) {
+const llvm::APInt apOfNat(unsigned numBits, lean::object* obj) {
   if (lean_is_scalar(obj)) {
     return llvm::APInt(numBits, lean_unbox(obj), false);
   } else {
@@ -79,7 +79,7 @@ const llvm::APInt nat_to_ap(unsigned numBits, lean::object* obj) {
   }
 }
 
-const llvm::APInt int_to_ap(unsigned numBits, lean::object* obj) {
+const llvm::APInt apOfInt(unsigned numBits, lean::object* obj) {
   if (lean_is_scalar(obj)) {
     return llvm::APInt(numBits, lean_unbox(obj), true);
   } else {

@@ -13,7 +13,7 @@ extern "C" obj_res papyrus_module_write_bitcode_to_file
 (b_obj_arg fnameObj, b_obj_arg modObj, uint8 perserveOrder, obj_arg /* w */)
 {
 	std::error_code ec;
-	raw_fd_ostream out(string_to_ref(fnameObj), ec);
+	raw_fd_ostream out(refOfString(fnameObj), ec);
 	if (ec) return decode_io_error(ec.value(), fnameObj);
 	llvm::WriteBitcodeToFile(*toModule(modObj), out, perserveOrder);
 	return io_result_mk_ok(box(0));
@@ -33,7 +33,7 @@ extern "C" obj_res papyrus_module_parse_bitcode_from_buffer
 		});
 		return io_result_mk_error(errMsg);
 	}
-	return io_result_mk_ok(mk_module_ref(ctxObj, std::move(*moduleOrErr)));
+	return io_result_mk_ok(mkModuleRef(ctxObj, std::move(*moduleOrErr)));
 }
 
 } // end namespace lean_llvm

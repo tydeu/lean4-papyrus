@@ -27,20 +27,20 @@ extern "C" obj_res papyrus_return_inst_create
 (b_obj_arg retValObj, obj_arg ctxRef, obj_arg /* w */)
 {
 	auto inst = ReturnInst::Create(*toLLVMContext(ctxRef), toValue(retValObj));
-	return io_result_mk_ok(mk_value_ref(ctxRef, inst));
+	return io_result_mk_ok(mkValueRef(ctxRef, inst));
 }
 
 // Get a reference to a newly created empty return instruction.
 extern "C" obj_res papyrus_return_inst_create_empty(obj_arg ctxRef, obj_arg /* w */) {
 	auto inst = ReturnInst::Create(*toLLVMContext(ctxRef));
-	return io_result_mk_ok(mk_value_ref(ctxRef, inst));
+	return io_result_mk_ok(mkValueRef(ctxRef, inst));
 }
 
 // Get a reference to the value returned by the instruction.
 extern "C" obj_res papyrus_return_inst_get_value(b_obj_arg instObj, obj_arg /* w */) {
 	auto value = toReturnInst(instObj)->getReturnValue();
 	lean::object* o = value == nullptr ? mk_option_none() :
-		mk_option_some(mk_value_ref(getValueContext(instObj), value));
+		mk_option_some(mkValueRef(getValueContext(instObj), value));
 	return io_result_mk_ok(o);
 }
 

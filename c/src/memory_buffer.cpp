@@ -14,21 +14,25 @@ static external_object_class* getMemoryBufferClass() {
 	return c;
 }
 
-MemoryBuffer* toMemoryBuffer(lean::object* bufRef) {
-	auto external = lean_to_external(bufRef);
+lean::object* mkMemoryBufferRef(MemoryBuffer* buf) {
+	return lean_alloc_external(getMemoryBufferClass(), buf);
+}
+
+MemoryBuffer* toMemoryBuffer(lean::object* ref) {
+	auto external = lean_to_external(ref);
 	lean_assert(external->m_calls == getMemoryBufferClass());
 	return static_cast<MemoryBuffer*>(external->m_data);
 }
 
 extern "C" obj_res papyrus_memory_buffer_from_file(b_obj_arg fnameObj, obj_arg /* w */) {
-	auto mbOrErr = MemoryBuffer::getFile(string_to_ref(fnameObj));
+	auto mbOrErr = MemoryBuffer::getFile(refOfString(fnameObj));
 	if (std::error_code ec = mbOrErr.getError()) {
 	  return decode_io_error(ec.value(), fnameObj);
 	}
 	auto bufPtr = std::move(mbOrErr.get());
-	object* bufferObj = lean_alloc_external(getMemoryBufferClass(), bufPtr.get());
+	object* bufObj = mkMemoryBufferRef(bufPtr.get());
 	bufPtr.release();
-	return io_result_mk_ok(bufferObj);
+	return io_result_mk_ok(bufObj);
 }
 
 } // end namespace papyrus

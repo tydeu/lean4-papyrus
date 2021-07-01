@@ -22,7 +22,7 @@ static external_object_class* getModuleClass() {
 }
 
 // Wrap an LLVM Module in a Lean object.
-lean::object* mk_module_ref(lean::object* ctx, std::unique_ptr<llvm::Module> mod) {
+lean::object* mkModuleRef(lean::object* ctx, std::unique_ptr<llvm::Module> mod) {
 	return lean_alloc_external(getModuleClass(), new ContainedExternal<llvm::Module>(ctx, std::move(mod)));
 }
 
@@ -50,8 +50,8 @@ lean::object* getBorrowedModuleContext(lean::object* valueRef) {
 // Create a new Lean LLVM Module object with the given ID.
 extern "C" obj_res papyrus_module_new(b_obj_arg modIdObj, obj_arg ctxRef, obj_arg /* w */) {
 	auto ctx = toLLVMContext(ctxRef);
-	auto mod = new llvm::Module(string_to_ref(modIdObj), *ctx);
-	return io_result_mk_ok(mk_module_ref(ctxRef, std::unique_ptr<llvm::Module>(mod)));
+	auto mod = new llvm::Module(refOfString(modIdObj), *ctx);
+	return io_result_mk_ok(mkModuleRef(ctxRef, std::unique_ptr<llvm::Module>(mod)));
 }
 
 // Get the ID of the module.
@@ -61,7 +61,7 @@ extern "C" obj_res papyrus_module_get_id(b_obj_arg modRef, obj_arg /* w */) {
 
 // Set the ID of the module.
 extern "C" obj_res papyrus_module_set_id(b_obj_arg modRef, b_obj_arg modIdObj, obj_arg /* w */) {
-	toModule(modRef)->setModuleIdentifier(string_to_ref(modIdObj));
+	toModule(modRef)->setModuleIdentifier(refOfString(modIdObj));
 	return io_result_mk_ok(box(0));
 }
 
@@ -72,7 +72,7 @@ extern "C" obj_res papyrus_module_get_functions(b_obj_arg modRef, obj_arg /* w *
 	lean_object* arr = lean::alloc_array(0, 8);
 	for (Function& fun : funs) {
 		lean_inc_ref(ctxRef);
-		arr = lean_array_push(arr, mk_value_ref(ctxRef, &fun));
+		arr = lean_array_push(arr, mkValueRef(ctxRef, &fun));
 	}
 	return io_result_mk_ok(arr);
 }

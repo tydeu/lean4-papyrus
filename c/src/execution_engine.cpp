@@ -44,7 +44,7 @@ static external_object_class* getExecutionEngineClass() {
 }
 
 // Wrap a ExecutionEngine in a Lean object.
-lean::object* mk_execution_engine(EEExternal* ee) {
+lean::object* mkExecutionEngineRef(EEExternal* ee) {
 	return lean_alloc_external(getExecutionEngineClass(), ee);
 }
 
@@ -81,15 +81,15 @@ extern "C" obj_res papyrus_execution_engine_create_for_module
   builder.setErrorStr(errMsg);
   builder.setOptLevel(static_cast<CodeGenOpt::Level>(optLevel));
   builder.setVerifyModules(verifyModules);
-  builder.setMArch(string_to_ref(marchStr));
-  builder.setMCPU(string_to_ref(mcpuStr));
+  builder.setMArch(refOfString(marchStr));
+  builder.setMCPU(refOfString(mcpuStr));
   LEAN_ARRAY_TO_REF(std::string, string_to_std, mattrsObj, mattrs);
   builder.setMAttrs(mattrs);
   // Try to construct the execution engine
   if (ExecutionEngine* ee = builder.create()) {
     auto eee = new EEExternal(ee, errMsg);
     eee->modules.push_back(toModule(modObj));
-    return io_result_mk_ok(mk_execution_engine(eee));
+    return io_result_mk_ok(mkExecutionEngineRef(eee));
   } else {
     // Steal back the module pointer before it gets deleted
     reinterpret_cast<std::unique_ptr<Module>&>(builder).release();
@@ -107,7 +107,7 @@ extern "C" obj_res papyrus_execution_engine_run_function
 {
   LEAN_ARRAY_TO_REF(GenericValue, *toGenericValue, argsObj, args);
   auto ret = toExecutionEngine(eeRef)->runFunction(toFunction(funRef), args);
-  return io_result_mk_ok(mk_generic_value(new GenericValue(ret)));
+  return io_result_mk_ok(mkGenericValueRef(new GenericValue(ret)));
 }
 
 } // end namespace papyrus

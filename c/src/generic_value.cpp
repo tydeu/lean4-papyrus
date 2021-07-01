@@ -17,7 +17,7 @@ static external_object_class* getGenericValueClass() {
 }
 
 // Wrap a GenericValue in a Lean object.
-lean::object* mk_generic_value(GenericValue* val) {
+lean::object* mkGenericValueRef(GenericValue* val) {
 	return lean_alloc_external(getGenericValueClass(), val);
 }
 
@@ -33,13 +33,13 @@ extern "C" obj_res papyrus_generic_value_of_int
 (b_obj_arg intObj, uint32 bitWidth, obj_arg /* w */)
 {
 	auto val = new GenericValue();
-  val->IntVal = int_to_ap(bitWidth, intObj);
-	return io_result_mk_ok(mk_generic_value(val));
+  val->IntVal = apOfInt(bitWidth, intObj);
+	return io_result_mk_ok(mkGenericValueRef(val));
 }
 
 // Convert an integer GenericValue to an Int.
 extern "C" obj_res papyrus_generic_value_to_int(b_obj_arg valObj, obj_arg /* w */) {
-	return io_result_mk_ok(mk_int(toGenericValue(valObj)->IntVal));
+	return io_result_mk_ok(mkIntFromAP(toGenericValue(valObj)->IntVal));
 }
 
 // Create a new integer GenericValue from a Nat and a IntegerType.
@@ -47,20 +47,20 @@ extern "C" obj_res papyrus_generic_value_of_nat
 (b_obj_arg natObj, uint32 bitWidth, obj_arg /* w */)
 {
 	auto val = new GenericValue();
-  val->IntVal = nat_to_ap(bitWidth, natObj);
-	return io_result_mk_ok(mk_generic_value(val));
+  val->IntVal = apOfNat(bitWidth, natObj);
+	return io_result_mk_ok(mkGenericValueRef(val));
 }
 
 // Convert an integer GenericValue to a Nat.
 extern "C" obj_res papyrus_generic_value_to_nat(b_obj_arg valObj, obj_arg /* w */) {
-	return io_result_mk_ok(mk_nat(toGenericValue(valObj)->IntVal));
+	return io_result_mk_ok(mkNatFromAP(toGenericValue(valObj)->IntVal));
 }
 
 // Create a new double GenericValue from a Float.
 extern "C" obj_res papyrus_generic_value_of_float(double fval, obj_arg /* w */) {
 	auto val = new GenericValue();
   val->DoubleVal = fval;
-	return io_result_mk_ok(mk_generic_value(val));
+	return io_result_mk_ok(mkGenericValueRef(val));
 }
 
 // Convert a double GenericValue to a Float.
@@ -77,7 +77,7 @@ extern "C" obj_res papyrus_generic_value_of_array(b_obj_arg valArr, obj_arg /* w
 	for (auto i = 0; i < valArrLen; i++) {
 		val->AggregateVal[i] = *toGenericValue(valArrObj->m_data[i]);
 	}
-	return io_result_mk_ok(mk_generic_value(val));
+	return io_result_mk_ok(mkGenericValueRef(val));
 }
 
 // Convert a vector GenericValue to an Array of generic value references.
@@ -87,7 +87,7 @@ extern "C" obj_res papyrus_generic_value_to_array(b_obj_arg valObj, obj_arg /* w
 	lean_object* obj = lean::alloc_array(len, len);
 	lean_array_object* arrObj = lean_to_array(obj);
 	for (auto i = 0; i < len; i++) {
-		arrObj->m_data[i] = mk_generic_value(new GenericValue(val->AggregateVal[i]));
+		arrObj->m_data[i] = mkGenericValueRef(new GenericValue(val->AggregateVal[i]));
 	}
 	return io_result_mk_ok(obj);
 }
