@@ -1,3 +1,4 @@
+import Papyrus.FFI
 import Papyrus.Context
 import Papyrus.MemoryBufferRef
 import Papyrus.IR.FunctionRef
@@ -5,10 +6,16 @@ import Papyrus.IR.FunctionRef
 namespace Papyrus
 
 /--
-  A reference to the LLVM representation of a
+  A opaque type representing an external LLVM
   [Module](https://llvm.org/doxygen/classllvm_1_1Module.html).
 -/
-constant ModuleRef : Type := Unit
+constant LLVM.Module : Type := Unit
+
+/--
+  A reference to an external LLVM
+  [Module](https://llvm.org/doxygen/classllvm_1_1Module.html).
+-/
+def ModuleRef := LinkedOwnedPtr ContextRef LLVM.Module
 
 namespace ModuleRef
 

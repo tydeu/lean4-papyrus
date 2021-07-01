@@ -1,4 +1,5 @@
 #include "papyrus.h"
+#include "papyrus_ffi.h"
 
 #include <lean/io.h>
 #include <llvm/IR/Module.h>
@@ -14,33 +15,14 @@ namespace papyrus {
 // Module references
 //------------------------------------------------------------------------------
 
-// Lean object class for LLVM modules.
-static external_object_class* getModuleClass() {
-	// Use static to make this thread safe due to static initialization rule.
-	static external_object_class* c = registerContainedClass<llvm::Module>();
-	return c;
-}
-
 // Wrap an LLVM Module in a Lean object.
-lean::object* mkModuleRef(lean::object* ctx, std::unique_ptr<llvm::Module> mod) {
-	return lean_alloc_external(getModuleClass(), new ContainedExternal<llvm::Module>(ctx, std::move(mod)));
-}
-
-// Get the LLVM Module external in an object.
-ContainedExternal<llvm::Module>* toModuleExternal(lean::object* modRef) {
-	auto external = lean_to_external(modRef);
-	assert(external->m_class == getModuleClass());
-	return static_cast<ContainedExternal<llvm::Module>*>(external->m_data);
+lean::object* mkModuleRef(lean::object* ctx, llvm::Module* modPtr) {
+	return mkLinkedOwnedPtr<Module>(ctx, modPtr);
 }
 
 // Get the LLVM Module wrapped in an object.
 llvm::Module* toModule(lean::object* modRef) {
-	return toModuleExternal(modRef)->value.get();
-}
-
-// Get the container LLVM context object of the given module.
-lean::object* getBorrowedModuleContext(lean::object* valueRef) {
-	return toModuleExternal(valueRef)->container;
+	return fromLinkedOwnedPtr<Module>(modRef);
 }
 
 //------------------------------------------------------------------------------
@@ -51,7 +33,7 @@ lean::object* getBorrowedModuleContext(lean::object* valueRef) {
 extern "C" obj_res papyrus_module_new(b_obj_arg modIdObj, obj_arg ctxRef, obj_arg /* w */) {
 	auto ctx = toLLVMContext(ctxRef);
 	auto mod = new llvm::Module(refOfString(modIdObj), *ctx);
-	return io_result_mk_ok(mkModuleRef(ctxRef, std::unique_ptr<llvm::Module>(mod)));
+	return io_result_mk_ok(mkModuleRef(ctxRef, mod));
 }
 
 // Get the ID of the module.
@@ -67,7 +49,7 @@ extern "C" obj_res papyrus_module_set_id(b_obj_arg modRef, b_obj_arg modIdObj, o
 
 // Get an array of references to the functions of the given module.
 extern "C" obj_res papyrus_module_get_functions(b_obj_arg modRef, obj_arg /* w */) {
-	auto ctxRef = getBorrowedModuleContext(modRef);
+	auto ctxRef = borrowLink(modRef);
 	auto& funs = toModule(modRef)->getFunctionList();
 	lean_object* arr = lean::alloc_array(0, 8);
 	for (Function& fun : funs) {

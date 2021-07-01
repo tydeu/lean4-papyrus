@@ -1,4 +1,5 @@
 #include "papyrus.h"
+#include "papyrus_ffi.h"
 
 #include <lean/io.h>
 #include <llvm/IR/Function.h>
@@ -20,17 +21,17 @@ extern "C" obj_res papyrus_function_create
 {
 	auto* fun = Function::Create(toFunctionType(typeRef),
 	  static_cast<GlobalValue::LinkageTypes>(linkage), addrSpace, refOfString(nameObj));
-	return io_result_mk_ok(mkValueRef(getTypeContext(typeRef), fun));
+	return io_result_mk_ok(mkValueRef(shareLink(typeRef), fun));
 }
 
 // Get an array of references to the basic blocks of the given function.
 extern "C" obj_res papyrus_function_get_basic_blocks(b_obj_arg funRef, obj_arg /* w */) {
-	auto ctxRef = getBorrowedValueContext(funRef);
+	auto link = borrowLink(funRef);
 	auto& bbs = toFunction(funRef)->getBasicBlockList();
 	lean_object* arr = lean::alloc_array(0, 8);
 	for (BasicBlock& bb : bbs) {
-		lean_inc_ref(ctxRef);
-		arr = lean_array_push(arr, mkValueRef(ctxRef, &bb));
+		lean_inc_ref(link);
+		arr = lean_array_push(arr, mkValueRef(link, &bb));
 	}
 	return io_result_mk_ok(arr);
 }

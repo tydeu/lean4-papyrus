@@ -1,4 +1,5 @@
 #include "papyrus.h"
+#include "papyrus_ffi.h"
 
 #include <lean/io.h>
 #include <llvm/IR/Value.h>
@@ -14,40 +15,19 @@ namespace papyrus {
 // Value references
 //------------------------------------------------------------------------------
 
-// The Lean object class for LLVM values.
-static external_object_class* getValueClass() {
-	// Use static to make this thread safe due to static initialization rule.
-	static external_object_class* c = registerOwnedClass<llvm::Value>();
-	return c;
-}
-
 // Wrap an LLVM Value pointer in a Lean object.
 lean::object* mkValueRef(lean::object* ctx, llvm::Value* ptr) {
-	return lean_alloc_external(getValueClass(), new OwnedExternal<llvm::Value>(ctx, ptr));
-}
-
-// Get the LLVM Value external wrapped in an object.
-OwnedExternal<llvm::Value>* toValueExternal(lean::object* valueRef) {
-	auto external = lean_to_external(valueRef);
-	lean_assert(external->m_class == getValueClass());
-	return static_cast<OwnedExternal<llvm::Value>*>(external->m_data);
+	return mkLinkedLoosePtr<llvm::Value>(ctx, ptr);
 }
 
 // Get the LLVM Value pointer wrapped in an object.
 llvm::Value* toValue(lean::object* valueRef) {
-	return toValueExternal(valueRef)->value;
-}
-
-// Get the owning LLVM context object of the given value.
-lean::object* getBorrowedValueContext(lean::object* valueRef) {
-	return toValueExternal(valueRef)->owner;
+	return fromLinkedLoosePtr<llvm::Value>(valueRef);
 }
 
 // Get the owning LLVM context object of the given value and increments its RC.
 lean::object* getValueContext(lean::object* valueRef) {
-	auto ctx = toValueExternal(valueRef)->owner;
-	lean_inc_ref(ctx);
-	return ctx;
+	return shareLink(valueRef);
 }
 
 //------------------------------------------------------------------------------

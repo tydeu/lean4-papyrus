@@ -4,7 +4,7 @@ import Papyrus.IR.ValueRef
 namespace Papyrus
 
 /--
-  An external reference to the LLVM representation of an
+  A reference to an external LLVMn
   [Instruction](https://llvm.org/doxygen/classllvm_1_1Instruction.html).
 -/
 def InstructionRef := UserRef

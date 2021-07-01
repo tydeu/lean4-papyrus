@@ -1,4 +1,5 @@
 #include "papyrus.h"
+#include "papyrus_ffi.h"
 
 #include <lean/io.h>
 #include <llvm/Support/MemoryBuffer.h>
@@ -8,20 +9,12 @@ using namespace llvm;
 
 namespace papyrus {
 
-static external_object_class* getMemoryBufferClass() {
-	// Use static thread to make this thread safe (hopefully).
-	static external_object_class* c = registerDeleteClass<MemoryBuffer>();
-	return c;
-}
-
-lean::object* mkMemoryBufferRef(MemoryBuffer* buf) {
-	return lean_alloc_external(getMemoryBufferClass(), buf);
+lean::object* mkMemoryBufferRef(MemoryBuffer* ptr) {
+	return mkOwnedPtr<MemoryBuffer>(ptr);
 }
 
 MemoryBuffer* toMemoryBuffer(lean::object* ref) {
-	auto external = lean_to_external(ref);
-	lean_assert(external->m_calls == getMemoryBufferClass());
-	return static_cast<MemoryBuffer*>(external->m_data);
+	return fromOwnedPtr<MemoryBuffer>(ref);
 }
 
 extern "C" obj_res papyrus_memory_buffer_from_file(b_obj_arg fnameObj, obj_arg /* w */) {

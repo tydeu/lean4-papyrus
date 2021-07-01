@@ -1,4 +1,5 @@
 #include "papyrus.h"
+#include "papyrus_ffi.h"
 
 #include <lean/io.h>
 #include <llvm/IR/Constants.h>
@@ -15,13 +16,13 @@ namespace papyrus {
 // Get the null constant of the given type.
 extern "C" obj_res papyrus_get_null_constant(b_obj_arg typeRef, obj_arg /* w */) {
 	auto constant = Constant::getNullValue(toType(typeRef));
-	return io_result_mk_ok(mkValueRef(getTypeContext(typeRef), constant));
+	return io_result_mk_ok(mkValueRef(shareLink(typeRef), constant));
 }
 
 // Get the all ones constant of the given type.
 extern "C" obj_res papyrus_get_all_ones_constant(b_obj_arg typeRef, obj_arg /* w */) {
 	auto constant = Constant::getAllOnesValue(toType(typeRef));
-	return io_result_mk_ok(mkValueRef(getTypeContext(typeRef), constant));
+	return io_result_mk_ok(mkValueRef(shareLink(typeRef), constant));
 }
 
 //------------------------------------------------------------------------------
@@ -38,7 +39,7 @@ llvm::ConstantInt* toConstantInt(lean::object* constRef) {
 extern "C" obj_res papyrus_get_constant_int
 (b_obj_arg intObj, b_obj_arg typeRef, obj_arg /* w */)
 {
-	auto ctxObj = getTypeContext(typeRef);
+	auto ctxObj = shareLink(typeRef);
 	auto numBits = toIntegerType(typeRef)->getBitWidth();
 	auto n = ConstantInt::get(*toLLVMContext(ctxObj), apOfInt(numBits, intObj));
 	return io_result_mk_ok(mkValueRef(ctxObj, n));
@@ -49,7 +50,7 @@ extern "C" obj_res papyrus_get_constant_int
 extern "C" obj_res papyrus_get_constant_nat
 (b_obj_arg intObj, b_obj_arg typeRef, obj_arg /* w */)
 {
-	auto ctxObj = getTypeContext(typeRef);
+	auto ctxObj = shareLink(typeRef);
 	auto numBits = toIntegerType(typeRef)->getBitWidth();
 	auto n = ConstantInt::get(*toLLVMContext(ctxObj), apOfNat(numBits, intObj));
 	return io_result_mk_ok(mkValueRef(ctxObj, n));

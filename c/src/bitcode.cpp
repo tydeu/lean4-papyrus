@@ -24,7 +24,7 @@ extern "C" obj_res papyrus_module_parse_bitcode_from_buffer
 {
 	auto ctx = toLLVMContext(ctxObj);
 	MemoryBufferRef buf = toMemoryBuffer(bufObj)->getMemBufferRef();
-	auto moduleOrErr = llvm::parseBitcodeFile(buf, *ctx);
+	Expected<std::unique_ptr<Module>> moduleOrErr = llvm::parseBitcodeFile(buf, *ctx);
 	if (!moduleOrErr) {
 		dec_ref(ctxObj);
 		std::string errMsg = "failed to parse bitcode file";
@@ -33,7 +33,7 @@ extern "C" obj_res papyrus_module_parse_bitcode_from_buffer
 		});
 		return io_result_mk_error(errMsg);
 	}
-	return io_result_mk_ok(mkModuleRef(ctxObj, std::move(*moduleOrErr)));
+	return io_result_mk_ok(mkModuleRef(ctxObj, moduleOrErr.get().release()));
 }
 
 } // end namespace lean_llvm

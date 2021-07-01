@@ -1,10 +1,18 @@
+import Papyrus.FFI
+
 namespace Papyrus
 
 /--
-  A reference to the LLVM representation of a
+  An opaque type representing an external
   [LLVMContext](https://llvm.org/doxygen/classllvm_1_1LLVMContext.html).
 -/
-constant ContextRef : Type := Unit
+constant LLVMContext : Type := Unit
+
+/--
+  A reference to an external
+  [LLVMContext](https://llvm.org/doxygen/classllvm_1_1LLVMContext.html).
+-/
+def ContextRef := OwnedPtr LLVMContext
 
 /-- Create a new LLVM context. -/
 @[extern "papyrus_context_new"]
@@ -15,8 +23,8 @@ abbrev LLVM := ReaderT ContextRef IO
 
 namespace LLVM
 
-def runIn (ctx : ContextRef) (self : LLVM α) : IO α :=
+protected def runIn (ctx : ContextRef) (self : LLVM α) : IO α :=
   self ctx
 
-def run (self : LLVM α) : IO α := do
+protected def run (self : LLVM α) : IO α := do
   self (← ContextRef.new)

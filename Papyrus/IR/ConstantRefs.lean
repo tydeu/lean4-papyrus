@@ -17,7 +17,7 @@ constant getAllOnesConstant (self : @& TypeRef) : IO ConstantRef
 end TypeRef
 
 /--
-  An external reference to the LLVM representation of a
+  A reference to an external LLVM
   [ConstantData](https://llvm.org/doxygen/classllvm_1_1ConstantData.html).
 -/
 def ConstantDataRef := ConstantRef
@@ -29,7 +29,7 @@ def ConstantDataRef := ConstantRef
 -- # Constant Word
 
 /--
-  An external reference to the LLVM representation of a
+  A reference to an external LLVM
   [ConstantInt](https://llvm.org/doxygen/classllvm_1_1ConstantInt.html)
   that is treated simply as a block of bits.
 -/
@@ -60,7 +60,7 @@ end ConstantWordRef
 -- # Constant Int
 
 /--
-  An external reference to the LLVM representation of a
+  A reference to an external LLVM
   [ConstantInt](https://llvm.org/doxygen/classllvm_1_1ConstantInt.html)
   that is treated as an `Int` (i.e., a signed native ).
 -/
@@ -73,7 +73,7 @@ def ConstantIntRef.getValue (self : ConstantIntRef) :=
 -- # Constant Nat
 
 /--
-  An external reference to the LLVM representation of a
+  A reference to an external LLVM
   [ConstantInt](https://llvm.org/doxygen/classllvm_1_1ConstantInt.html)
   that is treated as a `Nat`.
 -/

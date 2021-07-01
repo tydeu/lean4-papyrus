@@ -1,12 +1,19 @@
+import Papyrus.FFI
 import Papyrus.IR.TypeRefs
 
 namespace Papyrus
 
 /--
-  A reference to the LLVM representation of a
+  An opaque type representing an external
   [GenericValue](https://llvm.org/doxygen/structllvm_1_1GenericValue.html).
 -/
-constant GenericValueRef : Type := Unit
+constant LLVM.GenericValue : Type := Unit
+
+/--
+  A reference to an external LLVM
+  [GenericValue](https://llvm.org/doxygen/structllvm_1_1GenericValue.html).
+-/
+def GenericValueRef := OwnedPtr LLVM.GenericValue
 
 namespace  GenericValueRef
 

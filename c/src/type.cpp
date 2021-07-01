@@ -1,4 +1,5 @@
 #include "papyrus.h"
+#include "papyrus_ffi.h"
 
 #include <lean/io.h>
 #include <llvm/IR/Type.h>
@@ -15,41 +16,14 @@ namespace papyrus {
 // Type references
 //------------------------------------------------------------------------------
 
-// The Lean object class for LLVM types.
-static external_object_class* getTypeClass() {
-	// Use static to make this thread safe due to static initialization rule.
-	static external_object_class* c = registerOwnedClass<llvm::Type>();
-	return c;
-}
-
 // Wrap an LLVM Type pointer in a Lean object.
 lean::object* mkTypeRef(lean::object* ctx, llvm::Type* ptr) {
-	return lean_alloc_external(getTypeClass(), new OwnedExternal<llvm::Type>(ctx, ptr));
-}
-
-// Get the LLVM Type external wrapped in an object.
-OwnedExternal<llvm::Type>* toTypeExternal(lean::object* typeRef) {
-	auto external = lean_to_external(typeRef);
-	assert(external->m_class == getTypeClass());
-	return static_cast<OwnedExternal<llvm::Type>*>(external->m_data);
+	return mkLinkedLoosePtr<llvm::Type>(ctx, ptr);
 }
 
 // Get the LLVM Type pointer wrapped in an object.
 llvm::Type* toType(lean::object* typeRef) {
-	return toTypeExternal(typeRef)->value;
-}
-
-// Get the owning LLVM context object of the given value.
-lean::object* getBorrowedTypeContext(lean::object* valueRef) {
-	return toTypeExternal(valueRef)->owner;
-}
-
-// Get the owning LLVM context object of the given type reference
-// and increment its RC.
-lean::object* getTypeContext(lean::object* typeRef) {
-	auto ctx = toTypeExternal(typeRef)->owner;
-	lean_inc_ref(ctx);
-	return ctx;
+	return fromLinkedLoosePtr<llvm::Type>(typeRef);
 }
 
 // Covert an LLVM ArrayRef of types to a Lean Array of type references.
@@ -74,7 +48,7 @@ lean::object* packTypes(b_obj_arg ctxRef, const llvm::ArrayRef<llvm::Type*>& arr
 
 // Get the owning LLVM context object of the given type (in Lean).
 extern "C" obj_res papyrus_type_get_context(b_obj_arg typeRef, obj_arg /* w */) {
-	return io_result_mk_ok(getTypeContext(typeRef));
+	return io_result_mk_ok(shareLink(typeRef));
 }
 
 // Get the TypeID of the given type.
@@ -206,19 +180,19 @@ extern "C" obj_res papyrus_get_function_type
 {
 	LEAN_UNPACK_TYPES(paramsObj, params);
 	auto type = FunctionType::get(toType(resultObj), params, isVarArg);
-	return io_result_mk_ok(mkTypeRef(getTypeContext(resultObj), type));
+	return io_result_mk_ok(mkTypeRef(shareLink(resultObj), type));
 }
 
 // Get a reference to the return type of the given function type.
 extern "C" obj_res papyrus_function_type_get_return_type(b_obj_arg typeRef, obj_arg /* w */) {
 	auto retType = toFunctionType(typeRef)->getReturnType();
-	return io_result_mk_ok(mkTypeRef(getTypeContext(typeRef), retType));
+	return io_result_mk_ok(mkTypeRef(shareLink(typeRef), retType));
 }
 
 // Get an array of references to the parameter types of the given function type.
 extern "C" obj_res papyrus_function_type_get_parameter_types(b_obj_arg typeRef, obj_arg /* w */) {
 	auto paramTypes = toFunctionType(typeRef)->params();
-	return io_result_mk_ok(packTypes(getBorrowedTypeContext(typeRef), paramTypes));
+	return io_result_mk_ok(packTypes(borrowLink(typeRef), paramTypes));
 }
 
 // Get whether the function type reference accpets variable arguments.
@@ -241,13 +215,13 @@ extern "C" obj_res papyrus_get_pointer_type
 (b_obj_arg pointeeObj, uint32_t addrSpace, obj_arg /* w */)
 {
 	auto type = PointerType::get(toType(pointeeObj), addrSpace);
-	return io_result_mk_ok(mkTypeRef(getTypeContext(pointeeObj), type));
+	return io_result_mk_ok(mkTypeRef(shareLink(pointeeObj), type));
 }
 
 // Get a reference to the pointee type of the given pointer type.
 extern "C" obj_res papyrus_pointer_type_get_pointee_type(b_obj_arg typeRef, obj_arg /* w */) {
 	auto retType = toPointerType(typeRef)->getElementType();
-	return io_result_mk_ok(mkTypeRef(getTypeContext(typeRef), retType));
+	return io_result_mk_ok(mkTypeRef(shareLink(typeRef), retType));
 }
 
 // Get the index of the address space of the given pointer type.
@@ -322,7 +296,7 @@ extern "C" obj_res papyrus_struct_type_set_name
 // Get an array of references to the element types of the given struct type.
 extern "C" obj_res papyrus_struct_type_get_element_types(b_obj_arg typeRef, obj_arg /* w */) {
 	auto elementTypes = toStructType(typeRef)->elements();
-	return io_result_mk_ok(packTypes(getBorrowedTypeContext(typeRef), elementTypes));
+	return io_result_mk_ok(packTypes(borrowLink(typeRef), elementTypes));
 }
 
 // Get whether the given struct type is packed.
@@ -354,13 +328,13 @@ extern "C" obj_res papyrus_get_array_type(
 	b_obj_arg elemTypeRef, uint64_t numElems, obj_arg /* w */)
 {
 	auto type = ArrayType::get(toType(elemTypeRef), numElems);
-	return io_result_mk_ok(mkTypeRef(getTypeContext(elemTypeRef), type));
+	return io_result_mk_ok(mkTypeRef(shareLink(elemTypeRef), type));
 }
 
 // Get a reference to the element type of the given array type.
 extern "C" obj_res papyrus_array_type_get_element_type(b_obj_arg typeRef, obj_arg /* w */) {
 	auto retType = toArrayType(typeRef)->getElementType();
-	return io_result_mk_ok(mkTypeRef(getTypeContext(typeRef), retType));
+	return io_result_mk_ok(mkTypeRef(shareLink(typeRef), retType));
 }
 
 // Get the number of elements of the given array type.
@@ -383,13 +357,13 @@ extern "C" obj_res papyrus_get_vector_type(
 	b_obj_arg elemTypeRef, uint32_t numElems, uint8_t isScalable, obj_arg /* w */)
 {
 	auto type = VectorType::get(toType(elemTypeRef), numElems, isScalable);
-	return io_result_mk_ok(mkTypeRef(getTypeContext(elemTypeRef), type));
+	return io_result_mk_ok(mkTypeRef(shareLink(elemTypeRef), type));
 }
 
 // Get a reference to the element type of the given vector type.
 extern "C" obj_res papyrus_vector_type_get_element_type(b_obj_arg typeRef, obj_arg /* w */) {
 	auto retType = toVectorType(typeRef)->getElementType();
-	return io_result_mk_ok(mkTypeRef(getTypeContext(typeRef), retType));
+	return io_result_mk_ok(mkTypeRef(shareLink(typeRef), retType));
 }
 
 // Get the number of element quantity of the given vector type.

@@ -8,7 +8,7 @@ namespace Papyrus
 -- # Global Value References
 
 /--
-  An external reference to the LLVM representation of a
+  A reference to an external LLVM
   [GlobalValue](https://llvm.org/doxygen/classllvm_1_1GlobalValue.html).
 -/
 def GlobalValueRef := ConstantRef
@@ -220,7 +220,7 @@ constant GlobalValueRef.setAddressSignificance (addrSig : AddressSignificance)
 -- # Global Object References
 
 /--
-  An external reference to the LLVM representation of a
+  A reference to an external LLVM
   [GlobalObject](https://llvm.org/doxygen/classllvm_1_1GlobalObject.html).
 -/
 def GlobalObjectRef := GlobalValueRef

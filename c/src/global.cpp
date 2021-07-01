@@ -14,8 +14,8 @@ namespace papyrus {
 //------------------------------------------------------------------------------
 
 // Get the LLVM GlobalValue pointer wrapped in an object.
-llvm::GlobalValue* toGlobalValue(lean::object* funRef) {
-	return llvm::cast<GlobalValue>(toValue(funRef));
+llvm::GlobalValue* toGlobalValue(lean::object* ref) {
+	return llvm::cast<GlobalValue>(toValue(ref));
 }
 
 // Get the linkage of a global value.
@@ -110,8 +110,8 @@ extern "C" obj_res papyrus_global_value_get_address_space(b_obj_arg gblRef, obj_
 //------------------------------------------------------------------------------
 
 // Get the LLVM GlobalObject pointer wrapped in an object.
-llvm::GlobalObject* toGlobalObject(lean::object* funRef) {
-	return llvm::cast<GlobalObject>(toValue(funRef));
+llvm::GlobalObject* toGlobalObject(lean::object* ref) {
+	return llvm::cast<GlobalObject>(toValue(ref));
 }
 
 // Get whether the global has an explicitly specifiec linker section.

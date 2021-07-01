@@ -5,7 +5,7 @@ import Papyrus.IR.InstructionRef
 namespace Papyrus
 
 /--
-  An external reference to the LLVM representation of a
+  A reference to an external LLVM
   [ReturnInst](https://llvm.org/doxygen/classllvm_1_1ReturnInst.html).
 -/
 def ReturnInstRef := InstructionRef

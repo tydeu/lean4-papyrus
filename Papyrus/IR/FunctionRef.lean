@@ -7,7 +7,7 @@ import Papyrus.IR.TypeRefs
 namespace Papyrus
 
 /--
-  An external reference to the LLVM representation of a
+  A reference to an external LLVM
   [Function](https://llvm.org/doxygen/classllvm_1_1Function.html).
 -/
 def FunctionRef := GlobalObjectRef

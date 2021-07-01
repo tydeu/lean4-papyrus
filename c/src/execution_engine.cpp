@@ -1,4 +1,5 @@
 #include "papyrus.h"
+#include "papyrus_ffi.h"
 
 #include <lean/io.h>
 #include <llvm/ExecutionEngine/GenericValue.h>
@@ -39,7 +40,7 @@ struct EEExternal {
 static external_object_class* getExecutionEngineClass() {
 	// Use static to make this thread safe by static initialization rules.
   static external_object_class* c =
-    lean_register_external_class(&deletePointer<EEExternal>, &nopForeach);
+    lean_register_external_class(&deleteFinalize<EEExternal>, &nopForeach);
 	return c;
 }
 

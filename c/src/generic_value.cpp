@@ -1,4 +1,5 @@
 #include "papyrus.h"
+#include "papyrus_ffi.h"
 
 #include <lean/io.h>
 #include <llvm/IR/DerivedTypes.h>
@@ -9,23 +10,14 @@ using namespace llvm;
 
 namespace papyrus {
 
-// Lean object class for an LLVM GenericValue.
-static external_object_class* getGenericValueClass() {
-	// Use static to make this thread safe by static initialization rules.
-	static external_object_class* c = registerDeleteClass<GenericValue>();
-	return c;
-}
-
 // Wrap a GenericValue in a Lean object.
-lean::object* mkGenericValueRef(GenericValue* val) {
-	return lean_alloc_external(getGenericValueClass(), val);
+lean::object* mkGenericValueRef(GenericValue* ptr) {
+	return mkOwnedPtr<GenericValue>(ptr);
 }
 
 // Get the GenericValue wrapped in an object.
-GenericValue* toGenericValue(lean::object* valRef) {
-	auto external = lean_to_external(valRef);
-	assert(external->m_class == getGenericValueClass());
-	return static_cast<GenericValue*>(external->m_data);
+GenericValue* toGenericValue(lean::object* ref) {
+	return fromOwnedPtr<GenericValue>(ref);
 }
 
 // Create a new integer GenericValue from an Int and a IntegerType.

@@ -4,10 +4,16 @@ import Papyrus.IR.TypeRef
 namespace Papyrus
 
 /--
-  An external reference to the LLVM representation of a Value.
-  See https://llvm.org/doxygen/classllvm_1_1Value.html.
+  An opaque type representing an external LLVM
+  [Value](https://llvm.org/doxygen/classllvm_1_1Value.html).
 -/
-constant ValueRef : Type := Unit
+constant LLVM.Value : Type := Unit
+
+/--
+  A reference to an external LLVM
+  [Value](https://llvm.org/doxygen/classllvm_1_1Value.html).
+-/
+def ValueRef := LinkedLoosePtr ContextRef LLVM.Value
 
 namespace ValueRef
 
@@ -37,7 +43,7 @@ constant dump (self : @& ValueRef) : IO PUnit
 end ValueRef
 
 /--
-  An external reference to the LLVM representation of a User.
+  A reference to an external LLVM User.
   See https://llvm.org/doxygen/classllvm_1_1User.html.
 -/
 def UserRef := ValueRef

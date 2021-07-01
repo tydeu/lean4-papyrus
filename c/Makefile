@@ -26,7 +26,8 @@ HDR_DIR := include
 OUT_DIR := build
 
 HDRS := \
-	papyrus.h
+	papyrus.h\
+	papyrus_ffi.h
 
 SRCS := \
 	adt.cpp\

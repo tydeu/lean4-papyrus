@@ -5,7 +5,7 @@ import Papyrus.IR.InstructionRef
 namespace Papyrus
 
 /--
-  An external reference to the LLVM representation of a
+  A reference to an external LLVM
   [BasicBlock](https://llvm.org/doxygen/classllvm_1_1BasicBlock.html).
 -/
 def BasicBlockRef := ValueRef

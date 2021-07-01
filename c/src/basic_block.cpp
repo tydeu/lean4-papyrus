@@ -1,4 +1,5 @@
 #include "papyrus.h"
+#include "papyrus_ffi.h"
 
 #include <lean/io.h>
 #include <llvm/IR/BasicBlock.h>
@@ -23,12 +24,12 @@ extern "C" obj_res papyrus_basic_block_create
 
 // Get an array of references to the instructions of the given basic block.
 extern "C" obj_res papyrus_basic_block_get_instructions(b_obj_arg bbRef, obj_arg /* w */) {
-	auto ctxRef = getBorrowedValueContext(bbRef);
+	auto link = borrowLink(bbRef);
 	auto& is = toBasicBlock(bbRef)->getInstList();
 	lean_object* arr = lean::alloc_array(0, 8);
 	for (llvm::Instruction& i : is) {
-		lean_inc_ref(ctxRef);
-		arr = lean_array_push(arr, mkValueRef(ctxRef, &i));
+		lean_inc_ref(link);
+		arr = lean_array_push(arr, mkValueRef(link, &i));
 	}
 	return io_result_mk_ok(arr);
 }

@@ -59,7 +59,7 @@ attribute [unbox] OptLevel
 instance : Inhabited OptLevel := ⟨OptLevel.Default⟩
 
 /--
-  A reference to the LLVM representation of a
+  A reference to an external LLVM
   [ExecutionEngine](https://llvm.org/doxygen/classllvm_1_1ExecutionEngine.html).
 -/
 constant ExecutionEngineRef : Type := Unit
