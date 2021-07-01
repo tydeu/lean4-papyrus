@@ -6,12 +6,14 @@ PAPYRUS_C_LIBDIR	:= $(PAPYRUS_HOME)/c/build
 PAPYRUS_OLEAN_DIR := $(PAPYRUS_HOME)/build
 
 LLVM_CONFIG 			?= llvm-config
-LLVM_COMPONENTS 	:= core bitreader bitwriter
+LLVM_COMPONENTS 	:= core bitreader bitwriter executionengine mcjit interpreter all-targets
 LLVM_LD_FLAGS   	:= $(shell $(LLVM_CONFIG) --ldflags)
 LLVM_LIBS       	:= $(shell $(LLVM_CONFIG) --link-static --libs $(LLVM_COMPONENTS))
-LLVM_SYS_LIBS   	:= $(shell $(LLVM_CONFIG) --link-static --system-libs)
+LLVM_SYS_LIBS   	:= $(shell $(LLVM_CONFIG) --link-static --system-libs) -lffi
 LLVM_LIB_FLAGS		:= $(LLVM_LD_FLAGS) $(LLVM_LIBS) $(LLVM_SYS_LIBS)
 
+PAPYRUS_LIB 			:= $(PAPYRUS_LIBDIR)/libPapyrus.a
+PAPYRUS_C_LIB			:= ${PAPYRUS_C_LIBDIR}/libPapyrusC.a
 PAPYRUS_LIBS			:= -lPapyrus -lPapyrusC $(LLVM_LIBS) $(LLVM_SYS_LIBS)
 PAPYRUS_LD_FLAGS	:= -L$(PAPYRUS_LIBDIR) -L$(PAPYRUS_C_LIBDIR) $(LLVM_LD_FLAGS)
 
@@ -48,13 +50,13 @@ bin: $(BINS)
 $(OUT_DIR):
 	$(MKPATH) $@
 
-$(OUT_DIR)/%.c : $(SRC_DIR)/%.lean | $(OUT_DIR)
+$(OUT_DIR)/%.c : $(SRC_DIR)/%.lean $(PAPYRUS_LIB) | $(OUT_DIR)
 	LEAN_PATH=$(PAPYRUS_OLEAN_DIR) $(LEAN) -c $@ $<
 
 $(OUT_DIR)/%.o : $(OUT_DIR)/%.c | $(OUT_DIR)
 	$(LEANC) -c -o $@ $< $(LEANC_FLAGS)
 
-$(OUT_DIR)/% : $(OUT_DIR)/%.o | $(OUT_DIR)
+$(OUT_DIR)/% : $(OUT_DIR)/%.o $(PAPYRUS_C_LIB) | $(OUT_DIR)
 	$(LEANC) -o $@ $< $(PAPYRUS_LD_FLAGS) $(PAPYRUS_LIBS)
 
 .PRECIOUS: $(OUT_DIR)/%.c

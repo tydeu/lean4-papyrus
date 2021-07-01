@@ -31,7 +31,7 @@ extern "C" obj_res papyrus_module_parse_bitcode_from_buffer
 		handleAllErrors(std::move(moduleOrErr.takeError()), [&](llvm::ErrorInfoBase &eib) {
 			errMsg = "failed to parse bitcode file:" + eib.message();
 		});
-		return io_result_mk_error( errMsg.c_str() );
+		return io_result_mk_error(errMsg);
 	}
 	return io_result_mk_ok(mk_module_ref(ctxObj, std::move(*moduleOrErr)));
 }

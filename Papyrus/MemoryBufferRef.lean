@@ -2,7 +2,7 @@ namespace Papyrus
 
 /--
   A reference to the LLVM representation of a
-  [MemoryBuffer](https://llvm.org/doxygen/classllvm_1_1Module.html).
+  [MemoryBuffer](https://llvm.org/doxygen/classllvm_1_1MemoryBuffer.html).
 -/
 constant MemoryBufferRef : Type := Unit
 

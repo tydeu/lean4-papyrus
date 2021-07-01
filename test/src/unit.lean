@@ -1,3 +1,4 @@
+import Papyrus.Init
 import Papyrus.Context
 import Papyrus.IR.TypeRefs
 import Papyrus.IR.ConstantRefs
@@ -5,6 +6,7 @@ import Papyrus.IR.InstructionRefs
 import Papyrus.IR.BasicBlockRef
 import Papyrus.IR.FunctionRef
 import Papyrus.IR.ModuleRef
+import Papyrus.ExecutionEngineRef
 
 open Papyrus
 
@@ -296,7 +298,7 @@ def testModule : LLVM PUnit := do
     else
       assertFail s!"expected 1 function in module, got {fns.size}"
 
-  testcase "simple module verify & write bitcode" do
+  testcase "simple module" do
     -- Construct Module
     let exitCode := 101
     let mod ← ModuleRef.new "test"
@@ -308,8 +310,15 @@ def testModule : LLVM PUnit := do
     bb.appendInstruction inst
     fn.appendBasicBlock bb
     mod.appendFunction fn
-    -- Verify & Output It
+    -- Verify It
     assertFalse (← mod.verify)
+    -- Run It
+    assertFalse (← initNativeTarget)
+    assertFalse (← initNativeAsmPrinter)
+    let ee ← ExecutionEngineRef.createForModule mod
+    let ret ← ee.runFunction fn #[]
+    assertBEq 101 (← ret.toInt)
+    -- Output It
     let outDir : System.FilePath := "out"
     IO.FS.createDirAll outDir
     mod.writeBitcodeToFile <| outDir / "exit.bc"

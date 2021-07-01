@@ -30,6 +30,7 @@ HDRS := \
 
 SRCS := \
 	adt.cpp\
+	init.cpp\
 	memory_buffer.cpp\
   context.cpp\
   module.cpp\
@@ -41,6 +42,8 @@ SRCS := \
 	basic_block.cpp\
 	global.cpp\
 	function.cpp\
+	generic_value.cpp\
+	execution_engine.cpp\
 
 LIB := libPapyrusC.a
 

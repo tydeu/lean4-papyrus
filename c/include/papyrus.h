@@ -15,6 +15,7 @@ namespace llvm {
 	class Instruction;
 	class BasicBlock;
 	class Function;
+	class GenericValue;
 }
 
 namespace papyrus {
@@ -53,9 +54,23 @@ llvm::Instruction* toInstruction(lean::object* instRef);
 llvm::BasicBlock* toBasicBlock(lean::object* bbRef);
 llvm::Function* toFunction(lean::object* funRef);
 
+lean::object* mk_generic_value(llvm::GenericValue* val);
+llvm::GenericValue* toGenericValue(lean::object* valRef);
+
 //------------------------------------------------------------------------------
 // Generic utilities
 //------------------------------------------------------------------------------
+
+// Covert a Lean Array of references to an LLVM ArrayRef of objects.
+// Defined as a macro because it needs to dynamically allocate to the user's stack.
+#define LEAN_ARRAY_TO_REF(ELEM_TYPE, CONVERTER, OBJ, REF) \
+	auto OBJ##_arr = lean_to_array(OBJ); \
+	auto OBJ##_len = OBJ##_arr->m_size; \
+	ELEM_TYPE REF##_data[OBJ##_len]; \
+	for (auto i = 0; i < OBJ##_len; i++) { \
+		REF##_data[i] = CONVERTER(OBJ##_arr->m_data[i]); \
+	} \
+	ArrayRef<ELEM_TYPE> REF(REF##_data, OBJ##_len)
 
 // A no-op foreach callback for external classes
 static void nopForeach(void* /* p */, lean::b_obj_arg /* a */) {
