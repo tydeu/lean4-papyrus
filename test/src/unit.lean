@@ -11,9 +11,6 @@ import TestLib
 
 open TestLib Papyrus
 
---------------------------------------------------------------------------------
--- Type Tests
---------------------------------------------------------------------------------
 
 def assertBEqRefArray  {m} [Monad m] [MonadLiftT IO m]
   (expected actual : Array TypeRef) : AssertT m PUnit := do
@@ -40,6 +37,7 @@ def assertVectorTypeRoundtrips
   assertBEq minSize (← ref.getMinSize)
   assertBEq isScalable (← ref.isScalable)
 
+/-- Type Unit Tests -/
 def testTypes : SuiteT LLVM PUnit := do
 
   test "special types" do
@@ -122,10 +120,7 @@ def testTypes : SuiteT LLVM PUnit := do
     assertVectorTypeRoundtrips elemType 8 false
     assertVectorTypeRoundtrips elemType 16 true
 
---------------------------------------------------------------------------------
--- Constant Tests
---------------------------------------------------------------------------------
-
+/-- Constant Unit Tests -/
 def testConstants : SuiteT LLVM PUnit := do
 
   test "big null integer constant" do
@@ -169,10 +164,7 @@ def testConstants : SuiteT LLVM PUnit := do
     assertBEq (Int.ofNat (2 ^ 128) - absVal) (← const.getNatValue)
     assertBEq intVal (← const.getValue)
 
---------------------------------------------------------------------------------
--- Instruction Tests
---------------------------------------------------------------------------------
-
+/-- Instruction Unit Tests -/
 def testInstructions : SuiteT LLVM PUnit := do
 
   test "empty return instruction" do
@@ -190,10 +182,7 @@ def testInstructions : SuiteT LLVM PUnit := do
     let retInt : ConstantIntRef := retVal
     assertBEq val (← retInt.getValue)
 
---------------------------------------------------------------------------------
--- Basic Block Test
---------------------------------------------------------------------------------
-
+/-- Basic Block Unit Tests -/
 def testBasicBlock : SuiteT LLVM PUnit := do
 
   test "basic block" do
@@ -210,10 +199,7 @@ def testBasicBlock : SuiteT LLVM PUnit := do
     else
       assertFail s!"expected 1 instruction in basic block, got {is.size}"
 
---------------------------------------------------------------------------------
--- Function Test
---------------------------------------------------------------------------------
-
+/-- Function Unit Tests -/
 def testFunction : SuiteT LLVM PUnit := do
 
   test "empty function" do
@@ -242,10 +228,7 @@ def testFunction : SuiteT LLVM PUnit := do
     else
       assertFail s!"expected 1 basic block in function, got {bbs.size}"
 
---------------------------------------------------------------------------------
--- Module Tests
---------------------------------------------------------------------------------
-
+/-- Module Unit Tests -/
 def testModule : SuiteT LLVM PUnit := do
 
   test "module renaming" do
@@ -270,7 +253,11 @@ def testModule : SuiteT LLVM PUnit := do
     else
       assertFail s!"expected 1 function in module, got {fns.size}"
 
-  test "simple module" do
+/-- Full Program Tests -/
+def testProgram : SuiteT LLVM PUnit := do
+
+  test "simple exiting program" do
+
     -- Construct Module
     let exitCode := 101
     let mod ← ModuleRef.new "foo"
@@ -283,23 +270,39 @@ def testModule : SuiteT LLVM PUnit := do
     bb.appendInstruction inst
     fn.appendBasicBlock bb
     mod.appendFunction fn
+
     -- Verify It
     assertFalse (← mod.verify)
+
     -- Run It
     assertFalse (← initNativeTarget)
     assertFalse (← initNativeAsmPrinter)
     let ee ← ExecutionEngineRef.createForModule mod
     let ret ← ee.runFunction fn #[]
     assertBEq 101 (← ret.toInt)
+
     -- Output It
     let outDir : System.FilePath := "out"
     IO.FS.createDirAll outDir
-    mod.writeBitcodeToFile <| outDir / "exit.bc"
+    let file := outDir / "exit"
+    let bcFile := file.withExtension "bc" |>.toString
+    let asmFile := file.withExtension "s" |>.toString
+    let exeFile := file.withExtension System.FilePath.exeExtension |>.toString
+    mod.writeBitcodeToFile bcFile
+    let llc ← IO.Process.spawn {
+      cmd := "llc"
+      args := #["-o", asmFile, bcFile]
+    }
+    assertBEq 0 (← llc.wait)
+    let cpp ← IO.Process.spawn {
+      cmd := "cc"
+      args := #["-o", exeFile, asmFile]
+    }
+    assertBEq 0 (← cpp.wait)
+    let program ← IO.Process.spawn {cmd := exeFile}
+    assertBEq 101 (← program.wait)
 
---------------------------------------------------------------------------------
--- Test Runner
---------------------------------------------------------------------------------
-
+/-- Test Runner -/
 def main : IO PUnit :=
   LLVM.run <| SuiteT.runIO do
     testTypes
@@ -308,3 +311,4 @@ def main : IO PUnit :=
     testBasicBlock
     testFunction
     testModule
+    testProgram

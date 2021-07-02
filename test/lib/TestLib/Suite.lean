@@ -59,8 +59,8 @@ def Suite.run [Monad m] (self : Suite m) : m (Array (Test m × AssertionError)) 
 def Suite.runIO
 [Monad m] [MonadLiftT IO m] [MonadExceptOf IO.Error m] (self : Suite m)
 : m PUnit := do
-  let mut passCount := 0
-  let mut failCount := 0
+  let mut passed := 0
+  let mut failed := 0
   try self.beforeAll catch e =>
     IO.eprintln s!"unexpected exception in before all callback: {e}"
   for test in self.tests do
@@ -70,17 +70,18 @@ def Suite.runIO
     try
       match (← test.run) with
       | Except.ok _ =>
-        passCount := passCount + 1
+        passed := passed + 1
       | Except.error e =>
         IO.eprintln e.message
-        failCount := failCount + 1
+        failed := failed + 1
     catch e : IO.Error =>
       IO.eprintln s!"unexpected exception in test: {e}"
     try self.afterEach catch e =>
       IO.eprintln s!"unexpected exception in after each callback: {e}"
   try self.afterAll catch e =>
     IO.eprintln s!"unexpected exception in before all callback: {e}"
-  IO.println s!"Tests finished. {passCount} passed. {failCount} failed."
+  let total := self.tests.size
+  IO.println s!"All {total} tests finished. {passed} passed. {failed} failed."
 
 -- # Suite Monad
 

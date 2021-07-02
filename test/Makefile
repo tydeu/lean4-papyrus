@@ -19,7 +19,7 @@ PAPYRUS_C_LIB			:= ${PAPYRUS_C_LIBDIR}/libPapyrusC.a
 PAPYRUS_LIBS			:= -lPapyrus -lPapyrusC $(LLVM_LIBS) $(LLVM_SYS_LIBS)
 PAPYRUS_LD_FLAGS	:= -L$(PAPYRUS_LIBDIR) -L$(PAPYRUS_C_LIBDIR) $(LLVM_LD_FLAGS)
 
-# Configure test library
+# Configure Test Lib
 
 TESTLIB_HOME			:= ./lib
 TESTLIB_BUILD_DIR	:= $(TESTLIB_HOME)/build
@@ -37,13 +37,10 @@ LEANC 	:= leanc
 MKPATH 	:= mkdir -p
 RMPATH 	:= rm -rf
 
-LLVM_BINDIR := $(shell $(LLVM_CONFIG) --bindir)
-LLC	:= $(LLVM_BINDIR)/llc
-
 SRC_DIR := src
 OUT_DIR := build
 TEST_OUT_DIR := out
-LEANC_FLAGS	:= -O1
+LEANC_FLAGS	:=
 
 SRCS :=\
 	unit.lean\
@@ -54,18 +51,22 @@ BINS := $(addprefix $(OUT_DIR)/,$(SRCS:.lean=))
 
 all: bin test
 
-# Build Rules
+# Test Lib Build Rules
+
+testlib:
+	cd $(TESTLIB_HOME) && leanpkg build lib
+
+$(TESTLIB_OLEAN) $(TESTLIB_LIB): testlib
+
+clean-testlib:
+	$(RMPATH) $(TESTLIB_BUILD_DIR)
+
+# Test Suite Build Rules
 
 bin: $(BINS)
 
 $(OUT_DIR):
 	$(MKPATH) $@
-
-$(TESTLIB_OLEAN):
-	cd $(TESTLIB_HOME) && leanpkg build
-
-$(TESTLIB_LIB): $(TESTLIB_OLEAN)
-	cd $(TESTLIB_HOME) && leanpkg build lib
 
 $(OUT_DIR)/%.c : $(SRC_DIR)/%.lean $(PAPYRUS_LIB) $(TESTLIB_OLEAN) | $(OUT_DIR)
 	LEAN_PATH="$(PAPYRUS_OLEAN_DIR);$(TESTLIB_OLEAN_DIR)" $(LEAN) -c $@ $<
@@ -81,22 +82,12 @@ $(OUT_DIR)/% : $(OUT_DIR)/%.o $(PAPYRUS_C_LIB) $(TESTLIB_LIB) | $(OUT_DIR)
 clean-bin:
 	$(RMPATH) $(OUT_DIR)
 
-testlib: $(TESTLIB_OLEAN) $(TESTLIB_LIB)
-
-clean-testlib:
-	$(RMPATH) $(TESTLIB_BUILD_DIR)
-
 clean-build: clean-bin clean-testlib
 
-# Test Rules
+# Testing Rules
 
 test: bin
 	$(OUT_DIR)/unit
-	@echo "checking produced bitcode"
-	$(LLC) -o $(TEST_OUT_DIR)/exit.s $(TEST_OUT_DIR)/exit.bc
-	$(CXX) -o $(TEST_OUT_DIR)/exit $(TEST_OUT_DIR)/exit.s
-	-$(TEST_OUT_DIR)/exit
-	@echo "error 101 expected"
 
 clean-test:
 	$(RMPATH) $(TEST_OUT_DIR)
