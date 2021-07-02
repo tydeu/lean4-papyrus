@@ -69,7 +69,7 @@ constant getPPCFP128TypeRef : LLVM TypeRef
 --------------------------------------------------------------------------------
 
 /--
-  A reference to the LLVM representation of an
+  A reference to an external LLVM
   [IntegerType](https://llvm.org/doxygen/classllvm_1_1IntegerType.html).
 -/
 def IntegerTypeRef := TypeRef
@@ -105,7 +105,7 @@ end IntegerTypeRef
 --------------------------------------------------------------------------------
 
 /--
-  A reference to the LLVM representation of a
+  A reference to an external LLVM
   [FunctionType](https://llvm.org/doxygen/classllvm_1_1FunctionType.html).
 -/
 def FunctionTypeRef := TypeRef
@@ -140,7 +140,7 @@ end FunctionTypeRef
 --------------------------------------------------------------------------------
 
 /--
-  A reference to the LLVM representation of a
+  A reference to an external LLVM
   [PointerType](https://llvm.org/doxygen/classllvm_1_1PointerType.html).
 -/
 def PointerTypeRef := TypeRef
@@ -182,7 +182,7 @@ end PointerTypeRef
 --------------------------------------------------------------------------------
 
 /--
-  A reference to the LLVM representation of a
+  A reference to an external LLVM
   [StructType](https://llvm.org/doxygen/classllvm_1_1StructType.html).
 -/
 def StructTypeRef := TypeRef
@@ -210,7 +210,7 @@ end StructTypeRef
 -- # Literal Struct Types
 
 /--
-  A reference to the LLVM representation of a literal
+  A reference to an external LLVM literal
   [StructType](https://llvm.org/doxygen/classllvm_1_1StructType.html).
 
   Literal struct types (e.g., `{ i32, i32 }`) are uniqued structurally,
@@ -234,7 +234,7 @@ end LiteralStructTypeRef
 -- # Identified Struct Types
 
 /--
-  A reference to the LLVM representation of a identified
+  A reference to an external LLVM identified
   [StructType](https://llvm.org/doxygen/classllvm_1_1StructType.html).
 
   Identified structs may optionally have a name and are not uniqued.
@@ -295,7 +295,7 @@ end IdentifiedStructTypeRef
 --------------------------------------------------------------------------------
 
 /--
-  A reference to the LLVM representation of a
+  A reference to an external LLVM
   [ArrayType](https://llvm.org/doxygen/classllvm_1_1ArrayType.html).
 -/
 def ArrayTypeRef := TypeRef
@@ -325,7 +325,7 @@ end ArrayTypeRef
 --------------------------------------------------------------------------------
 
 /--
-  A reference to the LLVM representation of a
+  A reference to an external LLVM
   [VectorType](https://llvm.org/doxygen/classllvm_1_1VectorType.html).
 -/
 def VectorTypeRef := TypeRef
@@ -362,7 +362,7 @@ end VectorTypeRef
 -- # Fixed Vector Types
 
 /--
-  A reference to the LLVM representation of a
+  A reference to an external LLVM
   [FixedVectorType](https://llvm.org/doxygen/classllvm_1_1FixedVectorType.html).
 -/
 def FixedVectorTypeRef := VectorTypeRef
@@ -386,7 +386,7 @@ end FixedVectorTypeRef
 -- # Scalable Vector Types
 
 /--
-  A reference to the LLVM representation of a
+  A reference to an external LLVM
   [ScalableVectorType](https://llvm.org/doxygen/classllvm_1_1ScalableVectorType.html).
 -/
 def ScalableVectorTypeRef := VectorTypeRef

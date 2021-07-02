@@ -37,8 +37,6 @@ structure LinkedPtrImpl (k : ExternalPtrClass) (σ) (α) where
 constant LinkedPtr (k : ExternalPtrClass) (σ : Type) (α : Type) : Type :=
   LinkedPtrImpl k σ α
 
-#check IO.RealWorld
-
 /--  A linked external pointer that should not be managed by Lean. -/
 abbrev LinkedLoosePtr := LinkedPtr LoosePtr.class
 

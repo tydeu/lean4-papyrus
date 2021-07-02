@@ -35,15 +35,15 @@ constant toInt (self : @& GenericValueRef) : IO Int
 @[extern "papyrus_generic_value_of_nat"]
 constant ofNat (value : @& Nat)  (numBits : @& UInt32) : IO GenericValueRef
 
-/-- Get the value of this generic as an `Nat` by treating its integer bits as unsigned. -/
+/-- Get the value of this generic as a `Nat` by treating its integer bits as unsigned. -/
 @[extern "papyrus_generic_value_to_nat"]
 constant toNat (self : @& GenericValueRef) : IO Nat
 
-/-- Create a generic from a `Float. -/
+/-- Create a generic from a `Float`. -/
 @[extern "papyrus_generic_value_of_float"]
 constant ofFloat (value : @& Float) : IO GenericValueRef
 
-/-- Get the value of this generic as an `Float` by treating its bits as a `double`. -/
+/-- Get the value of a `double` generic as a `Float`. -/
 @[extern "papyrus_generic_value_to_float"]
 constant toFloat (self : @& GenericValueRef) : IO Float
 
