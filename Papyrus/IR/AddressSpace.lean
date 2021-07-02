@@ -2,7 +2,7 @@ namespace Papyrus
 
 /-- A numerically indexed address space. -/
 structure AddressSpace where
-  index : Nat
+  index : UInt32
   deriving BEq, Repr
 
 namespace AddressSpace
@@ -11,16 +11,16 @@ namespace AddressSpace
 def default := mk 0
 
 /-- Make an address space from a `Nat`. -/
-def ofNat (n : Nat) := mk n
+def ofNat (n : Nat) := mk n.toUInt32
 
 /-- Make an address space from a `UInt32`. -/
-def ofUInt32 (n : UInt32) := mk n.toNat
+def ofUInt32 (n : UInt32) := mk n
 
 /-- Convert an address space tp a `Nat`. -/
-def toNat (self : AddressSpace) := self.index
+def toNat (self : AddressSpace) : Nat := self.index.toNat
 
 /-- Convert an address space to a `UInt32`. -/
-def toUInt32 (self : AddressSpace) := self.index.toUInt32
+def toUInt32 (self : AddressSpace) : UInt32 := self.index
 
 end AddressSpace
 
