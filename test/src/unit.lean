@@ -11,47 +11,161 @@ import Papyrus.ExecutionEngineRef
 open Papyrus
 
 --------------------------------------------------------------------------------
--- General Test Helpers
+-- Assertions
 --------------------------------------------------------------------------------
 
-def assertFail (msg : String) : IO PUnit := do
-  IO.eprintln msg
+structure AssertionError where
+  message : String
 
-def assertTrue (actual : Bool) : IO PUnit :=
+instance : ToString AssertionError := ⟨AssertionError.message⟩
+
+abbrev AssertT  := ExceptT AssertionError
+
+section
+variable {m} [Monad m]
+
+def assertFail (message : String) : AssertT m PUnit :=
+  throwThe AssertionError ⟨message⟩
+
+def assertTrue (actual : Bool) : AssertT m PUnit  :=
   unless actual do
     assertFail "expected true, got false"
 
-def assertFalse (actual : Bool) : IO PUnit := do
+def assertFalse (actual : Bool) : AssertT m PUnit := do
   if actual then
     assertFail "expected false, got true"
 
-def assertEq [Repr α] [DecidableEq α] (expected actual : α) : IO PUnit := do
+def assertEq [Repr α] [DecidableEq α] (expected actual : α) : AssertT m PUnit := do
   unless expected = actual do
     assertFail s!"expected '{repr expected}', got '{repr actual}'"
 
-def assertBEq [Repr α] [BEq α] (expected actual : α) : IO PUnit := do
+def assertBEq [Repr α] [BEq α] (expected actual : α) : AssertT m PUnit := do
   unless expected == actual do
     assertFail s!"expected '{repr expected}', got '{repr actual}'"
 
-def testcase (name : String) [Monad m] [MonadLiftT IO m] (action : m PUnit) : m PUnit := do
-  IO.println s!"Running test '{name}' ..."
-  action
+end
+
+--------------------------------------------------------------------------------
+-- Test Suites
+--------------------------------------------------------------------------------
+
+structure Test (m) where
+  name : String
+  run : AssertT m PUnit
+
+structure Suite (m) where
+  tests       : Array (Test m)
+  beforeAll   : m PUnit
+  beforeEach  : m PUnit
+  afterEach   : m PUnit
+  afterAll    : m PUnit
+
+def Suite.empty [Pure m] : Suite m := {
+  tests       := #[]
+  beforeAll   := pure ()
+  beforeEach  := pure ()
+  afterEach   := pure ()
+  afterAll    := pure ()
+}
+
+instance [Pure m] : Inhabited (Suite m) := ⟨Suite.empty⟩
+
+def Suite.appendTest (test : Test m) (self : Suite m) : Suite m :=
+  {self with tests := self.tests.push test}
+
+def Suite.appendBeforeAll [SeqRight m] (action : m PUnit) (self : Suite m) : Suite m :=
+  {self with beforeAll := self.beforeAll *> action}
+
+def Suite.appendBeforeEach [SeqRight m] (action : m PUnit) (self : Suite m) : Suite m :=
+  {self with beforeEach := self.beforeEach *> action}
+
+def Suite.appendAfterEach [SeqRight m] (action : m PUnit) (self : Suite m) : Suite m :=
+ {self with afterEach := self.afterEach *> action}
+
+def Suite.appendAfterAll [SeqRight m] (action : m PUnit) (self : Suite m) : Suite m :=
+ {self with afterAll := self.afterAll *> action}
+
+/--
+  Run the tests in this suite,
+  returning an array of failing tests and their errors in the suite monad.
+-/
+def Suite.run [Monad m] (self : Suite m) : m (Array (Test m × AssertionError)) := do
+  let mut failures := #[]
+  self.beforeAll
+  for test in self.tests do
+    self.beforeEach
+    match (← test.run) with
+    | Except.ok _ => pure ()
+    | Except.error e =>
+      failures := failures.push (test, e)
+    self.afterEach
+  self.afterAll
+  return failures
+
+/-- Run the tests in this suite, printing out results along the way. -/
+def Suite.runIO
+[Monad m] [MonadLiftT IO m] [MonadExceptOf IO.Error m] (self : Suite m)
+: m PUnit := do
+  let mut passCount := 0
+  let mut failCount := 0
+  try self.beforeAll catch e =>
+    IO.eprintln s!"unexpected exception in before all callback: {e}"
+  for test in self.tests do
+    IO.println s!"Running {test.name} ..."
+    try self.beforeEach catch e =>
+      IO.eprintln s!"unexpected exception in before each callback: {e}"
+    try
+      match (← test.run) with
+      | Except.ok _ =>
+        passCount := passCount + 1
+      | Except.error e =>
+        IO.eprintln e.message
+        failCount := failCount + 1
+    catch e : IO.Error =>
+      IO.eprintln s!"unexpected exception in test: {e}"
+    try self.afterEach catch e =>
+      IO.eprintln s!"unexpected exception in after each callback: {e}"
+  try self.afterAll catch e =>
+    IO.eprintln s!"unexpected exception in before all callback: {e}"
+  IO.println s!"Tests finished. {passCount} passed. {failCount} failed."
+
+-- # Suite Monad
+
+abbrev SuiteT (m) := StateM (Suite m)
+
+def SuiteT.runIO
+[Monad m] [MonadLiftT IO m] [MonadExceptOf IO.Error m] (self : SuiteT m PUnit)
+: m PUnit := do
+  StateT.run self Suite.empty |>.run.2.runIO
+
+def beforeAll [SeqRight m] (action : m PUnit) : SuiteT m PUnit :=
+  modify fun suite => suite.appendBeforeAll action
+
+def beforeEach [SeqRight m] (action : m PUnit) : SuiteT m PUnit :=
+  modify fun suite => suite.appendBeforeEach action
+
+def test (name : String) (action : AssertT m PUnit) : SuiteT m PUnit :=
+  modify fun suite => suite.appendTest ⟨name, action⟩
+
+def afterEach [SeqRight m] (action : m PUnit) : SuiteT m PUnit :=
+  modify fun suite => suite.appendAfterAll action
+
+def afterAll [SeqRight m] (action : m PUnit) : SuiteT m PUnit :=
+  modify fun suite => suite.appendAfterAll action
 
 --------------------------------------------------------------------------------
 -- Type Tests
 --------------------------------------------------------------------------------
 
-def printRefTypeID (ref : TypeRef) : IO PUnit := do
-  IO.println <| repr (← ref.getTypeID)
-
-def assertBEqRefArray (expected actual : Array TypeRef) : IO PUnit := do
+def assertBEqRefArray  {m} [Monad m] [MonadLiftT IO m]
+  (expected actual : Array TypeRef) : AssertT m PUnit := do
   assertBEq expected.size actual.size
   for (expectedElem, actualElem) in Array.zip expected actual do
     assertBEq (← expectedElem.getTypeID) (← actualElem.getTypeID)
 
 def assertFunTypeRoundtrips
 (retType : TypeRef) (paramTypes : Array TypeRef) (isVarArg : Bool)
-: LLVM PUnit := do
+: AssertT LLVM PUnit := do
   let ref ← FunctionTypeRef.get retType paramTypes isVarArg
   assertBEq TypeID.function (← ref.getTypeID)
   assertBEq (← retType.getTypeID) (← (← ref.getReturnType).getTypeID)
@@ -60,7 +174,7 @@ def assertFunTypeRoundtrips
 
 def assertVectorTypeRoundtrips
 (elementType : TypeRef) (minSize : UInt32) (isScalable : Bool)
-: LLVM PUnit := do
+: AssertT LLVM PUnit := do
   let ref ← VectorTypeRef.get elementType minSize isScalable
   let expectedId := if isScalable then TypeID.scalableVector else TypeID.fixedVector
   assertBEq expectedId (← ref.getTypeID)
@@ -68,9 +182,9 @@ def assertVectorTypeRoundtrips
   assertBEq minSize (← ref.getMinSize)
   assertBEq isScalable (← ref.isScalable)
 
-def testTypes : LLVM PUnit := do
+def testTypes : SuiteT LLVM PUnit := do
 
-  testcase "special types" do
+  test "special types" do
     assertBEq TypeID.void       (← (← getVoidTypeRef).getTypeID)
     assertBEq TypeID.label      (← (← getLabelTypeRef).getTypeID)
     assertBEq TypeID.metadata   (← (← getMetadataTypeRef).getTypeID)
@@ -78,7 +192,7 @@ def testTypes : LLVM PUnit := do
     assertBEq TypeID.x86MMX     (← (← getX86MMXTypeRef).getTypeID)
     assertBEq TypeID.x86AMX     (← (← getX86AMXTypeRef).getTypeID)
 
-  testcase "floating point types" do
+  test "floating point types" do
     assertBEq TypeID.half       (← (← getHalfTypeRef).getTypeID)
     assertBEq TypeID.bfloat     (← (← getBFloatTypeRef).getTypeID)
     assertBEq TypeID.float      (← (← getFloatTypeRef).getTypeID)
@@ -87,27 +201,27 @@ def testTypes : LLVM PUnit := do
     assertBEq TypeID.fp128      (← (← getFP128TypeRef).getTypeID)
     assertBEq TypeID.ppcFP128   (← (← getPPCFP128TypeRef).getTypeID)
 
-  testcase "integer types" do
+  test "integer types" do
     let n := 100
     let ref ← IntegerTypeRef.get n
     assertBEq TypeID.integer (← ref.getTypeID)
     assertBEq n (← ref.getBitWidth)
 
-  testcase "function types" do
+  test "function types" do
     let retType ← getVoidTypeRef
     let paramAType ← getDoubleTypeRef
     let paramBType ← IntegerTypeRef.get 100
     assertFunTypeRoundtrips retType #[paramAType] false
     assertFunTypeRoundtrips retType #[paramBType, paramAType] true
 
-  testcase "pointer types" do
+  test "pointer types" do
     let pointeeType ← getDoubleTypeRef
     let ref ← PointerTypeRef.get pointeeType
     assertBEq TypeID.pointer (← ref.getTypeID)
     assertBEq (← pointeeType.getTypeID) (← (← ref.getPointeeType).getTypeID)
     assertBEq AddressSpace.default (← ref.getAddressSpace)
 
-  testcase "literal struct types" do
+  test "literal struct types" do
     let elemTypes := #[← getHalfTypeRef, ← getDoubleTypeRef]
     let ref ← LiteralStructTypeRef.get elemTypes
     assertBEq TypeID.struct (← ref.getTypeID)
@@ -116,7 +230,7 @@ def testTypes : LLVM PUnit := do
     assertBEqRefArray elemTypes (← ref.getElementTypes)
     assertBEq false (← ref.isPacked)
 
-  testcase "complete struct types" do
+  test "complete struct types" do
     let name := "foo"
     let elemTypes := #[← getFloatTypeRef]
     let ref ← IdentifiedStructTypeRef.create name elemTypes true
@@ -127,7 +241,7 @@ def testTypes : LLVM PUnit := do
     assertBEqRefArray elemTypes (← ref.getElementTypes)
     assertBEq true (← ref.isPacked)
 
-  testcase "opaque struct types" do
+  test "opaque struct types" do
     let name := "bar"
     let ref ← IdentifiedStructTypeRef.createOpaque name
     assertBEq TypeID.struct (← ref.getTypeID)
@@ -137,7 +251,7 @@ def testTypes : LLVM PUnit := do
     assertBEq 0 (← ref.getElementTypes).size
     assertBEq false (← ref.isPacked)
 
-  testcase "array types" do
+  test "array types" do
     let size := 8
     let elemType ← IntegerTypeRef.get 30
     let ref ← ArrayTypeRef.get elemType size
@@ -145,7 +259,7 @@ def testTypes : LLVM PUnit := do
     assertBEq (← elemType.getTypeID) (← (← ref.getElementType).getTypeID)
     assertBEq size (← ref.getSize)
 
-  testcase "vector types" do
+  test "vector types" do
     let elemType ← getDoubleTypeRef
     assertVectorTypeRoundtrips elemType 8 false
     assertVectorTypeRoundtrips elemType 16 true
@@ -154,42 +268,45 @@ def testTypes : LLVM PUnit := do
 -- Constant Tests
 --------------------------------------------------------------------------------
 
-def testConstants : LLVM PUnit := do
+def testConstants : SuiteT LLVM PUnit := do
 
-  let int8TypeRef ← IntegerTypeRef.get 8
-  let int128TypeRef ← IntegerTypeRef.get 128
-
-  testcase "big null integer constant" do
+  test "big null integer constant" do
+    let int128TypeRef ← IntegerTypeRef.get 128
     let const : ConstantIntRef ← int128TypeRef.getNullConstant
     assertBEq 0 (← const.getNatValue)
     assertBEq 0 (← const.getValue)
 
-  testcase "big all ones integer constant" do
+  test "big all ones integer constant" do
+    let int128TypeRef ← IntegerTypeRef.get 128
     let const : ConstantIntRef ← int128TypeRef.getAllOnesConstant
     assertBEq (2 ^ 128 - 1) (← const.getNatValue)
     assertBEq (-1) (← const.getValue)
 
-  testcase "small positive constructed integer constant" do
+  test "small positive constructed integer constant" do
     let val := 32
+    let int8TypeRef ← IntegerTypeRef.get 8
     let const ← int8TypeRef.getConstantInt val
     assertBEq val (← const.getNatValue)
     assertBEq val (← const.getValue)
 
-  testcase "small negative constructed integer constant" do
+  test "small negative constructed integer constant" do
     let absVal := 32; let intVal := -32
+    let int8TypeRef ← IntegerTypeRef.get 8
     let const ← int8TypeRef.getConstantInt intVal
     assertBEq (2 ^ 8 - absVal) (← const.getNatValue)
     assertBEq intVal (← const.getValue)
 
-  testcase "big positive constructed integer constant" do
+  test "big positive constructed integer constant" do
     let val : Nat := 2 ^ 80 + 12
+    let int128TypeRef ← IntegerTypeRef.get 128
     let const ← int128TypeRef.getConstantInt val
     assertBEq (Int.ofNat val) (← const.getValue)
     assertBEq val (← const.getNatValue)
 
-  testcase "big negative constructed integer constant" do
+  test "big negative constructed integer constant" do
     let absVal := 2 ^ 80 + 12
     let intVal := -(Int.ofNat absVal)
+    let int128TypeRef ← IntegerTypeRef.get 128
     let const ← int128TypeRef.getConstantInt intVal
     assertBEq (Int.ofNat (2 ^ 128) - absVal) (← const.getNatValue)
     assertBEq intVal (← const.getValue)
@@ -198,17 +315,16 @@ def testConstants : LLVM PUnit := do
 -- Instruction Tests
 --------------------------------------------------------------------------------
 
-def testInstructions : LLVM PUnit := do
+def testInstructions : SuiteT LLVM PUnit := do
 
-  let intTypeRef ← IntegerTypeRef.get 32
-
-  testcase "empty return instruction" do
+  test "empty return instruction" do
     let inst ← ReturnInstRef.createEmpty
     unless (← inst.getReturnValue).isNone do
       assertFail "got return value when expecting none"
 
-  testcase "nonempty return instruction" do
+  test "nonempty return instruction" do
     let val := 1
+    let intTypeRef ← IntegerTypeRef.get 32
     let const ← intTypeRef.getConstantInt val
     let inst ← ReturnInstRef.create const
     let some retVal ← inst.getReturnValue
@@ -220,9 +336,9 @@ def testInstructions : LLVM PUnit := do
 -- Basic Block Test
 --------------------------------------------------------------------------------
 
-def testBasicBlock : LLVM PUnit := do
+def testBasicBlock : SuiteT LLVM PUnit := do
 
-  testcase "basic block" do
+  test "basic block" do
     let name := "foo"
     let bb ← BasicBlockRef.create name
     assertBEq name (← bb.getName)
@@ -240,12 +356,11 @@ def testBasicBlock : LLVM PUnit := do
 -- Function Test
 --------------------------------------------------------------------------------
 
-def testFunction : LLVM PUnit := do
+def testFunction : SuiteT LLVM PUnit := do
 
-  let voidTypeRef ← getVoidTypeRef
-
-  testcase "empty function" do
+  test "empty function" do
     let name := "foo"
+    let voidTypeRef ← getVoidTypeRef
     let fnTy ← FunctionTypeRef.get voidTypeRef #[]
     let fn ← FunctionRef.create fnTy name
     assertBEq name (← fn.getName)
@@ -255,8 +370,9 @@ def testFunction : LLVM PUnit := do
     assertBEq AddressSignificance.global (← fn.getAddressSignificance)
     assertBEq AddressSpace.default (← fn.getAddressSpace)
 
-  testcase "single block function" do
+  test "single block function" do
     let bbName := "foo"
+    let voidTypeRef ← getVoidTypeRef
     let fnTy ← FunctionTypeRef.get voidTypeRef #[]
     let fn ← FunctionRef.create fnTy "test"
     let bb ← BasicBlockRef.create bbName
@@ -272,12 +388,9 @@ def testFunction : LLVM PUnit := do
 -- Module Tests
 --------------------------------------------------------------------------------
 
-def testModule : LLVM PUnit := do
+def testModule : SuiteT LLVM PUnit := do
 
-  let voidTypeRef ← getVoidTypeRef
-  let intTypeRef ← IntegerTypeRef.get 32
-
-  testcase "module renaming" do
+  test "module renaming" do
     let name1 := "foo"
     let mod ← ModuleRef.new name1
     assertBEq name1 (← mod.getModuleID)
@@ -285,9 +398,10 @@ def testModule : LLVM PUnit := do
     mod.setModuleID name2
     assertBEq name2 (← mod.getModuleID)
 
-  testcase "single function module" do
+  test "single function module" do
     let fnName := "foo"
     let mod ← ModuleRef.new "test"
+    let voidTypeRef ← getVoidTypeRef
     let fnTy ← FunctionTypeRef.get voidTypeRef #[]
     let fn ← FunctionRef.create fnTy fnName
     mod.appendFunction fn
@@ -298,10 +412,11 @@ def testModule : LLVM PUnit := do
     else
       assertFail s!"expected 1 function in module, got {fns.size}"
 
-  testcase "simple module" do
+  test "simple module" do
     -- Construct Module
     let exitCode := 101
-    let mod ← ModuleRef.new "test"
+    let mod ← ModuleRef.new "foo"
+    let intTypeRef ← IntegerTypeRef.get 32
     let fnTy ← FunctionTypeRef.get intTypeRef #[]
     let fn ← FunctionRef.create fnTy "main"
     let bb ← BasicBlockRef.create
@@ -327,13 +442,11 @@ def testModule : LLVM PUnit := do
 -- Test Runner
 --------------------------------------------------------------------------------
 
-def main : IO PUnit := LLVM.run do
-
-  testTypes
-  testConstants
-  testInstructions
-  testBasicBlock
-  testFunction
-  testModule
-
-  IO.println "All tests finished."
+def main : IO PUnit :=
+  LLVM.run <| SuiteT.runIO do
+    testTypes
+    testConstants
+    testInstructions
+    testBasicBlock
+    testFunction
+    testModule

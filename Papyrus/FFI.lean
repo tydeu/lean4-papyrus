@@ -7,7 +7,7 @@ constant ExternalPtrClass : Type := Unit
 constant ExternalPtr : ExternalPtrClass → Type → Type := fun _ _ => Unit
 
 /- The external class of LoosePtr. -/
-axiom LoosePtr.class  : ExternalPtrClass
+axiom LoosePtr.class : ExternalPtrClass
 
 /-- An external pointer with no memory management. -/
 abbrev LoosePtr (α) := ExternalPtr Papyrus.LoosePtr.class α

@@ -8,8 +8,8 @@ PAPYRUS_OLEAN_DIR := $(PAPYRUS_HOME)/build
 LLVM_CONFIG 			?= llvm-config
 LLVM_COMPONENTS 	:= core bitreader bitwriter executionengine mcjit interpreter all-targets
 LLVM_LD_FLAGS   	:= $(shell $(LLVM_CONFIG) --ldflags)
-LLVM_LIBS       	:= $(shell $(LLVM_CONFIG) --link-static --libs $(LLVM_COMPONENTS))
-LLVM_SYS_LIBS   	:= $(shell $(LLVM_CONFIG) --link-static --system-libs) -lffi
+LLVM_LIBS       	:= $(shell $(LLVM_CONFIG) --libs $(LLVM_COMPONENTS))
+LLVM_SYS_LIBS   	:= $(shell $(LLVM_CONFIG) --system-libs)
 LLVM_LIB_FLAGS		:= $(LLVM_LD_FLAGS) $(LLVM_LIBS) $(LLVM_SYS_LIBS)
 
 PAPYRUS_LIB 			:= $(PAPYRUS_LIBDIR)/libPapyrus.a
@@ -32,7 +32,7 @@ LLC	:= $(LLVM_BINDIR)/llc
 SRC_DIR := src
 OUT_DIR := build
 TEST_OUT_DIR := out
-LEANC_FLAGS	:= -O3
+LEANC_FLAGS	:= -O1
 
 SRCS := \
 	unit.lean\
