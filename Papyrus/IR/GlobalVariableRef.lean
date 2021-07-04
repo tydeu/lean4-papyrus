@@ -2,6 +2,7 @@ import Papyrus.Context
 import Papyrus.IR.GlobalRefs
 import Papyrus.IR.AddressSpace
 import Papyrus.IR.ConstantRef
+import Papyrus.IR.ConstantRefs
 import Papyrus.IR.TypeRef
 
 namespace Papyrus
@@ -26,6 +27,29 @@ constant newWithInit (type : @& TypeRef) (isConstant := false)
   (linkage := Linkage.external) (init : @& ConstantRef) (name : @& String := "")
   (tlm := ThreadLocalMode.notLocal) (addrSpace := AddressSpace.default)
   (isExternallyInitialized := false) : IO GlobalVariableRef
+
+/-- Create a new unlinked global constant with the given value. -/
+def newOfConstant (init : ConstantRef)
+(linkage := Linkage.external) (name := "")
+(tlm := ThreadLocalMode.notLocal) (addrSpace := AddressSpace.default)
+: IO GlobalVariableRef := do
+  newWithInit (← init.getType) true linkage init name tlm addrSpace
+
+/--
+  Create a new unlinked global string constant with the given value.
+
+  Such constants have private linkage, single byte alignment,
+  are not thread local, and their addresses are insignificant.
+-/
+def newString (value : String)
+(name := "") (addrSpace := AddressSpace.default)
+: LLVM GlobalVariableRef := do
+  let var ← newOfConstant (← ConstantDataArrayRef.getString value)
+    Linkage.private name ThreadLocalMode.notLocal addrSpace
+  var.setAddressSignificance AddressSignificance.none
+  var.setRawAlignment 1
+  var
+
 
 /--
   Get whether the this global variable is constant

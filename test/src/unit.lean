@@ -216,6 +216,8 @@ def testFunction : SuiteT LLVM PUnit := do
     assertBEq AddressSignificance.global (← fn.getAddressSignificance)
     assertBEq AddressSpace.default (← fn.getAddressSpace)
     assertBEq CallingConvention.c (← fn.getCallingConvention)
+    assertBEq 0 (← fn.getRawAlignment)
+    assertBEq false (← fn.hasSection)
     assertBEq false (← fn.hasGC)
 
   test "single block function" do
@@ -315,11 +317,8 @@ def testProgram : SuiteT LLVM PUnit := do
 
     -- Initialize Hello String Constant
     let hello := "Hello World!"
-    let helloConst ← ConstantDataArrayRef.getString hello
-    let helloConstType ← helloConst.getType
-    let stringTypeRef ← PointerTypeRef.get helloConstType
-    let helloGbl ← GlobalVariableRef.new helloConstType true
-    helloGbl.setInitializer helloConst
+    let helloGbl ← GlobalVariableRef.newString hello
+    let stringTypeRef ← helloGbl.getPointerType
     mod.appendGlobalVariable helloGbl
 
     -- Declare `printf` function

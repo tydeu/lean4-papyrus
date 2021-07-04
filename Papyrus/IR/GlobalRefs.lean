@@ -263,29 +263,29 @@ namespace GlobalObjectRef
 
 /-- Get whether this value has a explicitly specified linker section. -/
 @[extern "papyrus_global_object_has_section"]
-constant hasSection (self : @& GlobalValueRef) : IO Bool
+constant hasSection (self : @& GlobalObjectRef) : IO Bool
 
 /-- Get the explicit linker section of this value (or the empty string if none). -/
 @[extern "papyrus_global_object_get_section"]
-constant getSection (self : @& GlobalValueRef) : IO String
+constant getSection (self : @& GlobalObjectRef) : IO String
 
 /--
   Set the explicit linker section of this value
   (or remove it by passing the empty string).
 -/
 @[extern "papyrus_global_object_set_section"]
-constant setSection (sect : @& String) (self : @& GlobalValueRef) : IO PUnit
+constant setSection (sect : @& String) (self : @& GlobalObjectRef) : IO PUnit
 
 /--
   Get the explicit power of two alignment of this value (or 0 if undefined).
   Note that for functions this is the alignment of the code,
     not the alignment of a function pointer.
 -/
-@[extern "papyrus_global_object_get_align"]
-constant getRawAlign (self : @& GlobalValueRef) : IO UInt64
+@[extern "papyrus_global_object_get_alignment"]
+constant getRawAlignment (self : @& GlobalObjectRef) : IO UInt64
 
 /-- Set the explicit power of two alignment of this value (or pass 0 to remove it). -/
-@[extern "papyrus_global_object_set_align"]
-constant setRawAlign (align : UInt64) (self : @& GlobalValueRef) : IO PUnit
+@[extern "papyrus_global_object_set_alignment"]
+constant setRawAlignment (align : UInt64) (self : @& GlobalObjectRef) : IO PUnit
 
 end GlobalObjectRef
