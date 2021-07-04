@@ -1,5 +1,6 @@
 import Papyrus.Context
 import Papyrus.IR.AddressSpace
+import Papyrus.IR.CallingConvention
 import Papyrus.IR.BasicBlockRef
 import Papyrus.IR.GlobalRefs
 import Papyrus.IR.TypeRefs
@@ -38,5 +39,34 @@ constant appendBasicBlock (bb : @& BasicBlockRef) (self : @& FunctionRef) : IO P
 /-- Check the function for errors (returns *true* if any errors are found). -/
 @[extern "papyrus_function_verify"]
 constant verify (self : @& FunctionRef) : IO Bool
+
+/-- Get whether this function has a specified garbage collection algorithm. -/
+@[extern "papyrus_function_has_gc"]
+constant hasGC (self : @& FunctionRef) : IO Bool
+
+/--
+  Get the name of the garbage collection algorithm used in code generation.
+  It is only legal to call this if a garbage collection algorithm has been
+  specified (i.e., `hasGC` returns true).
+-/
+@[extern "papyrus_function_get_gc"]
+constant getGC (self : @& FunctionRef) : IO String
+
+/-- Set the name of the garbage collection algorithm used in code generation. -/
+@[extern "papyrus_function_set_gc"]
+constant setGC (gc : @& String) (self : @& FunctionRef) : IO PUnit
+
+/-- Remove any specified garbage collection algorithm for this function. -/
+@[extern "papyrus_function_clear_gc"]
+constant clearGC (self : @& FunctionRef) : IO PUnit
+
+/-- Get the calling convention of this function. -/
+@[extern "papyrus_function_get_calling_convention"]
+constant getCallingConvention (self : @& FunctionRef) : IO CallingConvention
+
+/-- Set the calling convention of this function. -/
+@[extern "papyrus_function_set_calling_convention"]
+constant setCallingConvention (cc : CallingConvention)
+  (self : @& FunctionRef) : IO PUnit
 
 end FunctionRef

@@ -212,8 +212,11 @@ def testFunction : SuiteT LLVM PUnit := do
     assertBEq Linkage.external (← fn.getLinkage)
     assertBEq Visibility.default (← fn.getVisibility)
     assertBEq DLLStorageClass.default (← fn.getDLLStorageClass)
+    assertBEq ThreadLocalMode.notLocal (← fn.getThreadLocalMode)
     assertBEq AddressSignificance.global (← fn.getAddressSignificance)
     assertBEq AddressSpace.default (← fn.getAddressSpace)
+    assertBEq CallingConvention.c (← fn.getCallingConvention)
+    assertBEq false (← fn.hasGC)
 
   test "single block function" do
     let bbName := "foo"

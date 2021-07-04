@@ -49,4 +49,44 @@ extern "C" obj_res papyrus_function_verify(b_obj_arg funRef, obj_arg /* w */) {
 	return io_result_mk_ok(box(llvm::verifyFunction(*toFunction(funRef))));
 }
 
+// Get whether the function has a specified garbage collection algorithm.
+extern "C" obj_res papyrus_function_has_gc(b_obj_arg funRef, obj_arg /* w */) {
+	return io_result_mk_ok(box(toFunction(funRef)->hasGC()));
+}
+
+// Get the garbage collection algorithm of a function.
+// Should only be called if it is known to have one specified.
+extern "C" obj_res papyrus_function_get_gc(b_obj_arg funRef, obj_arg /* w */) {
+	return io_result_mk_ok(mk_string(toFunction(funRef)->getGC()));
+}
+
+// Set the garbage collection algorithm of a function.
+extern "C" obj_res papyrus_function_set_gc
+	(b_obj_arg gcStr, b_obj_arg funRef, obj_arg /* w */)
+{
+	toFunction(funRef)->setGC(string_to_std(gcStr));
+	return io_result_mk_ok(box(0));
+}
+
+// Remove any specified garbage collection algorithm from the function.
+extern "C" obj_res papyrus_function_clear_gc(b_obj_arg funRef, obj_arg /* w */) {
+	toFunction(funRef)->clearGC();
+	return io_result_mk_ok(box(0));
+}
+
+// Get the calling convention of a function.
+extern "C" obj_res papyrus_function_get_calling_convention
+	(b_obj_arg funRef, obj_arg /* w */)
+{
+	return io_result_mk_ok(box(toFunction(funRef)->getCallingConv()));
+}
+
+// Set the calling convetion of a function.
+extern "C" obj_res papyrus_function_set_calling_convention
+	(uint32 callingConv, b_obj_arg funRef, obj_arg /* w */)
+{
+	toFunction(funRef)->setCallingConv(callingConv);
+	return io_result_mk_ok(box(0));
+}
+
 } // end namespace papyrus
