@@ -16,33 +16,16 @@ namespace GlobalVariableRef
 
 /-- Create a new unlinked global variable. -/
 @[extern "papyrus_global_variable_new"]
-constant newRaw (type : @& TypeRef) (isConstant := false) (linkage := Linkage.external)
-  (name : @& String := "") (tlm := ThreadLocalMode.notLocal) (addrSpace : UInt32 := 0)
+constant new (type : @& TypeRef) (isConstant := false) (linkage := Linkage.external)
+  (name : @& String := "") (tlm := ThreadLocalMode.notLocal) (addrSpace := AddressSpace.default)
   (isExternallyInitialized := false) : IO GlobalVariableRef
-
-/-- Create a new unlinked global variable. -/
-def new (type : @& TypeRef) (isConstant : Bool)
-(linkage := Linkage.external) (name : @& String := "") (tlm := ThreadLocalMode.notLocal)
-(addrSpace : @& AddressSpace := AddressSpace.default) (isExternallyInitialized := false)
-: IO GlobalVariableRef :=
-  newRaw type isConstant linkage name tlm addrSpace.toUInt32
-    isExternallyInitialized
 
 /-- Create a new unlinked global variable with an initializer. -/
 @[extern "papyrus_global_variable_new_with_init"]
-constant newWithInitRaw (type : @& TypeRef) (isConstant := false)
+constant newWithInit (type : @& TypeRef) (isConstant := false)
   (linkage := Linkage.external) (init : @& ConstantRef) (name : @& String := "")
-  (tlm := ThreadLocalMode.notLocal) (addrSpace : UInt32 := 0)
+  (tlm := ThreadLocalMode.notLocal) (addrSpace := AddressSpace.default)
   (isExternallyInitialized := false) : IO GlobalVariableRef
-
-/-- Create a new unlinked global variable with an initializer. -/
-def newWithInit (type : @& TypeRef) (isConstant := false)
-(linkage := Linkage.external) (init : @& ConstantRef) (name : @& String := "")
-(tlm := ThreadLocalMode.notLocal) (addrSpace : @& AddressSpace := AddressSpace.default)
-(isExternallyInitialized := false)
-: IO GlobalVariableRef := do
-  newWithInitRaw type isConstant linkage init name tlm addrSpace.toUInt32
-    isExternallyInitialized
 
 /--
   Get whether the this global variable is constant

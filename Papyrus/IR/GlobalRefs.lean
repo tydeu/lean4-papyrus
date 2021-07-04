@@ -26,10 +26,6 @@ def getPointerType (self : @& GlobalValueRef) : IO PointerTypeRef :=
 def getType (self : @& GlobalValueRef) : IO TypeRef := do
   (← self.getPointerType).getPointeeType
 
-/-- Get the raw numeric address space of this global. -/
-@[extern "papyrus_global_value_get_address_space"]
-constant getRawAddressSpace (self : @& GlobalValueRef) : IO UInt32
-
 /-- Get the address space of this global. -/
 @[extern "papyrus_global_value_get_address_space"]
 constant getAddressSpace (self : @& GlobalValueRef) : IO AddressSpace

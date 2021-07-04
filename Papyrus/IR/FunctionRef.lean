@@ -16,19 +16,12 @@ namespace FunctionRef
 
 /--
   Create a new unlinked function with the given type, the optional given name,
-    and the given linkage in the given raw address space.
--/
-@[extern "papyrus_function_create"]
-constant createRaw (type : @& FunctionTypeRef) (name : @& String)
-  (linkage : @& Linkage) (addrSpace : UInt32) : IO FunctionRef
-
-/--
-  Create a new unlinked function with the given type, the optional given name,
     and the given linkage in the given address space.
 -/
-def create (type : @& FunctionTypeRef) (name : @& String := "")
-  (linkage := Linkage.external) (addrSpace := AddressSpace.default) :=
-  createRaw type name linkage addrSpace.toUInt32
+@[extern "papyrus_function_create"]
+constant create (type : @& FunctionTypeRef) (name : @& String := "")
+  (linkage := Linkage.external) (addrSpace := AddressSpace.default)
+  : IO FunctionRef
 
 /-- Get the type of this function.  -/
 def getType (self : @& FunctionRef) : IO FunctionTypeRef :=
