@@ -51,12 +51,28 @@ extern "C" obj_res papyrus_global_value_get_dll_storage_class(b_obj_arg gblRef, 
 	return io_result_mk_ok(box(toGlobalValue(gblRef)->getDLLStorageClass()));
 }
 
-// Set the visibility of a global value.
+// Set the DLL storage class of a global value.
 extern "C" obj_res papyrus_global_value_set_dll_storage_class
 	(uint8 dllStorageClass, b_obj_arg gblRef, obj_arg /* w */)
 {
 	toGlobalValue(gblRef)->setDLLStorageClass(
 	  static_cast<GlobalValue::DLLStorageClassTypes>(dllStorageClass));
+	return io_result_mk_ok(box(0));
+}
+
+// Get the thread local mode of a global value.
+extern "C" obj_res papyrus_global_value_get_thread_local_mode
+	(b_obj_arg gblRef, obj_arg /* w */)
+{
+	return io_result_mk_ok(box(toGlobalValue(gblRef)->getThreadLocalMode()));
+}
+
+// Set the thread local mode of a global value.
+extern "C" obj_res papyrus_global_value_set_thread_local_mode
+	(uint8 tlm, b_obj_arg gblRef, obj_arg /* w */)
+{
+	toGlobalValue(gblRef)->setThreadLocalMode(
+	  static_cast<GlobalValue::ThreadLocalMode>(tlm));
 	return io_result_mk_ok(box(0));
 }
 

@@ -47,6 +47,26 @@ extern "C" obj_res papyrus_module_set_id(b_obj_arg modRef, b_obj_arg modIdObj, o
 	return io_result_mk_ok(box(0));
 }
 
+// Get an array of references to the global variables of the given module.
+extern "C" obj_res papyrus_module_get_global_variables(b_obj_arg modRef, obj_arg /* w */) {
+	auto ctxRef = borrowLink(modRef);
+	auto& vars = toModule(modRef)->getGlobalList();
+	lean_object* arr = lean::alloc_array(0, 8);
+	for (GlobalVariable& var : vars) {
+		lean_inc_ref(ctxRef);
+		arr = lean_array_push(arr, mkValueRef(ctxRef, &var));
+	}
+	return io_result_mk_ok(arr);
+}
+
+// Add the given global variable to the end of the module.
+extern "C" obj_res papyrus_module_append_global_variable
+(b_obj_arg funRef, b_obj_arg modRef, obj_arg /* w */)
+{
+	toModule(modRef)->getGlobalList().push_back(toGlobalVariable(funRef));
+	return io_result_mk_ok(box(0));
+}
+
 // Get an array of references to the functions of the given module.
 extern "C" obj_res papyrus_module_get_functions(b_obj_arg modRef, obj_arg /* w */) {
 	auto ctxRef = borrowLink(modRef);

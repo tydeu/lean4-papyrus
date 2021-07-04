@@ -6,5 +6,6 @@ import Papyrus.IR.ConstantRefs
 import Papyrus.IR.InstructionRefs
 import Papyrus.IR.BasicBlockRef
 import Papyrus.IR.FunctionRef
+import Papyrus.IR.GlobalVariableRef
 import Papyrus.IR.ModuleRef
 import Papyrus.IR.AddressSpace

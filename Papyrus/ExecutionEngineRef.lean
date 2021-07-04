@@ -76,8 +76,9 @@ constant createForModule (mod : @& ModuleRef) (kind : @& EngineKind := EngineKin
 /--
   Execute the given function with the given arguments, and return the result.
 
-  MCJIT execution engines can only execute 'main-like' function (i.e., those
-  returning `void` or `int`, and taking no arguments `[]` or `[int, char**]`).
+  MCJIT execution engines can only execute 'main-like' function.
+  That is, those returning `void` or `int` and taking no arguments
+  (i.e., `[]`) or argc/argv (i.e., `[int, char**]`).
 -/
 @[extern "papyrus_execution_engine_run_function"]
 constant runFunction (fn : @& FunctionRef) (args : @& Array GenericValueRef)

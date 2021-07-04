@@ -186,6 +186,44 @@ constant GlobalValueRef.getDLLStorageClass (self : @& GlobalValueRef)
 constant GlobalValueRef.setDLLStorageClass (dllStorageClass : DLLStorageClass)
   (self : @& GlobalValueRef) : IO PUnit
 
+-- # Thread Local Mode
+
+/--
+  A global may be defined as thread local, which means that it will not be
+  shared by threads (each thread will have a separated copy of the variable).
+
+  A thread local global can define a preferred thread local storage  model, see
+  [ELF Handling for Thread-Local Storage](http://people.redhat.com/drepper/tls.pdf)
+  for more information on the how they be used.
+
+  Not all targets support thread-local variables.
+-/
+inductive ThreadLocalMode
+| /-- Global is not thread local. -/
+  notLocal
+| /-- General case, the default for a thread local global. -/
+  generalDynamic
+| /-- Only used within the current shared library. -/
+  localDynamic
+| /-- Not loaded dynamically. -/
+  initialExec
+| /-- Defined in the executable and only used within it. -/
+  localExec
+deriving BEq, DecidableEq, Repr
+
+attribute [unbox] ThreadLocalMode
+instance : Inhabited ThreadLocalMode := ⟨ThreadLocalMode.notLocal⟩
+
+/-- Get the thread local mode of this global. -/
+@[extern "papyrus_global_value_get_dll_storage_class"]
+constant GlobalValueRef.getThreadLocalMode (self : @& GlobalValueRef)
+  : IO ThreadLocalMode
+
+/-- Set the thread local mode of this global. -/
+@[extern "papyrus_global_value_set_dll_storage_class"]
+constant GlobalValueRef.setThreadLocalMode (tlm : ThreadLocalMode)
+  (self : @& GlobalValueRef) : IO PUnit
+
 -- # Address Significance
 
 /--

@@ -12,8 +12,10 @@ namespace llvm {
 	class IntegerType;
 	class FunctionType;
 	class Value;
+	class Constant;
 	class Instruction;
 	class BasicBlock;
+	class GlobalVariable;
 	class Function;
 	class GenericValue;
 }
@@ -27,6 +29,7 @@ const llvm::APInt apOfInt(unsigned numBits, lean::object* obj);
 
 lean::object* mkStringFromRef(const llvm::StringRef& str);
 const llvm::StringRef refOfString(lean::object* str);
+const llvm::StringRef refOfStringWithNull(lean::object* str);
 
 llvm::MemoryBuffer* toMemoryBuffer(lean::object* ref);
 
@@ -45,8 +48,10 @@ lean::object* mkValueRef(lean::object* ctxRef, llvm::Value* value);
 lean::object* getValueContext(lean::object* ref);
 lean::object* borrowValueContext(lean::object* ref);
 llvm::Value* toValue(lean::object* ref);
+llvm::Constant* toConstant(lean::object* ref);
 llvm::Instruction* toInstruction(lean::object* ref);
 llvm::BasicBlock* toBasicBlock(lean::object* ref);
+llvm::GlobalVariable* toGlobalVariable(lean::object* ref);
 llvm::Function* toFunction(lean::object* ref);
 
 lean::object* mkGenericValueRef(llvm::GenericValue* val);

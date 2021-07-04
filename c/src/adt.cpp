@@ -21,9 +21,14 @@ lean::object* mkStringFromRef(const llvm::StringRef& str) {
   return obj;
 }
 
-const llvm::StringRef refOfString(lean::object* obj) {
-  auto strObj = lean_to_string(obj);
+const llvm::StringRef refOfString(lean::object* str) {
+  auto strObj = lean_to_string(str);
   return llvm::StringRef(strObj->m_data, strObj->m_size - 1);
+}
+
+const llvm::StringRef refOfStringWithNull(lean::object* str) {
+  auto strObj = lean_to_string(str);
+  return llvm::StringRef(strObj->m_data, strObj->m_size);
 }
 
 #define LEAN_SMALL_NAT_BITS (CHAR_BIT*sizeof(size_t)-1)

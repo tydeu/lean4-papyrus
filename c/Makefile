@@ -42,6 +42,7 @@ SRCS := \
 	instruction.cpp\
 	basic_block.cpp\
 	global.cpp\
+	global_variable.cpp\
 	function.cpp\
 	generic_value.cpp\
 	execution_engine.cpp\

@@ -31,7 +31,7 @@ def create (type : @& FunctionTypeRef) (name : @& String := "")
   createRaw type name linkage addrSpace.toUInt32
 
 /-- Get the type of this function.  -/
-def getType (self : @& GlobalValueRef) : IO FunctionTypeRef :=
+def getType (self : @& FunctionRef) : IO FunctionTypeRef :=
   GlobalValueRef.getType self
 
 /-- Get the array of references to the basic blocks of this function. -/

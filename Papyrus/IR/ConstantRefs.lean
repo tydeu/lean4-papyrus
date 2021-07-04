@@ -6,7 +6,7 @@ namespace Papyrus
 
 namespace TypeRef
 
-/- Get a reference to a constant of this type with all bits set to `0`. -/
+/- Get a reference to a null (`0`) constant of this type. -/
 @[extern "papyrus_get_null_constant"]
 constant getNullConstant (self : @& TypeRef) : IO ConstantRef
 
@@ -36,6 +36,26 @@ def ConstantDataRef := ConstantRef
 def ConstantWordRef := ConstantDataRef
 
 namespace ConstantWordRef
+
+/--  Get an i1 constant for a `Bool` (i.e., `1` for `true`, `0` for `false`). -/
+@[extern "papyrus_get_constant_bool"]
+constant ofBool (value : Bool) : LLVM ConstantWordRef
+
+/--  Get an i8 constant for a `UInt8`. -/
+@[extern "papyrus_get_constant_uint8"]
+constant ofUInt8 (value : UInt8) : LLVM ConstantWordRef
+
+/--  Get an i16 constant for a `UInt16`. -/
+@[extern "papyrus_get_constant_uint16"]
+constant ofUInt16 (value : UInt16) : LLVM ConstantWordRef
+
+/--  Get an i32 constant for a `UInt32`. -/
+@[extern "papyrus_get_constant_uint32"]
+constant ofUInt32 (value : UInt32) : LLVM ConstantWordRef
+
+/--  Get an i64 constant for a `UInt64`. -/
+@[extern "papyrus_get_constant_uint64"]
+constant ofUInt64 (value : UInt64) : LLVM ConstantWordRef
 
 /-- Get the integer type of this constant.  -/
 def getType (self : @& ConstantWordRef) : IO IntegerTypeRef :=
@@ -102,3 +122,37 @@ constant getConstantInt (value : @& Int) (self : @& IntegerTypeRef) : IO Constan
 constant getConstantNat (value : @& Nat) (self : @& IntegerTypeRef) : IO ConstantNatRef
 
 end IntegerTypeRef
+
+
+--------------------------------------------------------------------------------
+-- Constant Arrays
+--------------------------------------------------------------------------------
+
+/--
+  A reference to an external LLVM
+  [ConstantDataSequential](https://llvm.org/doxygen/classllvm_1_1ConstantDataSequential.html).
+-/
+def ConstantDataSequentialRef := ConstantDataRef
+
+/--
+  A reference to an external LLVM
+  [ConstantDataArray](https://llvm.org/doxygen/classllvm_1_1ConstantDataArray.html).
+-/
+def ConstantDataArrayRef := ConstantDataSequentialRef
+
+namespace ConstantDataArrayRef
+
+/-- Get the array type of this constant.  -/
+def getType (self : @& ConstantDataArrayRef) : IO ArrayTypeRef :=
+  ValueRef.getType self
+
+/-- Get the type of elements of this constant.  -/
+def getElementType (self : @& ConstantDataArrayRef) : IO TypeRef := do
+  (← self.getType).getElementType
+
+/--
+  Get reference to a UTF-8 encoded string constant.
+  If `withNull` is true, the string is null terminated.
+-/
+@[extern "papyrus_get_constant_string"]
+constant getString (str : @& String) (withNull := true) : LLVM ConstantDataArrayRef

@@ -1,6 +1,7 @@
 import Papyrus.FFI
 import Papyrus.Context
 import Papyrus.MemoryBufferRef
+import Papyrus.IR.GlobalVariableRef
 import Papyrus.IR.FunctionRef
 
 namespace Papyrus
@@ -48,6 +49,14 @@ constant getModuleID (self : @& ModuleRef) : IO String
 /-- Set the module's identifier. -/
 @[extern "papyrus_module_set_id"]
 constant setModuleID (self : @& ModuleRef) (modID : @& String) : IO PUnit
+
+/-- Get an array of references to the global variables of this module . -/
+@[extern "papyrus_module_get_global_variables"]
+constant getGlobalVariables (self : @& ModuleRef) : IO (Array GlobalVariableRef)
+
+/-- Add a global variable to the end of this module . -/
+@[extern "papyrus_module_append_global_variable"]
+constant appendGlobalVariable (var : @& GlobalVariableRef) (self : @& ModuleRef) : IO PUnit
 
 /-- Get an array of references to the functions of this module . -/
 @[extern "papyrus_module_get_functions"]

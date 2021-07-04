@@ -5,6 +5,7 @@ import Papyrus.IR.ConstantRefs
 import Papyrus.IR.InstructionRefs
 import Papyrus.IR.BasicBlockRef
 import Papyrus.IR.FunctionRef
+import Papyrus.IR.GlobalVariableRef
 import Papyrus.IR.ModuleRef
 import Papyrus.ExecutionEngineRef
 import TestLib
@@ -168,7 +169,7 @@ def testConstants : SuiteT LLVM PUnit := do
 def testInstructions : SuiteT LLVM PUnit := do
 
   test "empty return instruction" do
-    let inst ← ReturnInstRef.createEmpty
+    let inst ← ReturnInstRef.createVoid
     unless (← inst.getReturnValue).isNone do
       assertFail "got return value when expecting none"
 
@@ -189,7 +190,7 @@ def testBasicBlock : SuiteT LLVM PUnit := do
     let name := "foo"
     let bb ← BasicBlockRef.create name
     assertBEq name (← bb.getName)
-    let inst ← ReturnInstRef.createEmpty
+    let inst ← ReturnInstRef.createVoid
     bb.appendInstruction inst
     let is ← bb.getInstructions
     if h : is.size = 1 then
@@ -260,7 +261,7 @@ def testProgram : SuiteT LLVM PUnit := do
 
     -- Construct Module
     let exitCode := 101
-    let mod ← ModuleRef.new "foo"
+    let mod ← ModuleRef.new "exit"
     let intTypeRef ← IntegerTypeRef.get 32
     let fnTy ← FunctionTypeRef.get intTypeRef #[]
     let fn ← FunctionRef.create fnTy "main"
@@ -289,6 +290,8 @@ def testProgram : SuiteT LLVM PUnit := do
     let asmFile := file.withExtension "s" |>.toString
     let exeFile := file.withExtension System.FilePath.exeExtension |>.toString
     mod.writeBitcodeToFile bcFile
+
+    -- Compile and Run It
     let llc ← IO.Process.spawn {
       cmd := "llc"
       args := #["-o", asmFile, bcFile]
@@ -301,6 +304,65 @@ def testProgram : SuiteT LLVM PUnit := do
     assertBEq 0 (← cpp.wait)
     let program ← IO.Process.spawn {cmd := exeFile}
     assertBEq 101 (← program.wait)
+
+  test "hello world program" do
+
+    -- Construct Module
+    let mod ← ModuleRef.new "hello"
+
+    -- Initialize Hello String Constant
+    let hello := "Hello World!"
+    let helloConst ← ConstantDataArrayRef.getString hello
+    let helloConstType ← helloConst.getType
+    let stringTypeRef ← PointerTypeRef.get helloConstType
+    let helloGbl ← GlobalVariableRef.new helloConstType true
+    helloGbl.setInitializer helloConst
+    mod.appendGlobalVariable helloGbl
+
+    -- Declare `printf` function
+    let voidTypeRef ← getVoidTypeRef
+    let intTypeRef ← IntegerTypeRef.get 32
+    let printfFnTy ← FunctionTypeRef.get intTypeRef #[stringTypeRef] true
+    let printf ← FunctionRef.create printfFnTy "printf"
+    mod.appendFunction printf
+
+    -- Add Main Function
+    let mainFnTy ← FunctionTypeRef.get intTypeRef #[]
+    let main ← FunctionRef.create mainFnTy "main"
+    mod.appendFunction main
+    let bb ← BasicBlockRef.create
+    main.appendBasicBlock bb
+    let call ← printf.createCall #[helloGbl]
+    bb.appendInstruction call
+    let ret ← ReturnInstRef.createUInt32 0
+    bb.appendInstruction ret
+
+    -- Verify Module
+    assertFalse (← mod.verify)
+
+    -- Output It
+    let outDir : System.FilePath := "out"
+    IO.FS.createDirAll outDir
+    let file := outDir / "hello"
+    let bcFile := file.withExtension "bc" |>.toString
+    let asmFile := file.withExtension "s" |>.toString
+    let exeFile := file.withExtension System.FilePath.exeExtension |>.toString
+    mod.writeBitcodeToFile bcFile
+
+    -- Compile and Run It
+    let llc ← IO.Process.spawn {
+      cmd := "llc"
+      args := #["-o", asmFile, bcFile]
+    }
+    assertBEq 0 (← llc.wait)
+    let cpp ← IO.Process.spawn {
+      cmd := "cc"
+      args := #["-o", exeFile, asmFile]
+    }
+    assertBEq 0 (← cpp.wait)
+    let out ← IO.Process.output {cmd := exeFile}
+    assertBEq 0 out.exitCode
+    assertBEq hello out.stdout
 
 /-- Test Runner -/
 def main : IO PUnit :=
