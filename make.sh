@@ -7,7 +7,13 @@ make -C c "$@"
 
 leanpkg build lib "$@"
 
-# Make Test
+# Make Test Lib
+
+cd test/lib
+leanpkg build lib "$@"
+cd ../..
+
+# Make Tests
 
 echo "testing papyrus"
 make -C test "$@"

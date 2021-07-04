@@ -26,7 +26,6 @@ TESTLIB_BUILD_DIR	:= $(TESTLIB_HOME)/build
 TESTLIB_OLEAN_DIR	:= $(TESTLIB_BUILD_DIR)
 TESTLIB_OLEAN    	:= $(TESTLIB_OLEAN_DIR)/TestLib.olean
 TESTLIB_LIB    		:= $(TESTLIB_BUILD_DIR)/lib/libTestLib.a
-TESTLIB_OPTS			:=
 
 # Other Config
 
@@ -51,16 +50,6 @@ BINS := $(addprefix $(OUT_DIR)/,$(SRCS:.lean=))
 
 all: bin test
 
-# Test Lib Build Rules
-
-testlib:
-	cd $(TESTLIB_HOME) && leanpkg build lib
-
-$(TESTLIB_OLEAN) $(TESTLIB_LIB): testlib
-
-clean-testlib:
-	$(RMPATH) $(TESTLIB_BUILD_DIR)
-
 # Test Suite Build Rules
 
 bin: $(BINS)
@@ -82,8 +71,6 @@ $(OUT_DIR)/% : $(OUT_DIR)/%.o $(PAPYRUS_C_LIB) $(TESTLIB_LIB) | $(OUT_DIR)
 clean-bin:
 	$(RMPATH) $(OUT_DIR)
 
-clean-build: clean-bin clean-testlib
-
 # Testing Rules
 
 test: bin
@@ -92,4 +79,4 @@ test: bin
 clean-test:
 	$(RMPATH) $(TEST_OUT_DIR)
 
-clean: clean-build clean-test
+clean: clean-bin clean-test
