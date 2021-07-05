@@ -35,8 +35,8 @@ extern "C" obj_res papyrus_get_all_ones_constant(b_obj_arg typeRef, obj_arg /* w
 //------------------------------------------------------------------------------
 
 // Get the LLVM ConstantInt pointer wrapped in an object.
-llvm::ConstantInt* toConstantInt(lean::object* constRef) {
-	return llvm::cast<ConstantInt>(toValue(constRef));
+llvm::ConstantInt* toConstantInt(lean::object* ref) {
+	return llvm::cast<ConstantInt>(toValue(ref));
 }
 
 // Get a reference to an i1 constant of the given signed Bool value.
@@ -112,8 +112,29 @@ extern "C" obj_res papyrus_constant_word_get_nat_value(b_obj_arg constRef, obj_a
 }
 
 //------------------------------------------------------------------------------
-// Constant words / integers / naturals
+// Constant data arrays
 //------------------------------------------------------------------------------
+
+// Get the LLVM ConstantDataSequential pointer wrapped in an object.
+ConstantDataSequential* toConstantDataSequential(lean::object* ref) {
+	return llvm::cast<ConstantDataSequential>(toValue(ref));
+}
+
+// Get whether this constant is a string.
+extern "C" obj_res papyrus_constant_data_sequential_is_string
+	(b_obj_arg constRef,  obj_arg /* w */)
+{
+	auto b = toConstantDataSequential(constRef)->isString();
+	return io_result_mk_ok(box(b));
+}
+
+// Get the value of a constant as a string by treating its bytes as characters.
+extern "C" obj_res papyrus_constant_data_sequential_get_as_string
+	(b_obj_arg constRef, uint8 withNull, obj_arg /* w */)
+{
+	auto str = toConstantDataSequential(constRef)->getRawDataValues();
+	return io_result_mk_ok(mkStringFromRef(str));
+}
 
 // Get a reference to a (UTF-8 encoded) string constant.
 extern "C" obj_res papyrus_get_constant_string

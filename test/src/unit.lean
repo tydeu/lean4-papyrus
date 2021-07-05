@@ -200,6 +200,28 @@ def testBasicBlock : SuiteT LLVM PUnit := do
     else
       assertFail s!"expected 1 instruction in basic block, got {is.size}"
 
+/-- Global Variable Unit Tests -/
+def testGlobalVariable : SuiteT LLVM PUnit := do
+
+  test "global string constant" do
+
+    let str := "foo"
+    let name := "myConst"
+    let gbl ← GlobalVariableRef.newString str name (withNull := false)
+    assertBEq name (← gbl.getName)
+    assertBEq Linkage.private (← gbl.getLinkage)
+    assertBEq Visibility.default (← gbl.getVisibility)
+    assertBEq DLLStorageClass.default (← gbl.getDLLStorageClass)
+    assertBEq ThreadLocalMode.notLocal (← gbl.getThreadLocalMode)
+    assertBEq AddressSignificance.none (← gbl.getAddressSignificance)
+    assertBEq AddressSpace.default (← gbl.getAddressSpace)
+    assertBEq true (← gbl.hasInitializer)
+    let init : ConstantDataArrayRef ← gbl.getInitializer
+    assertBEq true (← init.isString)
+    assertBEq str (← init.getAsString)
+    assertBEq 1 (← gbl.getRawAlignment)
+    assertBEq false (← gbl.hasSection)
+
 /-- Function Unit Tests -/
 def testFunction : SuiteT LLVM PUnit := do
 
@@ -373,6 +395,7 @@ def main : IO PUnit :=
     testConstants
     testInstructions
     testBasicBlock
+    testGlobalVariable
     testFunction
     testModule
     testProgram

@@ -134,6 +134,18 @@ end IntegerTypeRef
 -/
 def ConstantDataSequentialRef := ConstantDataRef
 
+namespace ConstantDataSequentialRef
+
+/-- Check whether this constant is an i8 array. -/
+@[extern "papyrus_constant_data_sequential_is_string"]
+constant isString (const : @& ConstantDataSequentialRef) : IO Bool
+
+/-- Get the value of this constant as a `String` by treating its bytes as characters. -/
+@[extern "papyrus_constant_data_sequential_get_as_string"]
+constant getAsString (const : @& ConstantDataSequentialRef) : IO String
+
+end ConstantDataSequentialRef
+
 /--
   A reference to an external LLVM
   [ConstantDataArray](https://llvm.org/doxygen/classllvm_1_1ConstantDataArray.html).
@@ -155,4 +167,4 @@ def getElementType (self : @& ConstantDataArrayRef) : IO TypeRef := do
   If `withNull` is true, the string is null terminated.
 -/
 @[extern "papyrus_get_constant_string"]
-constant getString (str : @& String) (withNull := true) : LLVM ConstantDataArrayRef
+constant ofString (str : @& String) (withNull := true) : LLVM ConstantDataArrayRef

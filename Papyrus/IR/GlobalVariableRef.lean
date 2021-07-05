@@ -37,14 +37,15 @@ def newOfConstant (init : ConstantRef)
 
 /--
   Create a new unlinked global string constant with the given value.
+  If `withNull` is true, the string will be null terminated.
 
   Such constants have private linkage, single byte alignment,
   are not thread local, and their addresses are insignificant.
 -/
 def newString (value : String)
-(name := "") (addrSpace := AddressSpace.default)
+(name := "") (addrSpace := AddressSpace.default) (withNull := true)
 : LLVM GlobalVariableRef := do
-  let var ← newOfConstant (← ConstantDataArrayRef.getString value)
+  let var ← newOfConstant (← ConstantDataArrayRef.ofString value withNull)
     Linkage.private name ThreadLocalMode.notLocal addrSpace
   var.setAddressSignificance AddressSignificance.none
   var.setRawAlignment 1

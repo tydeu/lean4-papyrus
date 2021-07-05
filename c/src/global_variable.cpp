@@ -65,7 +65,7 @@ extern "C" obj_res papyrus_global_variable_has_initializer
 // Only call this if the global variable is know to have one
 // (i.e., because hasInitializer return true).
 extern "C" obj_res papyrus_global_variable_get_initializer
-(b_obj_arg initializerObj, b_obj_arg varRef, obj_arg /* w */)
+	(b_obj_arg varRef, obj_arg /* w */)
 {
 	auto initializer = toGlobalVariable(varRef)->getInitializer();
 	return io_result_mk_ok(mkValueRef(getValueContext(varRef), initializer));
