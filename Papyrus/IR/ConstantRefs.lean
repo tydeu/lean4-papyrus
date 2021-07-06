@@ -123,9 +123,8 @@ constant getConstantNat (value : @& Nat) (self : @& IntegerTypeRef) : IO Constan
 
 end IntegerTypeRef
 
-
 --------------------------------------------------------------------------------
--- Constant Arrays
+-- Constant Data Arrays
 --------------------------------------------------------------------------------
 
 /--
@@ -168,3 +167,40 @@ def getElementType (self : @& ConstantDataArrayRef) : IO TypeRef := do
 -/
 @[extern "papyrus_get_constant_string"]
 constant ofString (str : @& String) (withNull := true) : LLVM ConstantDataArrayRef
+
+end ConstantDataArrayRef
+
+--------------------------------------------------------------------------------
+-- Constant Expressions
+--------------------------------------------------------------------------------
+
+/--
+  A reference to an external LLVM
+  [ConstantExpr](https://llvm.org/doxygen/classllvm_1_1ConstantExpr.html).
+-/
+def ConstantExprRef := ConstantRef
+
+namespace ConstantExprRef
+
+/--
+  Create a constant GEP expression.
+  Calculates the address of the given sub-element of an aggregate data structure.
+  See the [`getelementptr`](https://llvm.org/docs/LangRef.html#getelementptr-instruction)
+  docs for more details.
+-/
+@[extern "papyrus_constant_expr_get_element_ptr"]
+constant getGetElementPtr (aggregate : @& ConstantRef)
+  (indices : @& Array ConstantRef) (inBounds := false)
+  : IO ConstantExprRef
+
+/--
+  Create a constant GEP expression with an additional `inrange` index.
+  See the [`getelementptr`](https://llvm.org/docs/LangRef.html#getelementptr-instruction)
+  docs for more details.
+-/
+@[extern "papyrus_constant_expr_get_element_ptr_in_range"]
+constant getGetElementPtrInRange (aggregate : @& ConstantRef)
+  (indices : @& Array ConstantRef) (inRange : UInt32) (inBounds := false)
+  : IO ConstantExprRef
+
+end ConstantExprRef

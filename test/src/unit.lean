@@ -340,12 +340,13 @@ def testProgram : SuiteT LLVM PUnit := do
     -- Initialize Hello String Constant
     let hello := "Hello World!"
     let helloGbl ← GlobalVariableRef.newString hello
-    let stringTypeRef ← helloGbl.getPointerType
+    let intTypeRef ← IntegerTypeRef.get 32
+    let z ← intTypeRef.getConstantNat 0
+    let helloPtr ← ConstantExprRef.getGetElementPtr helloGbl #[z, z] true
     mod.appendGlobalVariable helloGbl
 
     -- Declare `printf` function
-    let voidTypeRef ← getVoidTypeRef
-    let intTypeRef ← IntegerTypeRef.get 32
+    let stringTypeRef ← PointerTypeRef.get (← IntegerTypeRef.get 8)
     let printfFnTy ← FunctionTypeRef.get intTypeRef #[stringTypeRef] true
     let printf ← FunctionRef.create printfFnTy "printf"
     mod.appendFunction printf
@@ -356,7 +357,7 @@ def testProgram : SuiteT LLVM PUnit := do
     mod.appendFunction main
     let bb ← BasicBlockRef.create
     main.appendBasicBlock bb
-    let call ← printf.createCall #[helloGbl]
+    let call ← printf.createCall #[helloPtr]
     bb.appendInstruction call
     let ret ← ReturnInstRef.createUInt32 0
     bb.appendInstruction ret

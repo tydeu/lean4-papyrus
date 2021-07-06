@@ -15,7 +15,7 @@ llvm::Constant* toConstant(lean::object* ref) {
 }
 
 //------------------------------------------------------------------------------
-// Generic constants
+// Generic Constants
 //------------------------------------------------------------------------------
 
 // Get the null constant of the given type.
@@ -31,7 +31,7 @@ extern "C" obj_res papyrus_get_all_ones_constant(b_obj_arg typeRef, obj_arg /* w
 }
 
 //------------------------------------------------------------------------------
-// Constant words / integers / naturals
+// Constant Words / Integers / Naturals
 //------------------------------------------------------------------------------
 
 // Get the LLVM ConstantInt pointer wrapped in an object.
@@ -112,7 +112,7 @@ extern "C" obj_res papyrus_constant_word_get_nat_value(b_obj_arg constRef, obj_a
 }
 
 //------------------------------------------------------------------------------
-// Constant data arrays
+// Constant Data Arrays
 //------------------------------------------------------------------------------
 
 // Get the LLVM ConstantDataSequential pointer wrapped in an object.
@@ -144,5 +144,32 @@ extern "C" obj_res papyrus_get_constant_string
 	auto cnst = ConstantDataArray::getString(*toLLVMContext(ctxObj), str, false);
 	return io_result_mk_ok(mkValueRef(ctxObj, cnst));
 }
+
+//------------------------------------------------------------------------------
+// Constant Expressions
+//------------------------------------------------------------------------------
+
+// Get whether this constant is a string.
+extern "C" obj_res papyrus_constant_expr_get_element_ptr
+	(b_obj_arg aggRef, b_obj_arg indicesObj, uint8 inBounds, obj_arg /* w */)
+{
+	LEAN_ARRAY_TO_REF(Constant*, toConstant, indicesObj, indices);
+	auto k = ConstantExpr::getGetElementPtr(nullptr, toConstant(aggRef),
+		indices, inBounds);
+	return io_result_mk_ok(mkValueRef(getValueContext(aggRef), k));
+}
+
+// Get the value of a constant as a string by treating its bytes as characters.
+extern "C" obj_res papyrus_constant_expr_get_element_ptr_in_range
+	(b_obj_arg aggRef, b_obj_arg indicesObj, uint32 inRange,
+		uint8 inBounds, obj_arg /* w */)
+{
+	LEAN_ARRAY_TO_REF(Constant*, toConstant, indicesObj, indices);
+	auto k = ConstantExpr::getGetElementPtr(nullptr, toConstant(aggRef),
+		indices, inBounds, inRange);
+	return io_result_mk_ok(mkValueRef(getValueContext(aggRef), k));
+}
+
+// Get a reference to a (UTF-8 encoded) string constan
 
 } // end namespace papyrus
