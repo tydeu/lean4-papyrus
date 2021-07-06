@@ -39,7 +39,7 @@ llvm::ConstantInt* toConstantInt(lean::object* ref) {
 	return llvm::cast<ConstantInt>(toValue(ref));
 }
 
-// Get a reference to an i1 constant of the given signed Bool value.
+// Get a reference to an i1 constant of the given Bool value.
 extern "C" obj_res papyrus_get_constant_bool
 (uint8 val, obj_arg ctxObj, obj_arg /* w */)
 {
@@ -47,7 +47,7 @@ extern "C" obj_res papyrus_get_constant_bool
 	return io_result_mk_ok(mkValueRef(ctxObj, n));
 }
 
-// Get a reference to an i8 constant of the given signed UInt8 value.
+// Get a reference to an i8 constant of the given UInt8 value.
 extern "C" obj_res papyrus_get_constant_uint8
 (uint8 val, obj_arg ctxObj, obj_arg /* w */)
 {
@@ -55,7 +55,7 @@ extern "C" obj_res papyrus_get_constant_uint8
 	return io_result_mk_ok(mkValueRef(ctxObj, n));
 }
 
-// Get a reference to an i16 constant of the given signed UInt16 value.
+// Get a reference to an i16 constant of the given UInt16 value.
 extern "C" obj_res papyrus_get_constant_uint16
 (uint16 val, obj_arg ctxObj, obj_arg /* w */)
 {
