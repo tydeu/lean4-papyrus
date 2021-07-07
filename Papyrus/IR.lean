@@ -1,11 +1,16 @@
+import Papyrus.IR.AddressSpace
 import Papyrus.IR.TypeID
 import Papyrus.IR.TypeRef
 import Papyrus.IR.TypeRefs
+import Papyrus.IR.TypeBases
+import Papyrus.IR.Type
+import Papyrus.IR.Types
 import Papyrus.IR.ValueRef
+import Papyrus.IR.ConstantRef
 import Papyrus.IR.ConstantRefs
+import Papyrus.IR.InstructionRef
 import Papyrus.IR.InstructionRefs
 import Papyrus.IR.BasicBlockRef
 import Papyrus.IR.FunctionRef
 import Papyrus.IR.GlobalVariableRef
 import Papyrus.IR.ModuleRef
-import Papyrus.IR.AddressSpace
