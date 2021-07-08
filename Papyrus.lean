@@ -1,3 +1,4 @@
+import Papyrus.Init
 import Papyrus.Context
 import Papyrus.MemoryBufferRef
 import Papyrus.ExecutionEngineRef

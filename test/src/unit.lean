@@ -1,17 +1,7 @@
-import Papyrus.Init
-import Papyrus.Context
-import Papyrus.IR.TypeRefs
-import Papyrus.IR.ConstantRefs
-import Papyrus.IR.InstructionRefs
-import Papyrus.IR.BasicBlockRef
-import Papyrus.IR.FunctionRef
-import Papyrus.IR.GlobalVariableRef
-import Papyrus.IR.ModuleRef
-import Papyrus.ExecutionEngineRef
+import Papyrus
 import TestLib
 
 open TestLib Papyrus
-
 
 def assertBEqRefArray  {m} [Monad m] [MonadLiftT IO m]
   (expected actual : Array TypeRef) : AssertT m PUnit := do
@@ -19,7 +9,7 @@ def assertBEqRefArray  {m} [Monad m] [MonadLiftT IO m]
   for (expectedElem, actualElem) in Array.zip expected actual do
     assertBEq (← expectedElem.getTypeID) (← actualElem.getTypeID)
 
-def assertFunTypeRoundtrips
+def assertFunTypeRefRoundtrips
 (retType : TypeRef) (paramTypes : Array TypeRef) (isVarArg : Bool)
 : AssertT LLVM PUnit := do
   let ref ← FunctionTypeRef.get retType paramTypes isVarArg
@@ -28,7 +18,7 @@ def assertFunTypeRoundtrips
   assertBEqRefArray paramTypes (← ref.getParameterTypes)
   assertBEq isVarArg (← ref.isVarArg)
 
-def assertVectorTypeRoundtrips
+def assertVecTypeRefRoundtrips
 (elementType : TypeRef) (minSize : UInt32) (isScalable : Bool)
 : AssertT LLVM PUnit := do
   let ref ← VectorTypeRef.get elementType minSize isScalable
@@ -41,7 +31,7 @@ def assertVectorTypeRoundtrips
 /-- Type Unit Tests -/
 def testTypes : SuiteT LLVM PUnit := do
 
-  test "special types" do
+  test "special type refs" do
     assertBEq TypeID.void       (← (← getVoidTypeRef).getTypeID)
     assertBEq TypeID.label      (← (← getLabelTypeRef).getTypeID)
     assertBEq TypeID.metadata   (← (← getMetadataTypeRef).getTypeID)
@@ -49,7 +39,7 @@ def testTypes : SuiteT LLVM PUnit := do
     assertBEq TypeID.x86MMX     (← (← getX86MMXTypeRef).getTypeID)
     assertBEq TypeID.x86AMX     (← (← getX86AMXTypeRef).getTypeID)
 
-  test "floating point types" do
+  test "floating point type refs" do
     assertBEq TypeID.half       (← (← getHalfTypeRef).getTypeID)
     assertBEq TypeID.bfloat     (← (← getBFloatTypeRef).getTypeID)
     assertBEq TypeID.float      (← (← getFloatTypeRef).getTypeID)
@@ -58,27 +48,27 @@ def testTypes : SuiteT LLVM PUnit := do
     assertBEq TypeID.fp128      (← (← getFP128TypeRef).getTypeID)
     assertBEq TypeID.ppcFP128   (← (← getPPCFP128TypeRef).getTypeID)
 
-  test "integer types" do
+  test "integer type refs" do
     let n := 100
     let ref ← IntegerTypeRef.get n
     assertBEq TypeID.integer (← ref.getTypeID)
     assertBEq n (← ref.getBitWidth)
 
-  test "function types" do
+  test "function type refs" do
     let retType ← getVoidTypeRef
     let paramAType ← getDoubleTypeRef
     let paramBType ← IntegerTypeRef.get 100
-    assertFunTypeRoundtrips retType #[paramAType] false
-    assertFunTypeRoundtrips retType #[paramBType, paramAType] true
+    assertFunTypeRefRoundtrips retType #[paramAType] false
+    assertFunTypeRefRoundtrips retType #[paramBType, paramAType] true
 
-  test "pointer types" do
+  test "pointer type refs" do
     let pointeeType ← getDoubleTypeRef
     let ref ← PointerTypeRef.get pointeeType
     assertBEq TypeID.pointer (← ref.getTypeID)
     assertBEq (← pointeeType.getTypeID) (← (← ref.getPointeeType).getTypeID)
     assertBEq AddressSpace.default (← ref.getAddressSpace)
 
-  test "literal struct types" do
+  test "literal struct type refs" do
     let elemTypes := #[← getHalfTypeRef, ← getDoubleTypeRef]
     let ref ← LiteralStructTypeRef.get elemTypes
     assertBEq TypeID.struct (← ref.getTypeID)
@@ -87,7 +77,7 @@ def testTypes : SuiteT LLVM PUnit := do
     assertBEqRefArray elemTypes (← ref.getElementTypes)
     assertBEq false (← ref.isPacked)
 
-  test "complete struct types" do
+  test "complete struct type refs" do
     let name := "foo"
     let elemTypes := #[← getFloatTypeRef]
     let ref ← IdentifiedStructTypeRef.create name elemTypes true
@@ -98,7 +88,7 @@ def testTypes : SuiteT LLVM PUnit := do
     assertBEqRefArray elemTypes (← ref.getElementTypes)
     assertBEq true (← ref.isPacked)
 
-  test "opaque struct types" do
+  test "opaque struct type refs" do
     let name := "bar"
     let ref ← IdentifiedStructTypeRef.createOpaque name
     assertBEq TypeID.struct (← ref.getTypeID)
@@ -108,7 +98,7 @@ def testTypes : SuiteT LLVM PUnit := do
     assertBEq 0 (← ref.getElementTypes).size
     assertBEq false (← ref.isPacked)
 
-  test "array types" do
+  test "array type refs" do
     let size := 8
     let elemType ← IntegerTypeRef.get 30
     let ref ← ArrayTypeRef.get elemType size
@@ -116,10 +106,43 @@ def testTypes : SuiteT LLVM PUnit := do
     assertBEq (← elemType.getTypeID) (← (← ref.getElementType).getTypeID)
     assertBEq size (← ref.getSize)
 
-  test "vector types" do
+  test "vector type refs" do
     let elemType ← getDoubleTypeRef
-    assertVectorTypeRoundtrips elemType 8 false
-    assertVectorTypeRoundtrips elemType 16 true
+    assertVecTypeRefRoundtrips elemType 8 false
+    assertVecTypeRefRoundtrips elemType 16 true
+
+def assertTypeRoundtrips (type : «Type») : AssertT LLVM PUnit := do
+  assertBEq type (← (← type.getRef).purify)
+
+/-- Unit tests for pure types (e.g., `Type`). -/
+def testPureTypes : SuiteT LLVM PUnit := do
+
+  test "special types" do
+    assertTypeRoundtrips Type.void
+    assertTypeRoundtrips Type.label
+    assertTypeRoundtrips Type.metadata
+    assertTypeRoundtrips Type.token
+    assertTypeRoundtrips Type.x86MMX
+    assertTypeRoundtrips Type.x86AMX
+
+  test "floating point types" do
+    assertTypeRoundtrips Type.half
+    assertTypeRoundtrips Type.bfloat
+    assertTypeRoundtrips Type.float
+    assertTypeRoundtrips Type.double
+    assertTypeRoundtrips Type.x86FP80
+    assertTypeRoundtrips Type.fp128
+    assertTypeRoundtrips Type.ppcFP128
+
+  test "derived types" do
+    assertTypeRoundtrips <| integerType 100
+    assertTypeRoundtrips <| functionType Type.void #[Type.double] true
+    assertTypeRoundtrips <| pointerType (integerType 8)
+    assertTypeRoundtrips <| structType "foo'" #[integerType 24] true
+    assertTypeRoundtrips <| arrayType Type.float 6
+    assertTypeRoundtrips <| vectorType Type.float 4 true
+    assertTypeRoundtrips <| fixedVectorType Type.half 8
+    assertTypeRoundtrips <| scalableVectorType Type.double 2
 
 /-- Constant Unit Tests -/
 def testConstants : SuiteT LLVM PUnit := do
@@ -393,6 +416,7 @@ def testProgram : SuiteT LLVM PUnit := do
 def main : IO PUnit :=
   LLVM.run <| SuiteT.runIO do
     testTypes
+    testPureTypes
     testConstants
     testInstructions
     testBasicBlock
