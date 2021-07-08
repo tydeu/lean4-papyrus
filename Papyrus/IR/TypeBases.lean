@@ -52,6 +52,26 @@ def mask (self : IntegerType) : Nat :=
 
 end IntegerType
 
+-- ## Specializations
+
+/-- A 1-bit integer type (e.g., a `bool`). -/
+abbrev int1Type := integerType 1
+
+/-- An 8-bit integer type (e.g., a `byte` or `char`). -/
+abbrev int8Type := integerType 8
+
+/-- A 16-bit integer type (e.g., a `short`). -/
+abbrev int16Type := integerType 16
+
+/-- A 32-bit integer type (e.g., a `long`). -/
+abbrev int32Type := integerType 32
+
+/-- A 64-bit integer type (e.g., a `long long`). -/
+abbrev int64Type := integerType 64
+
+/-- A 128-bit integer type. -/
+abbrev int128Type := integerType 128
+
 --------------------------------------------------------------------------------
 -- # BaseFunctionType
 --------------------------------------------------------------------------------

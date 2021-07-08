@@ -5,6 +5,53 @@ import Papyrus.IR.AddressSpace
 namespace Papyrus
 
 --------------------------------------------------------------------------------
+-- # Special Types
+--------------------------------------------------------------------------------
+
+/-- An empty type. -/
+abbrev voidType := Type.void
+
+/-- A label type. -/
+abbrev labelType := Type.label
+
+/-- A metadata type. -/
+abbrev metadataType := Type.metadata
+
+/-- A token type. -/
+abbrev tokenType := Type.token
+
+/-- A 64-bit X86 MMX vector type. -/
+abbrev x86MMXType := Type.x86MMX
+
+/-- A 8192-bit X86 MMX vector type. -/
+abbrev x86AMXType := Type.x86AMX
+
+--------------------------------------------------------------------------------
+-- # Floating Point Types
+--------------------------------------------------------------------------------
+
+/-- An IEEE half precision (16-bit) floating point type. -/
+abbrev halfType := Type.half
+
+/-- A brain floating point. A 16-bit (7-bit significand) floating point type. -/
+abbrev bfloatType := Type.bfloat
+
+/-- An IEEE single precision (32-bit) floating point type. -/
+abbrev floatType := Type.float
+
+/-- An IEEE double precision (64-bit) floating point type. -/
+abbrev doubleType := Type.double
+
+/-- An X86/X87 80-bit floating point type. -/
+abbrev x86FP80Type := Type.x86FP80
+
+/-- An IEEE quadruple precision (128-bit) floating point type. -/
+abbrev fp128Type := Type.fp128
+
+/-- A PowerPC double double. A 128-bit floating point type that sums two IEEE doubles. -/
+abbrev ppcFP128Type := Type.ppcFP128
+
+--------------------------------------------------------------------------------
 -- # IntegerType
 --------------------------------------------------------------------------------
 
@@ -284,3 +331,26 @@ def ScalableVectorType.getRef (self : ScalableVectorType) : LLVM ScalableVectorT
 /-- Lift this reference to a pure `ArrayType`. -/
 def ScalableVectorTypeRef.purify (self : ScalableVectorTypeRef) : IO ScalableVectorType := do
   scalableVectorType (← (← self.getElementType).purify) (← self.getMinSize)
+
+--------------------------------------------------------------------------------
+-- # Convenience functions for constructing PointerTypes
+--------------------------------------------------------------------------------
+
+abbrev Type.pointerType (self : «Type») :=
+  Papyrus.pointerType self
+abbrev IntegerType.pointerType (self : IntegerType) :=
+  Papyrus.pointerType self
+abbrev FunctionType.pointerType (self : FunctionType) :=
+  Papyrus.pointerType self
+abbrev PointerType.pointerType (self : PointerType) :=
+  Papyrus.pointerType self
+abbrev StructType.pointerType (self : StructType) :=
+  Papyrus.pointerType self
+abbrev ArrayType.pointerType (self : ArrayType) :=
+  Papyrus.pointerType self
+abbrev VectorType.pointerType (self : VectorType) :=
+  Papyrus.pointerType self
+abbrev FixedVectorType.pointerType (self : FixedVectorType) :=
+  Papyrus.pointerType self
+abbrev ScalableVectorType.pointerType (self : ScalableVectorType) :=
+  Papyrus.pointerType self

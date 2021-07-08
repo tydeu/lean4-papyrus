@@ -136,13 +136,13 @@ def testPureTypes : SuiteT LLVM PUnit := do
 
   test "derived types" do
     assertTypeRoundtrips <| integerType 100
-    assertTypeRoundtrips <| functionType Type.void #[Type.double] true
-    assertTypeRoundtrips <| pointerType (integerType 8)
+    assertTypeRoundtrips <| functionType voidType #[int8Type.pointerType] true
+    assertTypeRoundtrips <| pointerType fp128Type
     assertTypeRoundtrips <| structType "foo'" #[integerType 24] true
-    assertTypeRoundtrips <| arrayType Type.float 6
-    assertTypeRoundtrips <| vectorType Type.float 4 true
-    assertTypeRoundtrips <| fixedVectorType Type.half 8
-    assertTypeRoundtrips <| scalableVectorType Type.double 2
+    assertTypeRoundtrips <| arrayType halfType 6
+    assertTypeRoundtrips <| vectorType int32Type 4 true
+    assertTypeRoundtrips <| fixedVectorType doubleType 8
+    assertTypeRoundtrips <| scalableVectorType int1Type 16
 
 /-- Constant Unit Tests -/
 def testConstants : SuiteT LLVM PUnit := do
