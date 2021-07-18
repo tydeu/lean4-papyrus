@@ -23,7 +23,7 @@ abbrev tokenType := Type.token
 /-- A 64-bit X86 MMX vector type. -/
 abbrev x86MMXType := Type.x86MMX
 
-/-- A 8192-bit X86 MMX vector type. -/
+/-- An 8192-bit X86 MMX vector type. -/
 abbrev x86AMXType := Type.x86AMX
 
 --------------------------------------------------------------------------------

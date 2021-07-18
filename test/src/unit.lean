@@ -118,21 +118,21 @@ def assertTypeRoundtrips (type : «Type») : AssertT LLVM PUnit := do
 def testPureTypes : SuiteT LLVM PUnit := do
 
   test "special types" do
-    assertTypeRoundtrips Type.void
-    assertTypeRoundtrips Type.label
-    assertTypeRoundtrips Type.metadata
-    assertTypeRoundtrips Type.token
-    assertTypeRoundtrips Type.x86MMX
-    assertTypeRoundtrips Type.x86AMX
+    assertTypeRoundtrips voidType
+    assertTypeRoundtrips labelType
+    assertTypeRoundtrips metadataType
+    assertTypeRoundtrips tokenType
+    assertTypeRoundtrips x86MMXType
+    assertTypeRoundtrips x86AMXType
 
   test "floating point types" do
-    assertTypeRoundtrips Type.half
-    assertTypeRoundtrips Type.bfloat
-    assertTypeRoundtrips Type.float
-    assertTypeRoundtrips Type.double
-    assertTypeRoundtrips Type.x86FP80
-    assertTypeRoundtrips Type.fp128
-    assertTypeRoundtrips Type.ppcFP128
+    assertTypeRoundtrips halfType
+    assertTypeRoundtrips bfloatType
+    assertTypeRoundtrips floatType
+    assertTypeRoundtrips doubleType
+    assertTypeRoundtrips x86FP80Type
+    assertTypeRoundtrips fp128Type
+    assertTypeRoundtrips ppcFP128Type
 
   test "derived types" do
     assertTypeRoundtrips <| integerType 100
