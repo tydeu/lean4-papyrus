@@ -336,21 +336,21 @@ def ScalableVectorTypeRef.purify (self : ScalableVectorTypeRef) : IO ScalableVec
 -- # Convenience functions for constructing PointerTypes
 --------------------------------------------------------------------------------
 
-abbrev Type.pointerType (self : «Type») :=
-  Papyrus.pointerType self
-abbrev IntegerType.pointerType (self : IntegerType) :=
-  Papyrus.pointerType self
-abbrev FunctionType.pointerType (self : FunctionType) :=
-  Papyrus.pointerType self
-abbrev PointerType.pointerType (self : PointerType) :=
-  Papyrus.pointerType self
-abbrev StructType.pointerType (self : StructType) :=
-  Papyrus.pointerType self
-abbrev ArrayType.pointerType (self : ArrayType) :=
-  Papyrus.pointerType self
-abbrev VectorType.pointerType (self : VectorType) :=
-  Papyrus.pointerType self
-abbrev FixedVectorType.pointerType (self : FixedVectorType) :=
-  Papyrus.pointerType self
-abbrev ScalableVectorType.pointerType (self : ScalableVectorType) :=
-  Papyrus.pointerType self
+protected abbrev Type.pointerType (self : «Type») :=
+  pointerType self
+protected abbrev IntegerType.pointerType (self : IntegerType) :=
+  pointerType self
+protected abbrev FunctionType.pointerType (self : FunctionType) :=
+  pointerType self
+protected abbrev PointerType.pointerType (self : PointerType) :=
+  pointerType self
+protected abbrev StructType.pointerType (self : StructType) :=
+  pointerType self
+protected abbrev ArrayType.pointerType (self : ArrayType) :=
+  pointerType self
+protected abbrev VectorType.pointerType (self : VectorType) :=
+  pointerType self
+protected abbrev FixedVectorType.pointerType (self : FixedVectorType) :=
+  pointerType self
+protected abbrev ScalableVectorType.pointerType (self : ScalableVectorType) :=
+  pointerType self
