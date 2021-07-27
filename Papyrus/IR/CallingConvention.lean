@@ -7,18 +7,28 @@ open Lean Parser Command
 
 syntax enumCtor := "\n| " declModifiers ident " := " term
 
-scoped macro (name := enumDecl) mods:declModifiers
-"enum" id:ident " : " type:term enums:many(enumCtor) : command => do
+scoped macro (name := enumDecl)
+  mods:declModifiers
+  "enum " id:ident " : " type:term _whereTk?:optional(" := " <|> " where ")
+  ctors:many(enumCtor)
+  deriv?:optDeriving
+: command => do
+  let wrap := mkIdent `fromId
+  let unwrap := mkIdent `toId
   let mut defs : Array Syntax := #[]
-  defs := defs.push <| ← `($mods:declModifiers def $id := $type)
-  for enum in enums do
-    let enumId := enum[2]
-    let enumQualId := mkIdentFrom enumId <|
-      id.getId.modifyBase (· ++ enumId.getId)
-    let enumVal := enum[4]
-    let enumMods := enum[1]
+  defs := defs.push <| ←
+    `($mods:declModifiers
+      structure $id where
+        $wrap:ident :: ($unwrap : $type)
+        $deriv?:optDeriving)
+  for ctor in ctors do
+    let ctorId := ctor[2]
+    let ctorQualId := mkIdentFrom ctorId <|
+      id.getId.modifyBase (· ++ ctorId.getId)
+    let ctorVal := ctor[4]
+    let ctorMods := ctor[1]
     defs := defs.push <| ←
-      `($enumMods:declModifiers def $enumQualId:ident : $id := ($enumVal : $type))
+      `($ctorMods:declModifiers def $ctorQualId:ident : $id := $wrap $ctorVal)
   mkNullNode defs
 
 end Internal
@@ -246,24 +256,22 @@ enum CallingConvention : UInt32
   amdGpuGfx := 100
 | /-- Calling convention used for M68k interrupt routines. -/
   m68kIntr := 101
+deriving BEq, DecidableEq, Repr
 
 namespace CallingConvention
 
 /-- The default calling convention (i.e., `c`). -/
-def default : CallingConvention := c
+def default := c
 
 /--
   This is the start of the target-specific calling conventions
   (e.g., `x86FastCall`).
 -/
-def firstTargetID : CallingConvention := (63 : UInt32)
+def firstTargetID : UInt32 := 63
 
 /-- The highest possible calling convention ID. -/
-def maxID : CallingConvention := (1023 : UInt32)
+def maxID : UInt32 := 1023
 
 end CallingConvention
 
-instance : BEq CallingConvention := inferInstanceAs (BEq UInt32)
-instance : DecidableEq CallingConvention := inferInstanceAs (DecidableEq UInt32)
-instance : Repr CallingConvention := inferInstanceAs (Repr UInt32)
 instance : Inhabited CallingConvention := ⟨CallingConvention.default⟩
