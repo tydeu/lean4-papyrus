@@ -8,13 +8,13 @@ namespace Papyrus
   An opaque type representing and external LLVM
   [Type](https://llvm.org/doxygen/classllvm_1_1Type.html).
 -/
-constant LLVM.Type : Type := Unit
+constant Llvm.Type : Type := Unit
 
 /--
   A reference to an external LLVM
   [Type](https://llvm.org/doxygen/classllvm_1_1Type.html).
 -/
-def TypeRef := LinkedLoosePtr ContextRef LLVM.Type
+def TypeRef := LinkedLoosePtr ContextRef Llvm.Type
 
 namespace TypeRef
 

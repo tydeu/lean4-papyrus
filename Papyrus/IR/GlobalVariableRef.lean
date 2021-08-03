@@ -44,7 +44,7 @@ def newOfConstant (init : ConstantRef)
 -/
 def newString (value : String)
 (name := "") (addrSpace := AddressSpace.default) (withNull := true)
-: LLVM GlobalVariableRef := do
+: LlvmM GlobalVariableRef := do
   let var ← newOfConstant (← ConstantDataArrayRef.ofString value withNull)
     Linkage.private name ThreadLocalMode.notLocal addrSpace
   var.setAddressSignificance AddressSignificance.none

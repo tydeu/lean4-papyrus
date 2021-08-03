@@ -7,13 +7,13 @@ namespace Papyrus
   An opaque type representing an external
   [GenericValue](https://llvm.org/doxygen/structllvm_1_1GenericValue.html).
 -/
-constant LLVM.GenericValue : Type := Unit
+constant Llvm.GenericValue : Type := Unit
 
 /--
   A reference to an external LLVM
   [GenericValue](https://llvm.org/doxygen/structllvm_1_1GenericValue.html).
 -/
-def GenericValueRef := OwnedPtr LLVM.GenericValue
+def GenericValueRef := OwnedPtr Llvm.GenericValue
 
 namespace  GenericValueRef
 

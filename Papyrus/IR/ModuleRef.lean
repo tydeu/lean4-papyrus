@@ -10,26 +10,26 @@ namespace Papyrus
   A opaque type representing an external LLVM
   [Module](https://llvm.org/doxygen/classllvm_1_1Module.html).
 -/
-constant LLVM.Module : Type := Unit
+constant Llvm.Module : Type := Unit
 
 /--
   A reference to an external LLVM
   [Module](https://llvm.org/doxygen/classllvm_1_1Module.html).
 -/
-def ModuleRef := LinkedOwnedPtr ContextRef LLVM.Module
+def ModuleRef := LinkedOwnedPtr ContextRef Llvm.Module
 
 namespace ModuleRef
 
 /-- Create a new module. -/
 @[extern "papyrus_module_new"]
-constant new (modID : @& String) : LLVM ModuleRef
+constant new (modID : @& String) : LlvmM ModuleRef
 
 /-- Load module from a bitcode memory buffer. -/
 @[extern "papyrus_module_parse_bitcode_from_buffer"]
-constant parseBitcodeFromBuffer (self : @& MemoryBufferRef) : LLVM ModuleRef
+constant parseBitcodeFromBuffer (self : @& MemoryBufferRef) : LlvmM ModuleRef
 
 /-- Load module from a bitcode file.  -/
-def parseBitcodeFromFile (file : System.FilePath) : LLVM ModuleRef := do
+def parseBitcodeFromFile (file : System.FilePath) : LlvmM ModuleRef := do
   parseBitcodeFromBuffer (← MemoryBufferRef.fromFile file)
 
 /--

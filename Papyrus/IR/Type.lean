@@ -62,7 +62,7 @@ def Type.typeID : (self : @& «Type») → TypeID
 
 open BaseStructType in
 /-- Get a reference to an external LLVM representation of this type. -/
-partial def Type.getRef : (type : «Type») → LLVM TypeRef
+partial def Type.getRef : (type : «Type») → LlvmM TypeRef
 | half => getHalfTypeRef
 | bfloat => getBFloatTypeRef
 | float => getFloatTypeRef

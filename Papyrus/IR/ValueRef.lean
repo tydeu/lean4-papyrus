@@ -7,13 +7,13 @@ namespace Papyrus
   An opaque type representing an external LLVM
   [Value](https://llvm.org/doxygen/classllvm_1_1Value.html).
 -/
-constant LLVM.Value : Type := Unit
+constant Llvm.Value : Type := Unit
 
 /--
   A reference to an external LLVM
   [Value](https://llvm.org/doxygen/classllvm_1_1Value.html).
 -/
-def ValueRef := LinkedLoosePtr ContextRef LLVM.Value
+def ValueRef := LinkedLoosePtr ContextRef Llvm.Value
 
 namespace ValueRef
 

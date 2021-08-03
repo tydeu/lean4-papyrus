@@ -11,7 +11,7 @@ def assertBEqRefArray  {m} [Monad m] [MonadLiftT IO m]
 
 def assertFunTypeRefRoundtrips
 (retType : TypeRef) (paramTypes : Array TypeRef) (isVarArg : Bool)
-: AssertT LLVM PUnit := do
+: AssertT LlvmM PUnit := do
   let ref ← FunctionTypeRef.get retType paramTypes isVarArg
   assertBEq TypeID.function (← ref.getTypeID)
   assertBEq (← retType.getTypeID) (← (← ref.getReturnType).getTypeID)
@@ -20,7 +20,7 @@ def assertFunTypeRefRoundtrips
 
 def assertVecTypeRefRoundtrips
 (elementType : TypeRef) (minSize : UInt32) (isScalable : Bool)
-: AssertT LLVM PUnit := do
+: AssertT LlvmM PUnit := do
   let ref ← VectorTypeRef.get elementType minSize isScalable
   let expectedId := if isScalable then TypeID.scalableVector else TypeID.fixedVector
   assertBEq expectedId (← ref.getTypeID)
@@ -29,7 +29,7 @@ def assertVecTypeRefRoundtrips
   assertBEq isScalable (← ref.isScalable)
 
 /-- Type Unit Tests -/
-def testTypes : SuiteT LLVM PUnit := do
+def testTypes : SuiteT LlvmM PUnit := do
 
   test "special type refs" do
     assertBEq TypeID.void       (← (← getVoidTypeRef).getTypeID)
@@ -111,11 +111,11 @@ def testTypes : SuiteT LLVM PUnit := do
     assertVecTypeRefRoundtrips elemType 8 false
     assertVecTypeRefRoundtrips elemType 16 true
 
-def assertTypeRoundtrips (type : «Type») : AssertT LLVM PUnit := do
+def assertTypeRoundtrips (type : «Type») : AssertT LlvmM PUnit := do
   assertBEq type (← (← type.getRef).purify)
 
 /-- Unit tests for pure types (e.g., `Type`). -/
-def testPureTypes : SuiteT LLVM PUnit := do
+def testPureTypes : SuiteT LlvmM PUnit := do
 
   test "special types" do
     assertTypeRoundtrips voidType
@@ -145,7 +145,7 @@ def testPureTypes : SuiteT LLVM PUnit := do
     assertTypeRoundtrips <| scalableVectorType int1Type 16
 
 /-- Constant Unit Tests -/
-def testConstants : SuiteT LLVM PUnit := do
+def testConstants : SuiteT LlvmM PUnit := do
 
   test "big null integer constant" do
     let int128TypeRef ← IntegerTypeRef.get 128
@@ -189,7 +189,7 @@ def testConstants : SuiteT LLVM PUnit := do
     assertBEq intVal (← const.getValue)
 
 /-- Instruction Unit Tests -/
-def testInstructions : SuiteT LLVM PUnit := do
+def testInstructions : SuiteT LlvmM PUnit := do
 
   test "empty return instruction" do
     let inst ← ReturnInstRef.createVoid
@@ -207,7 +207,7 @@ def testInstructions : SuiteT LLVM PUnit := do
     assertBEq val (← retInt.getValue)
 
 /-- Basic Block Unit Tests -/
-def testBasicBlock : SuiteT LLVM PUnit := do
+def testBasicBlock : SuiteT LlvmM PUnit := do
 
   test "basic block" do
     let name := "foo"
@@ -224,7 +224,7 @@ def testBasicBlock : SuiteT LLVM PUnit := do
       assertFail s!"expected 1 instruction in basic block, got {is.size}"
 
 /-- Global Variable Unit Tests -/
-def testGlobalVariable : SuiteT LLVM PUnit := do
+def testGlobalVariable : SuiteT LlvmM PUnit := do
 
   test "global string constant" do
 
@@ -246,7 +246,7 @@ def testGlobalVariable : SuiteT LLVM PUnit := do
     assertBEq false (← gbl.hasSection)
 
 /-- Function Unit Tests -/
-def testFunction : SuiteT LLVM PUnit := do
+def testFunction : SuiteT LlvmM PUnit := do
 
   test "empty function" do
     let name := "foo"
@@ -280,7 +280,7 @@ def testFunction : SuiteT LLVM PUnit := do
       assertFail s!"expected 1 basic block in function, got {bbs.size}"
 
 /-- Module Unit Tests -/
-def testModule : SuiteT LLVM PUnit := do
+def testModule : SuiteT LlvmM PUnit := do
 
   test "module renaming" do
     let name1 := "foo"
@@ -305,7 +305,7 @@ def testModule : SuiteT LLVM PUnit := do
       assertFail s!"expected 1 function in module, got {fns.size}"
 
 /-- Full Program Tests -/
-def testProgram : SuiteT LLVM PUnit := do
+def testProgram : SuiteT LlvmM PUnit := do
 
   test "simple exiting program" do
 
@@ -414,7 +414,7 @@ def testProgram : SuiteT LLVM PUnit := do
 
 /-- Test Runner -/
 def main : IO PUnit :=
-  LLVM.run <| SuiteT.runIO do
+  LlvmM.run <| SuiteT.runIO do
     testTypes
     testPureTypes
     testConstants

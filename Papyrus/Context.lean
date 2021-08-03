@@ -19,12 +19,12 @@ def ContextRef := OwnedPtr LLVMContext
 constant ContextRef.new : IO ContextRef
 
 /-- The LLVM Monad. -/
-abbrev LLVM := ReaderT ContextRef IO
+abbrev LlvmM := ReaderT ContextRef IO
 
-namespace LLVM
+namespace LlvmM
 
-protected def runIn (ctx : ContextRef) (self : LLVM α) : IO α :=
+protected def runIn (ctx : ContextRef) (self : LlvmM α) : IO α :=
   self ctx
 
-protected def run (self : LLVM α) : IO α := do
+protected def run (self : LlvmM α) : IO α := do
   self (← ContextRef.new)

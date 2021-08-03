@@ -39,23 +39,23 @@ namespace ConstantWordRef
 
 /--  Get an i1 constant for a `Bool` (i.e., `1` for `true`, `0` for `false`). -/
 @[extern "papyrus_get_constant_bool"]
-constant ofBool (value : Bool) : LLVM ConstantWordRef
+constant ofBool (value : Bool) : LlvmM ConstantWordRef
 
 /--  Get an i8 constant for a `UInt8`. -/
 @[extern "papyrus_get_constant_uint8"]
-constant ofUInt8 (value : UInt8) : LLVM ConstantWordRef
+constant ofUInt8 (value : UInt8) : LlvmM ConstantWordRef
 
 /--  Get an i16 constant for a `UInt16`. -/
 @[extern "papyrus_get_constant_uint16"]
-constant ofUInt16 (value : UInt16) : LLVM ConstantWordRef
+constant ofUInt16 (value : UInt16) : LlvmM ConstantWordRef
 
 /--  Get an i32 constant for a `UInt32`. -/
 @[extern "papyrus_get_constant_uint32"]
-constant ofUInt32 (value : UInt32) : LLVM ConstantWordRef
+constant ofUInt32 (value : UInt32) : LlvmM ConstantWordRef
 
 /--  Get an i64 constant for a `UInt64`. -/
 @[extern "papyrus_get_constant_uint64"]
-constant ofUInt64 (value : UInt64) : LLVM ConstantWordRef
+constant ofUInt64 (value : UInt64) : LlvmM ConstantWordRef
 
 /-- Get the integer type of this constant.  -/
 def getType (self : @& ConstantWordRef) : IO IntegerTypeRef :=
@@ -166,7 +166,7 @@ def getElementType (self : @& ConstantDataArrayRef) : IO TypeRef := do
   If `withNull` is true, the string is null terminated.
 -/
 @[extern "papyrus_get_constant_string"]
-constant ofString (str : @& String) (withNull := true) : LLVM ConstantDataArrayRef
+constant ofString (str : @& String) (withNull := true) : LlvmM ConstantDataArrayRef
 
 end ConstantDataArrayRef
 

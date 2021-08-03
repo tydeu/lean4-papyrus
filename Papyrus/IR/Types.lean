@@ -62,7 +62,7 @@ instance : Coe IntegerType «Type» := ⟨Type.integer⟩
   It is the user's responsible to ensure that the bit width of the type falls
   within the LLVM's requirements (i.e., that `isValidBitWidth numBits` holds).
 -/
-def IntegerType.getRef (self : IntegerType) : LLVM IntegerTypeRef :=
+def IntegerType.getRef (self : IntegerType) : LlvmM IntegerTypeRef :=
   IntegerTypeRef.get self.bitWidth
 
 /-- Lift this reference to a pure `IntegerType`. -/
@@ -88,7 +88,7 @@ def functionType (ret : «Type») (params : Array «Type») (isVarArg := false) 
   Get a reference to the LLVM representation of this type.
   It is the user's responsibility to ensure that the configuration is valid.
 -/
-def FunctionType.getRef (self : FunctionType) : LLVM FunctionTypeRef := do
+def FunctionType.getRef (self : FunctionType) : LlvmM FunctionTypeRef := do
   FunctionTypeRef.get (← self.returnType.getRef)
     (← self.parameterTypes.mapM (·.getRef)) self.isVarArg
 
@@ -117,7 +117,7 @@ def pointerType (pointee : «Type») (addrSpace := AddressSpace.default) : Point
   Get a reference to the LLVM representation of this type.
   It is the user's responsibility to ensure that the configuration is valid.
 -/
-def PointerType.getRef (self : PointerType) : LLVM PointerTypeRef := do
+def PointerType.getRef (self : PointerType) : LlvmM PointerTypeRef := do
   PointerTypeRef.get (← self.pointeeType.getRef) self.addressSpace
 
 /-- Lift this reference to a pure `PointerType`. -/
@@ -195,7 +195,7 @@ def opaqueStructType (name : String) : StructType :=
   Get a reference to the LLVM representation of this type.
   It is the user's responsibility to ensure that the configuration is valid.
 -/
-def StructType.getRef : (self : StructType) → LLVM StructTypeRef
+def StructType.getRef : (self : StructType) → LlvmM StructTypeRef
 | literal ⟨elemTypes, isPacked⟩ => do
     LiteralStructTypeRef.get (← elemTypes.mapM (·.getRef)) isPacked
 | complete name ⟨elemTypes, isPacked⟩ => do
@@ -241,7 +241,7 @@ def arrayType (elemType : «Type») (size : UInt64) : ArrayType :=
   Get a reference to the LLVM representation of this type.
   It is the user's responsibility to ensure that the configuration is valid.
 -/
-def ArrayType.getRef (self : ArrayType) : LLVM ArrayTypeRef := do
+def ArrayType.getRef (self : ArrayType) : LlvmM ArrayTypeRef := do
   ArrayTypeRef.get (← self.elementType.getRef) self.size
 
 /-- Lift this reference to a pure `ArrayType`. -/
@@ -277,7 +277,7 @@ instance : Coe VectorType «Type» := ⟨VectorType.toType⟩
   Get a reference to the LLVM representation of this type.
   It is the user's responsibility to ensure that the configuration is valid.
 -/
-def VectorType.getRef (self : VectorType) : LLVM VectorTypeRef := do
+def VectorType.getRef (self : VectorType) : LlvmM VectorTypeRef := do
   VectorTypeRef.get (← self.elementType.getRef) self.minSize self.isScalable
 
 /-- Lift this reference to a pure `VectorType`. -/
@@ -301,7 +301,7 @@ def fixedVectorType (elemType : «Type») (size : UInt32) : FixedVectorType :=
   Get a reference to the LLVM representation of this type.
   It is the user's responsibility to ensure that the configuration is valid.
 -/
-def FixedVectorType.getRef (self : FixedVectorType) : LLVM FixedVectorTypeRef := do
+def FixedVectorType.getRef (self : FixedVectorType) : LlvmM FixedVectorTypeRef := do
   FixedVectorTypeRef.get (← self.elementType.getRef) self.size
 
 /-- Lift this reference to a pure `ArrayType`. -/
@@ -325,7 +325,7 @@ def scalableVectorType (elemType : «Type») (minSize : UInt32) : ScalableVector
   Get a reference to the LLVM representation of this type.
   It is the user's responsibility to ensure that the configuration is valid.
 -/
-def ScalableVectorType.getRef (self : ScalableVectorType) : LLVM ScalableVectorTypeRef := do
+def ScalableVectorType.getRef (self : ScalableVectorType) : LlvmM ScalableVectorTypeRef := do
   FixedVectorTypeRef.get (← self.elementType.getRef) self.minSize
 
 /-- Lift this reference to a pure `ArrayType`. -/

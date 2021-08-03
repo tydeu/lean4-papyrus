@@ -12,57 +12,57 @@ namespace Papyrus
 
 /-- An empty type. -/
 @[extern "papyrus_get_void_type"]
-constant getVoidTypeRef : LLVM TypeRef
+constant getVoidTypeRef : LlvmM TypeRef
 
 /-- A label type. -/
 @[extern "papyrus_get_label_type"]
-constant getLabelTypeRef : LLVM TypeRef
+constant getLabelTypeRef : LlvmM TypeRef
 
 /-- A metadata type. -/
 @[extern "papyrus_get_metadata_type"]
-constant getMetadataTypeRef : LLVM TypeRef
+constant getMetadataTypeRef : LlvmM TypeRef
 
 /-- A token type. -/
 @[extern "papyrus_get_token_type"]
-constant getTokenTypeRef : LLVM TypeRef
+constant getTokenTypeRef : LlvmM TypeRef
 
 /-- A 64-bit X86 MMX vector type. -/
 @[extern "papyrus_get_x86_mmx_type"]
-constant getX86MMXTypeRef : LLVM TypeRef
+constant getX86MMXTypeRef : LlvmM TypeRef
 
 /-- A 8192-bit X86 AMX vector type. -/
 @[extern "papyrus_get_x86_amx_type"]
-constant getX86AMXTypeRef : LLVM TypeRef
+constant getX86AMXTypeRef : LlvmM TypeRef
 
 -- # Floating Point Types
 
 /-- A 16-bit floating point type. -/
 @[extern "papyrus_get_half_type"]
-constant getHalfTypeRef : LLVM TypeRef
+constant getHalfTypeRef : LlvmM TypeRef
 
 /-- A 16-bit (7-bit significand) floating point type. -/
 @[extern "papyrus_get_bfloat_type"]
-constant getBFloatTypeRef : LLVM TypeRef
+constant getBFloatTypeRef : LlvmM TypeRef
 
 /-- A 32-bit floating point type. -/
 @[extern "papyrus_get_float_type"]
-constant getFloatTypeRef : LLVM TypeRef
+constant getFloatTypeRef : LlvmM TypeRef
 
 /-- A 64-bit floating point type. -/
 @[extern "papyrus_get_double_type"]
-constant getDoubleTypeRef : LLVM TypeRef
+constant getDoubleTypeRef : LlvmM TypeRef
 
 /-- An X87 80-bit floating point type. -/
 @[extern "papyrus_get_x86_fp80_type"]
-constant getX86FP80TypeRef : LLVM TypeRef
+constant getX86FP80TypeRef : LlvmM TypeRef
 
 /-- A 128-bit (112-bit significand) floating point type. -/
 @[extern "papyrus_get_fp128_type"]
-constant getFP128TypeRef : LLVM TypeRef
+constant getFP128TypeRef : LlvmM TypeRef
 
 /-- A PowerPC 128-bit floating point type. -/
 @[extern "papyrus_get_ppc_fp128_type"]
-constant getPPCFP128TypeRef : LLVM TypeRef
+constant getPPCFP128TypeRef : LlvmM TypeRef
 
 --------------------------------------------------------------------------------
 -- Integer Type References
@@ -92,7 +92,7 @@ def isValidBitWidth (bitWidth : UInt32) : Prop :=
   within LLVM's requirements (i.e., that `isValidBitWidth numBits` holds).
 -/
 @[extern "papyrus_get_integer_type"]
-constant get (numBits : @& UInt32) : LLVM IntegerTypeRef
+constant get (numBits : @& UInt32) : LlvmM IntegerTypeRef
 
 /-- Get the width in bits of this type. -/
 @[extern "papyrus_integer_type_get_bit_width"]
@@ -216,7 +216,7 @@ namespace LiteralStructTypeRef
 -/
 @[extern "papyrus_get_literal_struct_type"]
 constant get (elemTypes : @& Array TypeRef) (isPacked := false)
-  : LLVM LiteralStructTypeRef
+  : LlvmM LiteralStructTypeRef
 
 end LiteralStructTypeRef
 
@@ -244,14 +244,14 @@ namespace IdentifiedStructTypeRef
 -/
 @[extern "papyrus_struct_type_create"]
 constant create (name : @& String) (elementTypes : @& Array TypeRef)
-  (packed := false) : LLVM IdentifiedStructTypeRef
+  (packed := false) : LlvmM IdentifiedStructTypeRef
 
 /--
   Create a new opaque struct type with the given name
   (or none if the name string is empty).
 -/
 @[extern "papyrus_opaque_struct_type_create"]
-constant createOpaque (name : @& String) : LLVM IdentifiedStructTypeRef
+constant createOpaque (name : @& String) : LlvmM IdentifiedStructTypeRef
 
 /-- Get the name of this struct type (or the empty string if none). -/
 @[extern "papyrus_struct_type_get_name"]

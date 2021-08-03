@@ -56,30 +56,30 @@ namespace ReturnInstRef
 
 /-- Create a new unlinked void return instruction. -/
 @[extern "papyrus_return_inst_create_void"]
-constant createVoid : LLVM ReturnInstRef
+constant createVoid : LlvmM ReturnInstRef
 
 /-- Create a new unlinked return instruction. -/
 @[extern "papyrus_return_inst_create"]
-constant create (retVal : @& ValueRef) : LLVM ReturnInstRef
+constant create (retVal : @& ValueRef) : LlvmM ReturnInstRef
 
 /-- Create a new unlinked i1 return instruction. -/
-def createBool (retVal : Bool) : LLVM ReturnInstRef := do
+def createBool (retVal : Bool) : LlvmM ReturnInstRef := do
   create (← ConstantWordRef.ofBool retVal)
 
 /-- Create a new unlinked i8 return instruction. -/
-def createUInt8 (retVal : UInt8) : LLVM ReturnInstRef := do
+def createUInt8 (retVal : UInt8) : LlvmM ReturnInstRef := do
   create (← ConstantWordRef.ofUInt8 retVal)
 
 /-- Create a new unlinked i16 return instruction. -/
-def createUInt16 (retVal : UInt16) : LLVM ReturnInstRef := do
+def createUInt16 (retVal : UInt16) : LlvmM ReturnInstRef := do
   create (← ConstantWordRef.ofUInt16 retVal)
 
 /-- Create a new unlinked i32 return instruction. -/
-def createUInt32 (retVal : UInt32) : LLVM ReturnInstRef := do
+def createUInt32 (retVal : UInt32) : LlvmM ReturnInstRef := do
   create (← ConstantWordRef.ofUInt32 retVal)
 
 /-- Create a new unlinked i64 return instruction. -/
-def createUInt64 (retVal : UInt64) : LLVM ReturnInstRef := do
+def createUInt64 (retVal : UInt64) : LlvmM ReturnInstRef := do
   create (← ConstantWordRef.ofUInt64 retVal)
 
 /-- Get a reference to the returned value. -/
