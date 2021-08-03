@@ -9,6 +9,11 @@ using namespace llvm;
 
 namespace papyrus {
 
+// Wrap an LLVM Constant pointer in an Lean object.
+obj_res mkConstantRef(obj_arg ctxRef, llvm::Constant* ptr) {
+	return mkValueRef(ctxRef, ptr);
+}
+
 // Get the LLVM Constant pointer wrapped in an object.
 llvm::Constant* toConstant(lean::object* ref) {
 	return llvm::cast<Constant>(toValue(ref));
@@ -21,13 +26,13 @@ llvm::Constant* toConstant(lean::object* ref) {
 // Get the null constant of the given type.
 extern "C" obj_res papyrus_get_null_constant(b_obj_arg typeRef, obj_arg /* w */) {
 	auto constant = Constant::getNullValue(toType(typeRef));
-	return io_result_mk_ok(mkValueRef(shareLink(typeRef), constant));
+	return io_result_mk_ok(mkConstantRef(copyLink(typeRef), constant));
 }
 
 // Get the all ones constant of the given type.
 extern "C" obj_res papyrus_get_all_ones_constant(b_obj_arg typeRef, obj_arg /* w */) {
 	auto constant = Constant::getAllOnesValue(toType(typeRef));
-	return io_result_mk_ok(mkValueRef(shareLink(typeRef), constant));
+	return io_result_mk_ok(mkConstantRef(copyLink(typeRef), constant));
 }
 
 //------------------------------------------------------------------------------
@@ -44,7 +49,7 @@ extern "C" obj_res papyrus_get_constant_bool
 (uint8 val, obj_arg ctxObj, obj_arg /* w */)
 {
 	auto n = ConstantInt::getBool(*toLLVMContext(ctxObj), val);
-	return io_result_mk_ok(mkValueRef(ctxObj, n));
+	return io_result_mk_ok(mkConstantRef(ctxObj, n));
 }
 
 // Get a reference to an i8 constant of the given UInt8 value.
@@ -52,7 +57,7 @@ extern "C" obj_res papyrus_get_constant_uint8
 (uint8 val, obj_arg ctxObj, obj_arg /* w */)
 {
 	auto n = ConstantInt::get(*toLLVMContext(ctxObj), APInt(8, val));
-	return io_result_mk_ok(mkValueRef(ctxObj, n));
+	return io_result_mk_ok(mkConstantRef(ctxObj, n));
 }
 
 // Get a reference to an i16 constant of the given UInt16 value.
@@ -60,7 +65,7 @@ extern "C" obj_res papyrus_get_constant_uint16
 (uint16 val, obj_arg ctxObj, obj_arg /* w */)
 {
 	auto n = ConstantInt::get(*toLLVMContext(ctxObj), APInt(16, val));
-	return io_result_mk_ok(mkValueRef(ctxObj, n));
+	return io_result_mk_ok(mkConstantRef(ctxObj, n));
 }
 
 // Get a reference to an i32 constant of the given UInt32 value.
@@ -68,7 +73,7 @@ extern "C" obj_res papyrus_get_constant_uint32
 (uint32 val, obj_arg ctxObj, obj_arg /* w */)
 {
 	auto n = ConstantInt::get(*toLLVMContext(ctxObj), APInt(32, val));
-	return io_result_mk_ok(mkValueRef(ctxObj, n));
+	return io_result_mk_ok(mkConstantRef(ctxObj, n));
 }
 
 // Get a reference to an i64 constant of the given UInt64 value.
@@ -76,7 +81,7 @@ extern "C" obj_res papyrus_get_constant_uint64
 (uint64 val, obj_arg ctxObj, obj_arg /* w */)
 {
 	auto n = ConstantInt::get(*toLLVMContext(ctxObj), APInt(64, val));
-	return io_result_mk_ok(mkValueRef(ctxObj, n));
+	return io_result_mk_ok(mkConstantRef(ctxObj, n));
 }
 
 // Get a reference to a constant of the given Int value,
@@ -84,10 +89,10 @@ extern "C" obj_res papyrus_get_constant_uint64
 extern "C" obj_res papyrus_get_constant_int
 (b_obj_arg intObj, b_obj_arg typeRef, obj_arg /* w */)
 {
-	auto ctxObj = shareLink(typeRef);
+	auto ctxObj = copyLink(typeRef);
 	auto numBits = toIntegerType(typeRef)->getBitWidth();
 	auto n = ConstantInt::get(*toLLVMContext(ctxObj), apOfInt(numBits, intObj));
-	return io_result_mk_ok(mkValueRef(ctxObj, n));
+	return io_result_mk_ok(mkConstantRef(ctxObj, n));
 }
 
 // Get a reference to a constant of the given Nat value,
@@ -95,10 +100,10 @@ extern "C" obj_res papyrus_get_constant_int
 extern "C" obj_res papyrus_get_constant_nat
 (b_obj_arg intObj, b_obj_arg typeRef, obj_arg /* w */)
 {
-	auto ctxObj = shareLink(typeRef);
+	auto ctxObj = copyLink(typeRef);
 	auto numBits = toIntegerType(typeRef)->getBitWidth();
 	auto n = ConstantInt::get(*toLLVMContext(ctxObj), apOfNat(numBits, intObj));
-	return io_result_mk_ok(mkValueRef(ctxObj, n));
+	return io_result_mk_ok(mkConstantRef(ctxObj, n));
 }
 
 // Get the Int value of the given integer constant.
@@ -142,7 +147,7 @@ extern "C" obj_res papyrus_get_constant_string
 {
 	auto str = withNull ? refOfStringWithNull(strObj) : refOfString(strObj);
 	auto cnst = ConstantDataArray::getString(*toLLVMContext(ctxObj), str, false);
-	return io_result_mk_ok(mkValueRef(ctxObj, cnst));
+	return io_result_mk_ok(mkConstantRef(ctxObj, cnst));
 }
 
 //------------------------------------------------------------------------------
@@ -156,7 +161,7 @@ extern "C" obj_res papyrus_constant_expr_get_element_ptr
 	LEAN_ARRAY_TO_REF(Constant*, toConstant, indicesObj, indices);
 	auto k = ConstantExpr::getGetElementPtr(nullptr, toConstant(aggRef),
 		indices, inBounds);
-	return io_result_mk_ok(mkValueRef(getValueContext(aggRef), k));
+	return io_result_mk_ok(mkConstantRef(getValueContext(aggRef), k));
 }
 
 // Get the value of a constant as a string by treating its bytes as characters.
@@ -167,7 +172,7 @@ extern "C" obj_res papyrus_constant_expr_get_element_ptr_in_range
 	LEAN_ARRAY_TO_REF(Constant*, toConstant, indicesObj, indices);
 	auto k = ConstantExpr::getGetElementPtr(nullptr, toConstant(aggRef),
 		indices, inBounds, inRange);
-	return io_result_mk_ok(mkValueRef(getValueContext(aggRef), k));
+	return io_result_mk_ok(mkConstantRef(getValueContext(aggRef), k));
 }
 
 // Get a reference to a (UTF-8 encoded) string constan

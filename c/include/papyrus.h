@@ -24,38 +24,40 @@ namespace papyrus {
 
 lean::object* mkNatFromAP(const llvm::APInt& ap);
 lean::object* mkIntFromAP(const llvm::APInt& ap);
-const llvm::APInt apOfNat(unsigned numBits, lean::object* obj);
-const llvm::APInt apOfInt(unsigned numBits, lean::object* obj);
+const llvm::APInt apOfNat(unsigned numBits, b_lean_obj_arg nat);
+const llvm::APInt apOfInt(unsigned numBits, b_lean_obj_arg intObj);
 
-lean::object* mkStringFromRef(const llvm::StringRef& str);
-const llvm::StringRef refOfString(lean::object* str);
-const llvm::StringRef refOfStringWithNull(lean::object* str);
+lean_obj_res mkStringFromRef(const llvm::StringRef& str);
+const llvm::StringRef refOfString(b_lean_obj_arg str);
+const llvm::StringRef refOfStringWithNull(b_lean_obj_arg str);
 
-llvm::MemoryBuffer* toMemoryBuffer(lean::object* ref);
+llvm::MemoryBuffer* toMemoryBuffer(b_lean_obj_arg ref);
 
-lean::object* mkContextRef(llvm::LLVMContext* ctx);
-llvm::LLVMContext* toLLVMContext(lean::object* ref);
+lean_obj_res mkContextRef(llvm::LLVMContext* ctx);
+llvm::LLVMContext* toLLVMContext(b_lean_obj_res ref);
 
-lean::object* mkModuleRef(lean::object* ctx, llvm::Module* ptr);
-llvm::Module* toModule(lean::object* ref);
+lean_obj_res mkModuleRef(b_lean_obj_arg ctx, llvm::Module* ptr);
+llvm::Module* toModule(b_lean_obj_arg ref);
 
-lean::object* mkTypeRef(lean::object* ctxRef, llvm::Type* type);
-llvm::Type* toType(lean::object* ref);
-llvm::IntegerType* toIntegerType(lean::object* ref);
-llvm::FunctionType* toFunctionType(lean::object* ref);
+lean_obj_res mkTypeRef(b_lean_obj_arg ctxRef, llvm::Type* type);
+llvm::Type* toType(b_lean_obj_arg ref);
+llvm::IntegerType* toIntegerType(b_lean_obj_arg ref);
+llvm::FunctionType* toFunctionType(b_lean_obj_arg ref);
 
-lean::object* mkValueRef(lean::object* ctxRef, llvm::Value* value);
-lean::object* getValueContext(lean::object* ref);
-lean::object* borrowValueContext(lean::object* ref);
-llvm::Value* toValue(lean::object* ref);
-llvm::Constant* toConstant(lean::object* ref);
-llvm::Instruction* toInstruction(lean::object* ref);
-llvm::BasicBlock* toBasicBlock(lean::object* ref);
-llvm::GlobalVariable* toGlobalVariable(lean::object* ref);
-llvm::Function* toFunction(lean::object* ref);
+lean_obj_res mkValueRef(lean_obj_arg ctxRef, llvm::Value* value);
+lean_obj_res getValueContext(b_lean_obj_arg ref);
+llvm::Value* toValue(b_lean_obj_arg ref);
 
-lean::object* mkGenericValueRef(llvm::GenericValue* val);
-llvm::GenericValue* toGenericValue(lean::object* ref);
+lean_obj_res mkConstantRef(lean_obj_arg ctxRef, llvm::Constant* ptr);
+llvm::Constant* toConstant(b_lean_obj_arg ref);
+
+llvm::Instruction* toInstruction(b_lean_obj_arg ref);
+llvm::BasicBlock* toBasicBlock(b_lean_obj_arg ref);
+llvm::GlobalVariable* toGlobalVariable(b_lean_obj_arg ref);
+llvm::Function* toFunction(b_lean_obj_arg ref);
+
+lean_obj_res mkGenericValueRef(llvm::GenericValue* val);
+llvm::GenericValue* toGenericValue(b_lean_obj_arg ref);
 
 // Covert a Lean Array of references to an LLVM ArrayRef of objects.
 // Defined as a macro because it needs to dynamically allocate to the user's stack.

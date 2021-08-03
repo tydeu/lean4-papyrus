@@ -16,18 +16,18 @@ namespace papyrus {
 //------------------------------------------------------------------------------
 
 // Wrap an LLVM Value pointer in a Lean object.
-lean::object* mkValueRef(lean::object* ctx, llvm::Value* ptr) {
-	return mkLinkedLoosePtr<llvm::Value>(ctx, ptr);
+obj_res mkValueRef(obj_res ctxRef, llvm::Value* ptr) {
+	return mkLinkedLoosePtr<llvm::Value>(ctxRef, ptr);
 }
 
 // Get the LLVM Value pointer wrapped in an object.
-llvm::Value* toValue(lean::object* valueRef) {
+llvm::Value* toValue(b_obj_arg valueRef) {
 	return fromLinkedLoosePtr<llvm::Value>(valueRef);
 }
 
 // Get the owning LLVM context object of the given value and increments its RC.
-lean::object* getValueContext(lean::object* valueRef) {
-	return shareLink(valueRef);
+obj_res getValueContext(b_obj_arg valRef) {
+  return copyLink(valRef);
 }
 
 //------------------------------------------------------------------------------

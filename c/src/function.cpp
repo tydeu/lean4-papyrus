@@ -20,8 +20,8 @@ extern "C" obj_res papyrus_function_create
 (b_obj_arg typeRef, b_obj_arg nameObj, uint8 linkage, uint32 addrSpace, obj_arg /* w */)
 {
 	auto* fun = Function::Create(toFunctionType(typeRef),
-	  static_cast<GlobalValue::LinkageTypes>(linkage), addrSpace, refOfString(nameObj));
-	return io_result_mk_ok(mkValueRef(shareLink(typeRef), fun));
+	static_cast<GlobalValue::LinkageTypes>(linkage), addrSpace, refOfString(nameObj));
+	return io_result_mk_ok(mkValueRef(copyLink(typeRef), fun));
 }
 
 // Get an array of references to the basic blocks of the given function.

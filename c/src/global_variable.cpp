@@ -22,7 +22,7 @@ extern "C" obj_res papyrus_global_variable_new
 	auto var = new GlobalVariable(toType(typeRef), isConstant,
 	  static_cast<GlobalValue::LinkageTypes>(linkage), nullptr, refOfString(nameObj),
     static_cast<GlobalValue::ThreadLocalMode>(tlm), addrSpace, externInit);
-	return io_result_mk_ok(mkValueRef(shareLink(typeRef), var));
+	return io_result_mk_ok(mkValueRef(copyLink(typeRef), var));
 }
 
 // Get a reference to a newly created global variable with an initializer.
@@ -34,7 +34,7 @@ extern "C" obj_res papyrus_global_variable_new_with_init
 	  static_cast<GlobalValue::LinkageTypes>(linkage), toConstant(initializerObj),
 		refOfString(nameObj), static_cast<GlobalValue::ThreadLocalMode>(tlm),
 		addrSpace, externInit);
-	return io_result_mk_ok(mkValueRef(shareLink(typeRef), var));
+	return io_result_mk_ok(mkValueRef(copyLink(typeRef), var));
 }
 
 
