@@ -230,7 +230,7 @@ def testGlobalVariable : SuiteT LlvmM PUnit := do
 
     let str := "foo"
     let name := "myConst"
-    let gbl ← GlobalVariableRef.newString str name (withNull := false)
+    let gbl ← GlobalVariableRef.ofString str name (withNull := false)
     assertBEq name (← gbl.getName)
     assertBEq Linkage.private (← gbl.getLinkage)
     assertBEq Visibility.default (← gbl.getVisibility)
@@ -304,6 +304,29 @@ def testModule : SuiteT LlvmM PUnit := do
     else
       assertFail s!"expected 1 function in module, got {fns.size}"
 
+def testOutDir : System.FilePath := "out"
+def compileAndRunModule [Monad m] [MonadLiftT IO m]
+(mod : ModuleRef) (fname : String) : AssertT m IO.Process.Output := do
+    IO.FS.createDirAll testOutDir
+    let file := testOutDir / fname
+    let bcFile := file.withExtension "bc" |>.toString
+    let asmFile := file.withExtension "s" |>.toString
+    let exeFile := file.withExtension System.FilePath.exeExtension |>.toString
+    -- Output Bitcode
+    mod.writeBitcodeToFile bcFile
+    -- Compile and Run It
+    let llc ← IO.Process.spawn {
+      cmd := "llc"
+      args := #["-o", asmFile, bcFile]
+    }
+    assertBEq 0 (← llc.wait)
+    let cpp ← IO.Process.spawn {
+      cmd := "cc"
+      args := #["-o", exeFile, asmFile]
+    }
+    assertBEq 0 (← cpp.wait)
+    IO.Process.output {cmd := exeFile}
+
 /-- Full Program Tests -/
 def testProgram : SuiteT LlvmM PUnit := do
 
@@ -333,27 +356,8 @@ def testProgram : SuiteT LlvmM PUnit := do
     assertBEq 101 (← ret.toInt)
 
     -- Output It
-    let outDir : System.FilePath := "out"
-    IO.FS.createDirAll outDir
-    let file := outDir / "exit"
-    let bcFile := file.withExtension "bc" |>.toString
-    let asmFile := file.withExtension "s" |>.toString
-    let exeFile := file.withExtension System.FilePath.exeExtension |>.toString
-    mod.writeBitcodeToFile bcFile
-
-    -- Compile and Run It
-    let llc ← IO.Process.spawn {
-      cmd := "llc"
-      args := #["-o", asmFile, bcFile]
-    }
-    assertBEq 0 (← llc.wait)
-    let cpp ← IO.Process.spawn {
-      cmd := "cc"
-      args := #["-o", exeFile, asmFile]
-    }
-    assertBEq 0 (← cpp.wait)
-    let program ← IO.Process.spawn {cmd := exeFile}
-    assertBEq 101 (← program.wait)
+    let out ← compileAndRunModule mod "exit"
+    assertBEq 101 (← out.exitCode)
 
   test "hello world program" do
 
@@ -362,7 +366,7 @@ def testProgram : SuiteT LlvmM PUnit := do
 
     -- Initialize Hello String Constant
     let hello := "Hello World!"
-    let helloGbl ← GlobalVariableRef.newString hello
+    let helloGbl ← GlobalVariableRef.ofString hello
     let intTypeRef ← IntegerTypeRef.get 32
     let z ← intTypeRef.getConstantNat 0
     let helloPtr ← ConstantExprRef.getGetElementPtr helloGbl #[z, z] true
@@ -385,30 +389,37 @@ def testProgram : SuiteT LlvmM PUnit := do
     let ret ← ReturnInstRef.createUInt32 0
     bb.appendInstruction ret
 
-    -- Verify Module
+    -- Verify, Compile, and Run Module
     assertFalse (← mod.verify)
+    let out ← compileAndRunModule mod "hello"
+    assertBEq 0 out.exitCode
+    assertBEq hello out.stdout
 
-    -- Output It
-    let outDir : System.FilePath := "out"
-    IO.FS.createDirAll outDir
-    let file := outDir / "hello"
-    let bcFile := file.withExtension "bc" |>.toString
-    let asmFile := file.withExtension "s" |>.toString
-    let exeFile := file.withExtension System.FilePath.exeExtension |>.toString
-    mod.writeBitcodeToFile bcFile
+open BuilderCommands in
+/-- Builder Tests -/
+def testBuilders : SuiteT LlvmM PUnit := do
 
-    -- Compile and Run It
-    let llc ← IO.Process.spawn {
-      cmd := "llc"
-      args := #["-o", asmFile, bcFile]
-    }
-    assertBEq 0 (← llc.wait)
-    let cpp ← IO.Process.spawn {
-      cmd := "cc"
-      args := #["-o", exeFile, asmFile]
-    }
-    assertBEq 0 (← cpp.wait)
-    let out ← IO.Process.output {cmd := exeFile}
+  test "builder hello world program" do
+
+    let hello := "Hello World!"
+
+    -- Construct Module
+    let mod ← module "hello" do
+
+      -- Declare `printf` function
+      let printfFnTyRef ← functionType
+        int32Type #[int8Type.pointerType] true |>.getRef
+      let printf ← declare printfFnTyRef "printf"
+
+      -- Define `main` Function
+      let mainFnTyRef ← functionType int32Type #[] |>.getRef
+      let main ← define mainFnTyRef (name := "main") do
+        call printf #[← stringPtr hello]
+        ret (← ConstantWordRef.ofUInt32 0)
+
+    -- Verify, Compile, and Run Module
+    assertFalse (← mod.verify)
+    let out ← compileAndRunModule mod "hello"
     assertBEq 0 out.exitCode
     assertBEq hello out.stdout
 
@@ -424,3 +435,4 @@ def main : IO PUnit :=
     testFunction
     testModule
     testProgram
+    testBuilders

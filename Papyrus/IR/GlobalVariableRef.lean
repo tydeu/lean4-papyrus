@@ -17,7 +17,8 @@ namespace GlobalVariableRef
 
 /-- Create a new unlinked global variable. -/
 @[extern "papyrus_global_variable_new"]
-constant new (type : @& TypeRef) (isConstant := false) (linkage := Linkage.external)
+constant new (type : @& TypeRef)
+  (isConstant := false) (linkage := Linkage.external)
   (name : @& String := "") (tlm := ThreadLocalMode.notLocal) (addrSpace := AddressSpace.default)
   (isExternallyInitialized := false) : IO GlobalVariableRef
 
@@ -29,11 +30,11 @@ constant newWithInit (type : @& TypeRef) (isConstant := false)
   (isExternallyInitialized := false) : IO GlobalVariableRef
 
 /-- Create a new unlinked global constant with the given value. -/
-def newOfConstant (init : ConstantRef)
-(linkage := Linkage.external) (name := "")
+def ofConstant (init : ConstantRef)
+(isConstant := true) (linkage := Linkage.external) (name := "")
 (tlm := ThreadLocalMode.notLocal) (addrSpace := AddressSpace.default)
 : IO GlobalVariableRef := do
-  newWithInit (← init.getType) true linkage init name tlm addrSpace
+  newWithInit (← init.getType) true linkage init name tlm addrSpace false
 
 /--
   Create a new unlinked global string constant with the given value.
@@ -42,11 +43,11 @@ def newOfConstant (init : ConstantRef)
   Such constants have private linkage, single byte alignment,
   are not thread local, and their addresses are insignificant.
 -/
-def newString (value : String)
+def ofString (value : String)
 (name := "") (addrSpace := AddressSpace.default) (withNull := true)
 : LlvmM GlobalVariableRef := do
-  let var ← newOfConstant (← ConstantDataArrayRef.ofString value withNull)
-    Linkage.private name ThreadLocalMode.notLocal addrSpace
+  let var ← ofConstant (← ConstantDataArrayRef.ofString value withNull)
+    true Linkage.private name ThreadLocalMode.notLocal addrSpace
   var.setAddressSignificance AddressSignificance.none
   var.setRawAlignment 1
   var
