@@ -223,7 +223,9 @@ constant GlobalValueRef.setThreadLocalMode (tlm : ThreadLocalMode)
 -- # Address Significance
 
 /--
-  The address significance of a global.
+  The significance of a global's address in memory.
+  A global with an insignificant address can be merged with an equivalent global.
+
   This is conceptually the opposite of LLVM's
   [UnnamedAddr](https://llvm.org/doxygen/classllvm_1_1GlobalValue.html#ae8df4be75bfc50b1eadd74e85c25fa45),
   enumeration, but order is preserved across the two by reversing the enumeration.
@@ -231,15 +233,15 @@ constant GlobalValueRef.setThreadLocalMode (tlm : ThreadLocalMode)
 -/
 inductive AddressSignificance
 | /-- Significant everywhere (the default). -/
-  «global»
-| /-- Significant only within the current module. -/
-  «local»
+  total
+| /-- Significant only outside the current module. -/
+  external
 | /-- Insignificant everywhere. -/
-  none
+  protected none
 deriving BEq, DecidableEq, Repr
 
 attribute [unbox] AddressSignificance
-instance : Inhabited AddressSignificance := ⟨AddressSignificance.global⟩
+instance : Inhabited AddressSignificance := ⟨AddressSignificance.total⟩
 
 /-- Get the address significance of this global. -/
 @[extern "papyrus_global_value_get_address_significance"]
