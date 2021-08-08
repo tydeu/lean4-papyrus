@@ -3,6 +3,7 @@ import Papyrus.IR.AddressSpace
 import Papyrus.IR.CallingConvention
 import Papyrus.IR.BasicBlockRef
 import Papyrus.IR.GlobalRefs
+import Papyrus.IR.ArgumentRef
 import Papyrus.IR.TypeRefs
 
 namespace Papyrus
@@ -27,6 +28,10 @@ constant create (type : @& FunctionTypeRef) (name : @& String := "")
 /-- Get the type of this function.  -/
 def getType (self : @& FunctionRef) : IO FunctionTypeRef :=
   GlobalValueRef.getType self
+
+/-- Get the nth argument of thee this function. -/
+@[extern "papyrus_function_get_arg"]
+constant getArg (argNo : @& UInt32) (self : @& FunctionRef) : IO ArgumentRef
 
 /-- Get the array of references to the basic blocks of this function. -/
 @[extern "papyrus_function_get_basic_blocks"]

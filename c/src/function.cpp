@@ -24,6 +24,11 @@ extern "C" obj_res papyrus_function_create
 	return io_result_mk_ok(mkValueRef(copyLink(typeRef), fun));
 }
 
+// Get the nth argument of the function
+extern "C" obj_res papyrus_function_get_arg(uint32 argNo, b_obj_arg funRef, obj_arg /* w */) {
+	return io_result_mk_ok(mkValueRef(copyLink(funRef), toFunction(funRef)->getArg(argNo)));
+}
+
 // Get an array of references to the basic blocks of the given function.
 extern "C" obj_res papyrus_function_get_basic_blocks(b_obj_arg funRef, obj_arg /* w */) {
 	auto link = borrowLink(funRef);
