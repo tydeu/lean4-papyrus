@@ -28,14 +28,14 @@ instance : MonadLift ModuleM BasicBlockM where
 protected def BasicBlockM.runIn (ctx : BasicBlockContext) (self : BasicBlockM α) : LlvmM α :=
   self ctx
 
-namespace BuilderCommands
+namespace Actions
 
 def module (name : String) (builder : ModuleM PUnit) : LlvmM ModuleRef := do
   let modRef ← ModuleRef.new name
   builder.runIn modRef
   return modRef
 
--- ## Module Commands
+-- ## Module Actions
 
 /-- Add a global variable to the module. -/
 def globalVar (type : TypeRef)
@@ -96,13 +96,17 @@ def define (type : FunctionTypeRef) (builder : BasicBlockM PUnit) (name : String
   builder.runIn {modRef, funRef, bbRef}
   return funRef
 
--- ## Basic Block Commands
+-- ## Basic Block Actions
 
-def call (fn : FunctionRef) (args : Array ValueRef := #[]) (name : String := "") : BasicBlockM PUnit := do
-  (← read).bbRef.appendInstruction <| ← fn.createCall args name
+def call (fn : FunctionRef) (args : Array ValueRef := #[]) (name : String := "") : BasicBlockM InstructionRef := do
+  let inst ← fn.createCall args name
+  (← read).bbRef.appendInstruction inst
+  return inst
 
-def callAs (type : FunctionTypeRef) (fn : ValueRef) (args : Array ValueRef := #[]) (name : String := "") : BasicBlockM PUnit := do
-  (← read).bbRef.appendInstruction <| ← CallInstRef.create type fn args name
+def callAs (type : FunctionTypeRef) (fn : ValueRef) (args : Array ValueRef := #[]) (name : String := "") : BasicBlockM InstructionRef := do
+  let inst ← CallInstRef.create type fn args name
+  (← read).bbRef.appendInstruction inst
+  return inst
 
 def retVoid : BasicBlockM PUnit := do
   (← read).bbRef.appendInstruction <| ← ReturnInstRef.createVoid
