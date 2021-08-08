@@ -258,7 +258,7 @@ def testFunction : SuiteT LlvmM PUnit := do
     assertBEq Visibility.default (← fn.getVisibility)
     assertBEq DLLStorageClass.default (← fn.getDLLStorageClass)
     assertBEq ThreadLocalMode.notLocal (← fn.getThreadLocalMode)
-    assertBEq AddressSignificance.global (← fn.getAddressSignificance)
+    assertBEq AddressSignificance.total (← fn.getAddressSignificance)
     assertBEq AddressSpace.default (← fn.getAddressSpace)
     assertBEq CallingConvention.c (← fn.getCallingConvention)
     assertBEq 0 (← fn.getRawAlignment)
@@ -395,7 +395,7 @@ def testProgram : SuiteT LlvmM PUnit := do
     assertBEq 0 out.exitCode
     assertBEq hello out.stdout
 
-open BuilderCommands in
+open Actions in
 /-- Builder Tests -/
 def testBuilders : SuiteT LlvmM PUnit := do
 
@@ -414,7 +414,7 @@ def testBuilders : SuiteT LlvmM PUnit := do
       -- Define `main` Function
       let mainFnTyRef ← functionType int32Type #[] |>.getRef
       let main ← define mainFnTyRef (name := "main") do
-        call printf #[← stringPtr hello]
+        discard<|call printf #[← stringPtr hello]
         ret (← ConstantWordRef.ofUInt32 0)
 
     -- Verify, Compile, and Run Module
