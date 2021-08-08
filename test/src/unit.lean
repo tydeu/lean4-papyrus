@@ -395,7 +395,7 @@ def testProgram : SuiteT LlvmM PUnit := do
     assertBEq 0 out.exitCode
     assertBEq hello out.stdout
 
-open Actions in
+open Builder in
 /-- Builder Tests -/
 def testBuilders : SuiteT LlvmM PUnit := do
 

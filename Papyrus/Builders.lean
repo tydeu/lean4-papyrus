@@ -28,14 +28,14 @@ instance : MonadLift ModuleM BasicBlockM where
 protected def BasicBlockM.runIn (ctx : BasicBlockContext) (self : BasicBlockM α) : LlvmM α :=
   self ctx
 
-namespace Actions
+namespace Builder
 
 def module (name : String) (builder : ModuleM PUnit) : LlvmM ModuleRef := do
   let modRef ← ModuleRef.new name
   builder.runIn modRef
   return modRef
 
--- ## Module Actions
+-- ## Module Builder Actions
 
 /-- Add a global variable to the module. -/
 def globalVar (type : TypeRef)
@@ -96,7 +96,10 @@ def define (type : FunctionTypeRef) (builder : BasicBlockM PUnit) (name : String
   builder.runIn {modRef, funRef, bbRef}
   return funRef
 
--- ## Basic Block Actions
+-- ## Basic Block Builder Actions
+
+def getArg (argNo : UInt32) : BasicBlockM ArgumentRef := do
+  (← read).funRef.getArg argNo
 
 def call (fn : FunctionRef) (args : Array ValueRef := #[]) (name : String := "") : BasicBlockM InstructionRef := do
   let inst ← fn.createCall args name
