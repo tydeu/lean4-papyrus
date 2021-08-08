@@ -395,33 +395,29 @@ def testProgram : SuiteT LlvmM PUnit := do
     assertBEq 0 out.exitCode
     assertBEq hello out.stdout
 
-open Builder in
-/-- Builder Tests -/
-def testBuilders : SuiteT LlvmM PUnit := do
+section
+open Script Builder
 
-  test "builder hello world program" do
+/-- Script Tests -/
+def testScript : SuiteT LlvmM PUnit := do
 
-    let hello := "Hello World!"
+  test "hello world program script" do
+    let helloStr := "Hello World!"
 
     -- Construct Module
-    let mod ← module "hello" do
-
-      -- Declare `printf` function
-      let printfFnTyRef ← functionType
-        int32Type #[int8Type.pointerType] true |>.getRef
-      let printf ← declare printfFnTyRef "printf"
-
-      -- Define `main` Function
-      let mainFnTyRef ← functionType int32Type #[] |>.getRef
-      let main ← define mainFnTyRef (name := "main") do
-        discard<|call printf #[← stringPtr hello]
+    llvm module hello do
+      declare i8 printf(i8*, ...)
+      define i32 main() do
+        call printf(← stringPtr helloStr)
         ret (← ConstantWordRef.ofUInt32 0)
 
     -- Verify, Compile, and Run Module
-    assertFalse (← mod.verify)
-    let out ← compileAndRunModule mod "hello"
+    assertFalse (← hello.verify)
+    let out ← compileAndRunModule hello "hello2"
     assertBEq 0 out.exitCode
-    assertBEq hello out.stdout
+    assertBEq helloStr out.stdout
+
+end
 
 /-- Test Runner -/
 def main : IO PUnit :=
@@ -435,4 +431,4 @@ def main : IO PUnit :=
     testFunction
     testModule
     testProgram
-    testBuilders
+    testScript

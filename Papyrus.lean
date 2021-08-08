@@ -5,3 +5,4 @@ import Papyrus.ExecutionEngineRef
 import Papyrus.GenericValueRef
 import Papyrus.IR
 import Papyrus.Builders
+import Papyrus.Script
