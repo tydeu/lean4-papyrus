@@ -1,8 +1,8 @@
 import Lean.Parser
-import Papyrus.IR.Types
 import Papyrus.Builders
 import Papyrus.Script.Do
 import Papyrus.Script.Util
+import Papyrus.Script.Type
 import Papyrus.Script.GlobalModifiers
 
 namespace Papyrus.Script
@@ -14,22 +14,15 @@ def mkFunctionType (ret : Syntax) (params : Array Syntax) (varArg : Syntax) : Ma
 -- ## Function Parameters
 
 @[runParserAttributeHooks]
-def varArg := leading_parser "..."
-
-@[runParserAttributeHooks]
-def params := leading_parser
-  "(" >> sepBy1 termParser "," (allowTrailingSep := true) >> Parser.optional varArg >> ")"
-
-@[runParserAttributeHooks]
 def paramBinder := leading_parser
-  Parser.ident >> " : " >> termParser
+  Parser.ident >> " : " >> typeParser
 
 @[runParserAttributeHooks]
 def paramBinders := leading_parser
-  "(" >> sepBy paramBinder "," (allowTrailingSep := true) >> Parser.optional varArg >> ")"
+  "(" >> sepBy paramBinder "," (allowTrailingSep := true) >> Parser.optional vararg >> ")"
 
-def expandParamBinder (binder : Syntax) : MacroM (Syntax × Syntax) :=
-  (binder[0], binder[2])
+def expandParamBinder (binder : Syntax) : MacroM (Syntax × Syntax) := do
+  (binder[0], ← expandType binder[2])
 
 def expandParamBinders (binders : Array Syntax)  : MacroM (Array Syntax × Array Syntax) := do
   Array.unzip <| ← binders.mapM expandParamBinder
@@ -38,14 +31,16 @@ def expandParamBinders (binders : Array Syntax)  : MacroM (Array Syntax × Array
 
 @[runParserAttributeHooks]
 def llvmFunDecl := leading_parser
-  Parser.optional linkage >> termParser maxPrec >>
-  Parser.ident >> params >> Parser.optional addrspace
+  Parser.optional linkage >>
+  typeParser >>  Parser.ident >> params >>
+  Parser.optional addrspace
 
 def expandLlvmFunDecl : Macro
-| `(llvmFunDecl| $[$linkage?]? $ret:term $id:ident ($[$params:term],* $[$varArg?:varArg]?) $[$addrspace?:addrspace]?) => do
+| `(llvmFunDecl| $[$linkage?]? $rty:llvmType $id:ident $ps:params $[$addrspace?:addrspace]?) => do
   let name := identAsStrLit id
-  let varArg := quote varArg?.isSome
-  let type ← mkFunctionType ret params varArg
+  let rtyx ← expandType rty
+  let (ptys, vararg) ← expandParams ps
+  let type ← mkFunctionType rtyx ptys vararg
   let linkage ← expandOptLinkage linkage?
   let addrspace ← expandOptAddrspace addrspace?
   `(doElem| let $id:ident ← declare $type $name $linkage $addrspace)
@@ -69,8 +64,10 @@ def expandDoLlvmFunDecl : Macro
 
 @[runParserAttributeHooks]
 def llvmFunDef := leading_parser
-  Parser.optional linkage >> termParser maxPrec >>
-  Parser.ident >> paramBinders >> Parser.optional addrspace >> " do " >> bbDoSeq
+  Parser.optional linkage >>
+  typeParser >> Parser.ident >> paramBinders >>
+  Parser.optional addrspace >>
+  " do " >> bbDoSeq
 
 def mkArgLets (args : Array Syntax) : MacroM (Array Syntax) := do
   let mut argLets := #[]
@@ -81,11 +78,12 @@ def mkArgLets (args : Array Syntax) : MacroM (Array Syntax) := do
   return argLets
 
 def expandLlvmFunDef : Macro
-| `(llvmFunDef| $[$linkage?]? $ret:term $id:ident ($[$bs:paramBinder],* $[$varArg?:varArg]?) $[$addrspace?:addrspace]? do $seq) => do
+| `(llvmFunDef| $[$linkage?]? $rty:llvmType $id:ident ($[$bs:paramBinder],* $[$vararg?:vararg]?) $[$addrspace?:addrspace]? do $seq) => do
   let name := identAsStrLit id
-  let varArg := quote varArg?.isSome
+  let rtyx ← expandType rty
+  let vararg := quote vararg?.isSome
   let (args, params) ← expandParamBinders bs
-  let type ← mkFunctionType ret params varArg
+  let type ← mkFunctionType rtyx params vararg
   let linkage ← expandOptLinkage linkage?
   let addrspace ← expandOptAddrspace addrspace?
   let bbDoElems ← expandBbDoSeq seq

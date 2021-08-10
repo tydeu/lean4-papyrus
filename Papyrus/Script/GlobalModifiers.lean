@@ -51,17 +51,3 @@ def expandLinkage : (linkage : Syntax) → MacroM Syntax
 def expandOptLinkage : (linkage? : Option Syntax) → MacroM Syntax
 | some linkage => expandLinkage linkage
 | none => mkCIdent ``Linkage.external
-
--- ## Address Space
-
-@[runParserAttributeHooks]
-def addrspace := leading_parser
-  nonReservedSymbol "addrspace" >> "(" >> termParser >> ")"
-
-def expandAddrspace : (addrSpace : Syntax) → MacroM Syntax
-| `(addrspace| addrspace($x:term)) => x
-| stx => Macro.throwErrorAt stx "ill-formed address space"
-
-def expandOptAddrspace : (addrspace? : Option Syntax) → MacroM Syntax
-| some addrspace => expandAddrspace addrspace
-| none => mkCIdent ``AddressSpace.default
