@@ -1,5 +1,5 @@
 import Lean.Parser
-import Papyrus.IR.GlobalRefs
+import Papyrus.IR.GlobalModifiers
 
 namespace Papyrus.Script
 open Lean Parser Term
