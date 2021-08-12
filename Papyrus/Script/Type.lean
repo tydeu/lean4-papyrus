@@ -117,9 +117,11 @@ def expandVectorTypeLit : (stx : Syntax) → MacroM Syntax
 macro t:"half"        : llvmType => mkCIdentFrom t ``halfType
 macro t:"bfloat"      : llvmType => mkCIdentFrom t ``bfloatType
 macro t:"float"       : llvmType => mkCIdentFrom t ``floatType
-macro t:"x86_fp80"    : llvmType => mkCIdentFrom t ``doubleType
-macro t:"fp128"       : llvmType => mkCIdentFrom t ``x86FP80Type
-macro t:"ppc_fp128"   : llvmType => mkCIdentFrom t ``fp128Type
+macro t:"double"      : llvmType => mkCIdentFrom t ``doubleType
+macro t:"x86_fp80"    : llvmType => mkCIdentFrom t ``x86FP80Type
+macro t:"fp128"       : llvmType => mkCIdentFrom t ``fp128Type
+macro t:"ppc_fp128"   : llvmType => mkCIdentFrom t ``ppcFP128Type
+
 macro t:"void"        : llvmType => mkCIdentFrom t ``voidType
 macro t:"label"       : llvmType => mkCIdentFrom t ``labelType
 macro t:"metadata"    : llvmType => mkCIdentFrom t ``metadataType
