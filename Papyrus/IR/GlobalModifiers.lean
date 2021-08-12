@@ -70,7 +70,6 @@ inductive Linkage
 deriving BEq, DecidableEq, Repr
 
 attribute [unbox] Linkage
-export Linkage (linkOnceAny linkOnceODR)
 instance : Inhabited Linkage := ⟨Linkage.external⟩
 
 --------------------------------------------------------------------------------
