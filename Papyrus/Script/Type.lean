@@ -7,6 +7,10 @@ namespace Papyrus.Script
 
 scoped postfix:max "*" => pointerType
 
+--------------------------------------------------------------------------------
+-- # Type Category
+--------------------------------------------------------------------------------
+
 open Internal
 open Lean Parser
 
@@ -24,10 +28,37 @@ def expandTypeAsRef (stx : Syntax) : MacroM Syntax := do
 scoped macro "llvm " _x:&"type " t:llvmType : term => expandType t
 
 --------------------------------------------------------------------------------
+-- # Primitive Types
+--------------------------------------------------------------------------------
+
+-- ## Floating Point Types
+
+macro t:"half"        : llvmType => mkCIdentFrom t ``halfType
+macro t:"bfloat"      : llvmType => mkCIdentFrom t ``bfloatType
+macro t:"float"       : llvmType => mkCIdentFrom t ``floatType
+macro t:"double"      : llvmType => mkCIdentFrom t ``doubleType
+macro t:"x86_fp80"    : llvmType => mkCIdentFrom t ``x86FP80Type
+macro t:"fp128"       : llvmType => mkCIdentFrom t ``fp128Type
+macro t:"ppc_fp128"   : llvmType => mkCIdentFrom t ``ppcFP128Type
+
+-- ## Special Types
+
+macro t:"void"        : llvmType => mkCIdentFrom t ``voidType
+macro t:"label"       : llvmType => mkCIdentFrom t ``labelType
+macro t:"metadata"    : llvmType => mkCIdentFrom t ``metadataType
+macro t:"x86_mmx"     : llvmType => mkCIdentFrom t ``x86MMXType
+macro t:"x86_amx"     : llvmType => mkCIdentFrom t ``x86AMXType
+macro t:"token"       : llvmType => mkCIdentFrom t ``tokenType
+
+--------------------------------------------------------------------------------
 -- # Derived Type Parsers
 --------------------------------------------------------------------------------
 
--- ## Function Type
+-- ## Integer Types
+
+macro t:intTypeLit : llvmType => expandIntTypeLit t
+
+-- ## Function Types
 
 @[runParserAttributeHooks]
 def vararg := leading_parser "..."
@@ -43,7 +74,9 @@ def expandFunTypeLit (rty : Syntax) (params : Syntax) : MacroM Syntax := do
   let (ptys, vararg) ← expandParams params
   ``(functionType $(← expandType rty) #[$ptys,*] $vararg)
 
--- ## Pointer Type
+macro rt:llvmType ps:params : llvmType => expandFunTypeLit rt ps
+
+-- ## Pointer Types
 
 @[runParserAttributeHooks]
 def addrspace := leading_parser
@@ -60,16 +93,20 @@ def expandOptAddrspace : (addrspace? : Option Syntax) → MacroM Syntax
 def expandPtrTypeLit (ty : Syntax) (addrspace? : Option Syntax) : MacroM Syntax := do
   ``(pointerType $(← expandType ty) $(← expandOptAddrspace addrspace?))
 
--- ## Struct Type
+macro t:llvmType a?:optional(addrspace) "*" : llvmType => expandPtrTypeLit t a?
 
+-- ## Struct Types
+
+@[runParserAttributeHooks]
 def packedStructTypeLit := leading_parser
   "<{" >> sepBy typeParser "," >> "}>"
 
+@[runParserAttributeHooks]
 def unpackedStructTypeLit := leading_parser
   "{" >> sepBy typeParser "," >> "}"
 
-def structTypeLit :=
-  unpackedStructTypeLit <|> packedStructTypeLit
+@[runParserAttributeHooks]
+def structTypeLit := unpackedStructTypeLit <|> packedStructTypeLit
 
 def expandStructTypeLit : (stx : Syntax) → MacroM (Array Syntax × Bool)
 | `(unpackedStructTypeLit| { $[$ts:llvmType],* }) => do
@@ -82,10 +119,14 @@ def expandLiteralStructTypeLit (stx : Syntax) : MacroM Syntax := do
   let (tys, packed) ←  expandStructTypeLit stx
   ``(literalStructType #[$tys,*] $(quote packed))
 
--- ## Array Type
+macro t:structTypeLit : llvmType => expandLiteralStructTypeLit t
 
-def xTk := nonReservedSymbol "x" <|> "×"
+-- ## Array Types
 
+def xTk :=
+  nonReservedSymbol "x" <|> "×"
+
+@[runParserAttributeHooks]
 def arrayTypeLit := leading_parser
   "[" >> termParser maxPrec >> xTk >> typeParser >> "]"
 
@@ -93,11 +134,14 @@ def expandArrayTypeLit : Macro
 | `(arrayTypeLit| [$x x $t]) => do ``(arrayType $(← expandType t) $x)
 | stx => Macro.throwErrorAt stx "ill-formed array llvmType literal"
 
--- ## Vector Type
+macro t:arrayTypeLit : llvmType => expandArrayTypeLit t
+
+-- ## Vector Types
 
 def optVScale :=
   Parser.optional (nonReservedSymbol "vscale" >> xTk)
 
+@[runParserAttributeHooks]
 def vectorTypeLit := leading_parser
  "<" >> optVScale >> termParser maxPrec >> xTk >> typeParser >> ">"
 
@@ -108,33 +152,4 @@ def expandVectorTypeLit : (stx : Syntax) → MacroM Syntax
   ``(scalableVectorType $(← expandType t) $x)
 | stx => Macro.throwErrorAt stx "ill-formed vector llvmType literal"
 
---------------------------------------------------------------------------------
--- # Type Macros
---------------------------------------------------------------------------------
-
--- ## Leading Lit Macros
-
-macro t:"half"        : llvmType => mkCIdentFrom t ``halfType
-macro t:"bfloat"      : llvmType => mkCIdentFrom t ``bfloatType
-macro t:"float"       : llvmType => mkCIdentFrom t ``floatType
-macro t:"double"      : llvmType => mkCIdentFrom t ``doubleType
-macro t:"x86_fp80"    : llvmType => mkCIdentFrom t ``x86FP80Type
-macro t:"fp128"       : llvmType => mkCIdentFrom t ``fp128Type
-macro t:"ppc_fp128"   : llvmType => mkCIdentFrom t ``ppcFP128Type
-
-macro t:"void"        : llvmType => mkCIdentFrom t ``voidType
-macro t:"label"       : llvmType => mkCIdentFrom t ``labelType
-macro t:"metadata"    : llvmType => mkCIdentFrom t ``metadataType
-macro t:"x86_mmx"     : llvmType => mkCIdentFrom t ``x86MMXType
-macro t:"x86_amx"     : llvmType => mkCIdentFrom t ``x86AMXType
-macro t:"token"       : llvmType => mkCIdentFrom t ``tokenType
-
-macro t:intTypeLit    : llvmType => expandIntTypeLit t
-macro t:structTypeLit : llvmType => expandLiteralStructTypeLit t
-macro t:arrayTypeLit  : llvmType => expandArrayTypeLit t
 macro t:vectorTypeLit : llvmType => expandVectorTypeLit t
-
--- ## Trailing Lit Macros
-
-macro rt:llvmType ps:params : llvmType => expandFunTypeLit rt ps
-macro t:llvmType a?:optional(addrspace) "*" : llvmType => expandPtrTypeLit t a?
