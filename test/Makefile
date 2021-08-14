@@ -36,47 +36,68 @@ LEANC 	:= leanc
 MKPATH 	:= mkdir -p
 RMPATH 	:= rm -rf
 
-SRC_DIR := src
-OUT_DIR := build
+COMP_DIR := comp
+EVAL_DIR := eval
+BUILD_DIR := build
 TEST_OUT_DIR := out
 LEANC_FLAGS	:=
 
 SRCS :=\
 	unit.lean\
 
-BINS := $(addprefix $(OUT_DIR)/,$(SRCS:.lean=))
+EVALS :=\
+	script/type.lean
+
+BINS := $(addprefix $(BUILD_DIR)/,$(SRCS:.lean=))
 
 # Rules
 
 all: bin test
 
+clean: clean-bin clean-test
+
 # Test Suite Build Rules
 
 bin: $(BINS)
 
-$(OUT_DIR):
+$(BUILD_DIR):
 	$(MKPATH) $@
 
-$(OUT_DIR)/%.c : $(SRC_DIR)/%.lean $(PAPYRUS_LIB) $(TESTLIB_OLEAN) | $(OUT_DIR)
+$(BUILD_DIR)/%.c : $(COMP_DIR)/%.lean $(PAPYRUS_LIB) $(TESTLIB_OLEAN) | $(BUILD_DIR)
 	LEAN_PATH="$(PAPYRUS_OLEAN_DIR);$(TESTLIB_OLEAN_DIR)" $(LEAN) -c $@ $<
 
-$(OUT_DIR)/%.o : $(OUT_DIR)/%.c | $(OUT_DIR)
+$(BUILD_DIR)/%.o : $(BUILD_DIR)/%.c | $(BUILD_DIR)
 	$(LEANC) -c -o $@ $< $(LEANC_FLAGS)
 
-$(OUT_DIR)/% : $(OUT_DIR)/%.o $(PAPYRUS_C_LIB) $(TESTLIB_LIB) | $(OUT_DIR)
+$(BUILD_DIR)/% : $(BUILD_DIR)/%.o $(PAPYRUS_C_LIB) $(TESTLIB_LIB) | $(BUILD_DIR)
 	$(LEANC) -o $@ $< $(PAPYRUS_LD_FLAGS) $(PAPYRUS_LIBS) $(TESTLIB_LIB)
 
-.PRECIOUS: $(OUT_DIR)/%.c
+.PRECIOUS: $(BUILD_DIR)/%.c
 
 clean-bin:
-	$(RMPATH) $(OUT_DIR)
+	$(RMPATH) $(BUILD_DIR)
 
 # Testing Rules
 
-test: bin
-	$(OUT_DIR)/unit
+test: test-eval test-comp
 
-clean-test:
+test-comp: bin
+	@echo "Compiled tests:"
+	$(BUILD_DIR)/unit
+
+test-eval: pre-test-eval $(EVALS)
+
+pre-test-eval:
+	@echo "Interpreted tests:"
+
+$(EVALS):
+	@echo "Testing $@ ... "
+	@cd ${EVAL_DIR}; ./test_single.sh $@
+
+clean-test-eval:
+	$(RMPATH) ${EVAL_DIR}/**/*.lean.produced.out
+
+clean-test-out:
 	$(RMPATH) $(TEST_OUT_DIR)
 
-clean: clean-bin clean-test
+clean-test: clean-test-out clean-test-eval
