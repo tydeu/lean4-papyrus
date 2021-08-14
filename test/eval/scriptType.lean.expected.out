@@ -1,0 +1,52 @@
+halfType : Type
+bfloatType : Type
+floatType : Type
+doubleType : Type
+x86FP80Type : Type
+fp128Type : Type
+ppcFP128Type : Type
+voidType : Type
+labelType : Type
+metadataType : Type
+x86MMXType : Type
+x86AMXType : Type
+tokenType : Type
+integerType 1 : IntegerType
+integerType 32 : IntegerType
+integerType 1942652 : IntegerType
+integerType 1 : IntegerType
+integerType 32 : IntegerType
+integerType 1942652 : IntegerType
+functionType (Type.integer (integerType 32)) #[Type.integer (integerType 32)] : FunctionType
+(Type.function
+    (functionType floatType
+      #[Type.integer (integerType 16), Type.pointer (Type.integer (integerType 32))*]))* : PointerType
+functionType (Type.integer (integerType 32)) #[Type.pointer (Type.integer (integerType 8))*] true : FunctionType
+functionType (Type.struct (literalStructType #[Type.integer (integerType 32), Type.integer (integerType 32)]))
+  #[Type.integer (integerType 32)] : FunctionType
+(Type.integer (integerType 8))* : PointerType
+(Type.integer (integerType 8))* : PointerType
+(Type.array (arrayType (Type.integer (integerType 32)) 4))* : PointerType
+(Type.function
+    (functionType (Type.integer (integerType 32)) #[Type.pointer (Type.integer (integerType 32))*]))* : PointerType
+pointerType (Type.integer (integerType 32)) 5 : PointerType
+literalStructType
+  #[Type.integer (integerType 32), Type.integer (integerType 32), Type.integer (integerType 32)] : StructType
+literalStructType
+  #[floatType,
+    Type.pointer
+      (Type.function (functionType (Type.integer (integerType 32)) #[Type.integer (integerType 32)]))*] : StructType
+literalStructType #[Type.integer (integerType 8), Type.integer (integerType 32)] true : StructType
+arrayType (Type.integer (integerType 32)) 40 : ArrayType
+arrayType (Type.integer (integerType 32)) 41 : ArrayType
+arrayType (Type.integer (integerType 8)) 4 : ArrayType
+arrayType (Type.array (arrayType (Type.integer (integerType 32)) 4)) 3 : ArrayType
+arrayType (Type.array (arrayType floatType 10)) 12 : ArrayType
+arrayType (Type.array (arrayType (Type.array (arrayType (Type.integer (integerType 16)) 4)) 3)) 2 : ArrayType
+fixedVectorType (Type.integer (integerType 32)) 4 : FixedVectorType
+fixedVectorType floatType 8 : FixedVectorType
+fixedVectorType (Type.integer (integerType 64)) 2 : FixedVectorType
+fixedVectorType (Type.pointer (Type.integer (integerType 64))*) 4 : FixedVectorType
+scalableVectorType (Type.integer (integerType 32)) 4 : ScalableVectorType
+arrayType (Type.integer int8Type) 4 : ArrayType
+literalStructType #[Type.integer int8Type, floatType] : StructType
