@@ -59,16 +59,5 @@ def expandLlvmRet : (retVal? : Option Syntax) → MacroM Syntax
 | none => `(doElem| retVoid)
 | some x => `(doElem| ret $x)
 
-syntax (name := bbDoLlvmRet) "ret " optional(term) : bbDoElem
-
-@[macro bbDoLlvmRet]
-def expandBbDoLLvmRet : Macro
-| `(bbDoElem| ret $[$x?]?) => expandLlvmRet x?
-| _ => Macro.throwUnsupported
-
-scoped syntax (name := doLlvmRet) "llvm " &"ret " optional(term) : doElem
-
-@[macro doLlvmRet]
-def expandDoLLvmRet : Macro
-| `(doElem| llvm ret $[$x?]?) => expandLlvmRet x?
-| _ => Macro.throwUnsupported
+macro "ret " x?:optional(term) : bbDoElem => expandLlvmRet x?
+scoped macro "llvm " &"ret " x?:optional(term) : doElem => expandLlvmRet x?

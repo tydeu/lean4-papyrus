@@ -46,19 +46,8 @@ def expandLlvmFunDecl : Macro
   `(doElem| let $id:ident ← declare $type $name $linkage $addrspace)
 | stx => Macro.throwErrorAt stx "ill-formed declare"
 
-syntax (name := modDoLlvmFunDecl) "declare " llvmFunDecl : modDoElem
-
-@[macro modDoLlvmFunDecl]
-def expandModDoLlvmFunDecl : Macro
-| `(modDoElem| declare $decl) => expandLlvmFunDecl decl
-| _ => Macro.throwUnsupported
-
-scoped syntax (name := doLlvmFunDecl) "llvm " &"declare " llvmFunDecl : doElem
-
-@[macro doLlvmFunDecl]
-def expandDoLlvmFunDecl : Macro
-| `(doElem| llvm declare $decl) => expandLlvmFunDecl decl
-| _ => Macro.throwUnsupported
+macro "declare " d:llvmFunDecl : modDoElem => expandLlvmFunDecl d
+scoped macro "llvm " &"declare " d:llvmFunDecl : doElem => expandLlvmFunDecl d
 
 -- ## Function Definition
 
@@ -93,16 +82,5 @@ def expandLlvmFunDef : Macro
   `(doElem| let $id:ident ← define $type (do {$[$stmts:doElem]*}) $name $linkage $addrspace)
 | stx => Macro.throwErrorAt stx "ill-formed define"
 
-syntax (name := modDoLlvmFunDef) "define " llvmFunDef : modDoElem
-
-@[macro modDoLlvmFunDef]
-def expandModDoLlvmFunDef : Macro
-| `(modDoElem| define $defn) => expandLlvmFunDef defn
-| _ => Macro.throwUnsupported
-
-scoped syntax (name := doLlvmFunDef) "llvm " &"define " llvmFunDef : doElem
-
-@[macro doLlvmFunDef]
-def expandDoLlvmFunDef : Macro
-| `(doElem| llvm define $defn) => expandLlvmFunDef defn
-| _ => Macro.throwUnsupported
+macro "define " d:llvmFunDef : modDoElem => expandLlvmFunDef d
+scoped macro  "llvm " &"define " d:llvmFunDef : doElem => expandLlvmFunDef d

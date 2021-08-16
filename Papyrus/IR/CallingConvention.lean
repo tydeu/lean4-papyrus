@@ -9,7 +9,7 @@ syntax enumCtor := "\n| " declModifiers ident " := " term
 
 scoped macro (name := enumDecl)
   mods:declModifiers
-  "enum " id:ident " : " type:term _whereTk?:optional(" := " <|> " where ")
+  "enum " id:ident " : " type:term optional(" := " <|> " where ")
   ctors:many(enumCtor)
   deriv?:optDeriving
 : command => do

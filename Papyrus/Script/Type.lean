@@ -25,7 +25,7 @@ def expandType (stx : Syntax) : MacroM Syntax :=
 def expandTypeAsRef (stx : Syntax) : MacroM Syntax := do
   `(← Type.getRef $(← expandType stx))
 
-scoped macro "llvm " _x:&"type " t:llvmType : term => expandType t
+scoped macro "llvm " &"type " t:llvmType : term => expandType t
 
 --------------------------------------------------------------------------------
 -- # Primitive Types
