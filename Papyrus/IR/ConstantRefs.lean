@@ -68,6 +68,14 @@ constant ofUInt32 (value : UInt32) : LlvmM ConstantIntRef
 @[extern "papyrus_get_constant_uint64"]
 constant ofUInt64 (value : UInt64) : LlvmM ConstantIntRef
 
+/--  Get a constant with the given Nat value truncated to `numBits`. -/
+@[extern "papyrus_get_constant_nat_of_size"]
+constant ofNat (numBits : UInt32) (value : Nat) : LlvmM ConstantIntRef
+
+/--  Get a constant with the given Int value truncated to `numBits`. -/
+@[extern "papyrus_get_constant_int_of_size"]
+constant ofInt (numBits : UInt32) (value : Int) : LlvmM ConstantIntRef
+
 /-- Get the integer type of this constant.  -/
 def getType (self : @& ConstantIntRef) : IO IntegerTypeRef :=
   ValueRef.getType self
@@ -96,14 +104,14 @@ namespace IntegerTypeRef
   Get a reference to a constant of this type with the given `Int` value.
   The value will be truncated and/or extended as necessary to make it fit.
 -/
-@[extern "papyrus_get_constant_int"]
+@[extern "papyrus_get_constant_int_of_type"]
 constant getConstantInt (value : @& Int) (self : @& IntegerTypeRef) : IO ConstantIntRef
 
 /--
   Get a reference to a constant of this type with the given `Nat` value.
   The value will be truncated and/or extended as necessary to make it fit.
 -/
-@[extern "papyrus_get_constant_nat"]
+@[extern "papyrus_get_constant_nat_of_type"]
 constant getConstantNat (value : @& Nat) (self : @& IntegerTypeRef) : IO ConstantIntRef
 
 end IntegerTypeRef

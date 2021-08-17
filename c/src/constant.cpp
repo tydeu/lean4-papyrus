@@ -100,10 +100,18 @@ extern "C" obj_res papyrus_get_constant_uint64
 	return io_result_mk_ok(mkConstantRef(ctxObj, n));
 }
 
+// Get a reference to a constant of the given Int value truncated to `numBits`.
+extern "C" obj_res papyrus_get_constant_int_of_size
+	(uint32 numBits, b_obj_arg intObj, obj_arg ctxRef, obj_arg /* w */)
+{
+	auto n = ConstantInt::get(*toLLVMContext(ctxRef), apOfInt(numBits, intObj));
+	return io_result_mk_ok(mkConstantRef(ctxRef, n));
+}
+
 // Get a reference to a constant of the given Int value,
 // truncating and/or extending it as necessary to fit in the given type.
-extern "C" obj_res papyrus_get_constant_int
-(b_obj_arg intObj, b_obj_arg typeRef, obj_arg /* w */)
+extern "C" obj_res papyrus_get_constant_int_of_type
+	(b_obj_arg intObj, b_obj_arg typeRef, obj_arg /* w */)
 {
 	auto ctxObj = copyLink(typeRef);
 	auto numBits = toIntegerType(typeRef)->getBitWidth();
@@ -111,15 +119,23 @@ extern "C" obj_res papyrus_get_constant_int
 	return io_result_mk_ok(mkConstantRef(ctxObj, n));
 }
 
+// Get a reference to a constant of the given Int value truncated to `numBits`.
+extern "C" obj_res papyrus_get_constant_nat_of_size
+	(uint32 numBits, b_obj_arg intObj, obj_arg ctxRef, obj_arg /* w */)
+{
+	auto n = ConstantInt::get(*toLLVMContext(ctxRef), apOfNat(numBits, intObj));
+	return io_result_mk_ok(mkConstantRef(ctxRef, n));
+}
+
 // Get a reference to a constant of the given Nat value,
 // truncating and/or extending it as necessary to fit in the given type.
-extern "C" obj_res papyrus_get_constant_nat
-(b_obj_arg intObj, b_obj_arg typeRef, obj_arg /* w */)
+extern "C" obj_res papyrus_get_constant_nat_of_type
+	(b_obj_arg intObj, b_obj_arg typeRef, obj_arg /* w */)
 {
-	auto ctxObj = copyLink(typeRef);
+	auto ctxRef = copyLink(typeRef);
 	auto numBits = toIntegerType(typeRef)->getBitWidth();
-	auto n = ConstantInt::get(*toLLVMContext(ctxObj), apOfNat(numBits, intObj));
-	return io_result_mk_ok(mkConstantRef(ctxObj, n));
+	auto n = ConstantInt::get(*toLLVMContext(ctxRef), apOfNat(numBits, intObj));
+	return io_result_mk_ok(mkConstantRef(ctxRef, n));
 }
 
 // Get the Int value of the given integer constant.
