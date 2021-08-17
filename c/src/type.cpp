@@ -238,6 +238,15 @@ llvm::StructType* toStructType(b_obj_arg typeRef) {
 	return llvm::cast<StructType>(toType(typeRef));
 }
 
+// Get a reference to the struct type with the given name (if it exists).
+extern "C" obj_res papyrus_struct_type_get_type_by_name
+	(b_obj_arg nameObj, obj_arg ctxRef, obj_arg /* w */)
+{
+	auto type = StructType::getTypeByName(*toLLVMContext(ctxRef), refOfString(nameObj));
+	auto obj = type == nullptr ? mk_option_none() : mk_option_some(mkTypeRef(ctxRef, type));
+	return io_result_mk_ok(obj);
+}
+
 // Get a reference to the literal struct type with the given elements and packing.
 extern "C" obj_res papyrus_get_literal_struct_type
 (b_obj_arg elemsObj, uint8_t isPacked, obj_arg ctxRef, obj_arg /* w */)

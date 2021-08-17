@@ -178,6 +178,10 @@ def StructTypeRef := TypeRef
 
 namespace StructTypeRef
 
+/-- Get the struct type with the given name (if it exists). -/
+@[extern "papyrus_struct_type_get_type_by_name"]
+constant getTypeByName? (name : String) : LlvmM (Option StructTypeRef)
+
 /-- Get whether this struct type is literal. -/
 @[extern "papyrus_struct_type_is_literal"]
 constant isLiteral (self : @& StructTypeRef) : IO Bool
