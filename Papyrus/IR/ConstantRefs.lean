@@ -37,9 +37,18 @@ def ConstantWordRef := ConstantDataRef
 
 namespace ConstantWordRef
 
+/--  Get the LLVM true constant (i.e., `i1 0`). -/
+@[extern "papyrus_get_constant_false"]
+constant getFalse : LlvmM ConstantWordRef
+
+/--  Get the LLVM true constant (i.e., `i1 1`). -/
+@[extern "papyrus_get_constant_true"]
+constant getTrue : LlvmM ConstantWordRef
+
 /--  Get an i1 constant for a `Bool` (i.e., `1` for `true`, `0` for `false`). -/
-@[extern "papyrus_get_constant_bool"]
-constant ofBool (value : Bool) : LlvmM ConstantWordRef
+def ofBool : (value : Bool) → LlvmM ConstantWordRef
+| false => getFalse
+| true => getTrue
 
 /--  Get an i8 constant for a `UInt8`. -/
 @[extern "papyrus_get_constant_uint8"]
