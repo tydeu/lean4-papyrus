@@ -18,6 +18,7 @@ declare_symbol_syntax_cat llvmType
 def typeParser (rbp : Nat := 0) := categoryParser `llvmType rbp
 
 macro "type" "(" t:term ")" : llvmType => t
+macro (priority := low) t:ident : llvmType => t
 
 def expandType (stx : Syntax) : MacroM Syntax :=
   expandMacros stx
@@ -65,7 +66,7 @@ def vararg := leading_parser "..."
 
 @[runParserAttributeHooks]
 def params := leading_parser
-  "(" >> sepBy1 typeParser "," (allowTrailingSep := true) >> Parser.optional vararg >> ")"
+  "(" >> sepBy typeParser "," (allowTrailingSep := true) >> Parser.optional vararg >> ")"
 
 def expandParams (stx : Syntax) : MacroM (Array Syntax × Syntax) := do
   (← stx[1].getSepArgs.mapM expandType, (quote !stx[2].isNone))

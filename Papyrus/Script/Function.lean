@@ -32,11 +32,11 @@ def expandParamBinders (binders : Array Syntax)  : MacroM (Array Syntax × Array
 @[runParserAttributeHooks]
 def llvmFunDecl := leading_parser
   Parser.optional linkage >>
-  typeParser >>  Parser.ident >> params >>
+  typeParser >> "@" >> Parser.ident >> params >>
   Parser.optional addrspace
 
 def expandLlvmFunDecl : Macro
-| `(llvmFunDecl| $[$linkage?]? $rty:llvmType $id:ident $ps:params $[$addrspace?:addrspace]?) => do
+| `(llvmFunDecl| $[$linkage?]? $rty:llvmType @ $id:ident $ps:params $[$addrspace?:addrspace]?) => do
   let name := identAsStrLit id
   let rtyx ← expandType rty
   let (ptys, vararg) ← expandParams ps
@@ -54,7 +54,7 @@ scoped macro "llvm " &"declare " d:llvmFunDecl : doElem => expandLlvmFunDecl d
 @[runParserAttributeHooks]
 def llvmFunDef := leading_parser
   Parser.optional linkage >>
-  typeParser >> Parser.ident >> paramBinders >>
+  typeParser >> "@" >> Parser.ident >> paramBinders >>
   Parser.optional addrspace >>
   " do " >> bbDoSeq
 
@@ -67,7 +67,7 @@ def mkArgLets (args : Array Syntax) : MacroM (Array Syntax) := do
   return argLets
 
 def expandLlvmFunDef : Macro
-| `(llvmFunDef| $[$linkage?]? $rty:llvmType $id:ident ($[$bs:paramBinder],* $[$vararg?:vararg]?) $[$addrspace?:addrspace]? do $seq) => do
+| `(llvmFunDef| $[$linkage?]? $rty:llvmType @ $id:ident ($[$bs:paramBinder],* $[$vararg?:vararg]?) $[$addrspace?:addrspace]? do $seq) => do
   let name := identAsStrLit id
   let rtyx ← expandType rty
   let vararg := quote vararg?.isSome

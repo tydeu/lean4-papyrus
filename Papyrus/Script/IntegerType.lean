@@ -81,12 +81,12 @@ attribute [runParserAttributeHooks] intTypeLit
 
 -- # Macro
 
+def decodeIntTypeLit? (stx : Lean.Syntax) : Option Nat :=
+  OptionM.run do decodeDecimal? (← stx.isLit? ``intTypeLit) 1
+
 def expandIntTypeLit (stx : Syntax) : MacroM Syntax :=
-  match stx.isLit? ``intTypeLit with
-  | some str =>
-    match decodeDecimal? str 1 with
-    | some n => `(integerType $(quote n))
-    | none => Macro.throwErrorAt stx "ill-formed integer type literal"
-  | none => Macro.throwUnsupported
+  match decodeIntTypeLit? stx with
+  | some n => ``(integerType $(quote n))
+  | none => Macro.throwErrorAt stx "ill-formed integer type literal"
 
 scoped macro:max (priority := high) x:intTypeLit : term => expandIntTypeLit x

@@ -12,29 +12,29 @@ open Builder Lean Parser Term
 @[runParserAttributeHooks]
 def callInst := leading_parser
   nonReservedSymbol "call " >> Parser.optional typeParser >>
-    termParser maxPrec >> "(" >> sepBy termParser ","  >> ")"
+    "@" >> termParser maxPrec >> "(" >> sepBy termParser ","  >> ")"
 
 @[runParserAttributeHooks]
 def instruction :=
   callInst
 
 def expandInstruction (name : Syntax) : (inst : Syntax) → MacroM Syntax
-| `(instruction| call $[$ty?]? $fn:term ($[$args],*)) =>
+| `(instruction| call $[$ty?]? @ $fn:term ($[$args],*)) =>
   match ty? with
-  | none => `(call $fn #[$[$args],*] $name)
+  | none => ``(call $fn #[$[$args],*] $name)
   | some ty => do
     let tyx ← expandTypeAsRef ty
-    `(callAs $tyx $fn #[$[$args],*] $name)
+    ``(callAs $tyx $fn #[$[$args],*] $name)
 | inst => Macro.throwErrorAt inst "unknown instruction"
 
 -- ## Named Instructions
 
 @[runParserAttributeHooks]
 def namedInst := leading_parser
-  "%" >> Parser.ident >> " := " >> instruction
+  "%" >> Parser.ident >> " = " >> instruction
 
 def expandNamedInst : Macro
-| `(namedInst| % $id:ident := $inst) => do
+| `(namedInst| % $id:ident = $inst) => do
   let name := identAsStrLit id
   let inst ← expandInstruction name inst
   `(doElem| let $id:ident ← $inst:term)

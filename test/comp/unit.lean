@@ -406,9 +406,9 @@ def testScript : SuiteT LlvmM PUnit := do
 
     -- Construct Module
     llvm module hello do
-      declare i8 printf(i8*, ...)
-      define i32 main() do
-        call printf(← stringPtr helloStr)
+      declare i8 @printf(i8*, ...)
+      define i32 @main() do
+        call @printf(← stringPtr helloStr)
         ret (← ConstantWordRef.ofUInt32 0)
 
     -- Verify, Compile, and Run Module
