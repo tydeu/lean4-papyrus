@@ -47,11 +47,11 @@ def globalVar (type : TypeRef)
   return gblRef
 
 /-- Add a global variable with an initializer to the module. -/
-def globalVarInit (type : TypeRef)
+def globalVarInit (init : ConstantRef)
 (isConstant := false) (linkage := Linkage.external) (name : @& String := "")
 (tlm := ThreadLocalMode.notLocal) (addrSpace := AddressSpace.default)
 : ModuleM GlobalVariableRef := do
-  let gblRef ← GlobalVariableRef.new type isConstant linkage name tlm addrSpace false
+  let gblRef ← GlobalVariableRef.ofConstant init isConstant linkage name tlm addrSpace
   (← read).appendGlobalVariable gblRef
   return gblRef
 
