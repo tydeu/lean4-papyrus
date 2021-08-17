@@ -66,7 +66,7 @@ def string (str : String)
 def stringPtr (str : String)
 (name := "") (addrSpace := AddressSpace.default) (withNull := true) : ModuleM ConstantRef := do
   let gblRef ← string str name addrSpace withNull
-  let zeroRef ← ConstantWordRef.ofUInt32 0
+  let zeroRef ← ConstantIntRef.ofUInt32 0
   let ptrRef ← ConstantExprRef.getGetElementPtr gblRef #[zeroRef, zeroRef] true
   return ptrRef
 

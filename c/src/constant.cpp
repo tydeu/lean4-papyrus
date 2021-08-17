@@ -36,7 +36,7 @@ extern "C" obj_res papyrus_get_all_ones_constant(b_obj_arg typeRef, obj_arg /* w
 }
 
 //------------------------------------------------------------------------------
-// Constant Words / Integers / Naturals
+// Constant Ints (Words / Integers / Naturals)
 //------------------------------------------------------------------------------
 
 // Get the LLVM ConstantInt pointer wrapped in an object.
@@ -123,12 +123,12 @@ extern "C" obj_res papyrus_get_constant_nat
 }
 
 // Get the Int value of the given integer constant.
-extern "C" obj_res papyrus_constant_word_get_int_value(b_obj_arg constRef, obj_arg /* w */) {
+extern "C" obj_res papyrus_constant_int_get_int_value(b_obj_arg constRef, obj_arg /* w */) {
 	return io_result_mk_ok(mkIntFromAP(toConstantInt(constRef)->getValue()));
 }
 
 // Get the Nat value of the given integer constant.
-extern "C" obj_res papyrus_constant_word_get_nat_value(b_obj_arg constRef, obj_arg /* w */) {
+extern "C" obj_res papyrus_constant_int_get_nat_value(b_obj_arg constRef, obj_arg /* w */) {
 	return io_result_mk_ok(mkNatFromAP(toConstantInt(constRef)->getValue()));
 }
 

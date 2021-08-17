@@ -23,94 +23,70 @@ end TypeRef
 def ConstantDataRef := ConstantRef
 
 --------------------------------------------------------------------------------
--- Constant Word/Int/Nat
+-- Constant Ints (Words / Integers / Natural)
 --------------------------------------------------------------------------------
 
 -- # Constant Word
 
 /--
   A reference to an external LLVM
-  [ConstantInt](https://llvm.org/doxygen/classllvm_1_1ConstantInt.html)
-  that is treated simply as a block of bits.
--/
-def ConstantWordRef := ConstantDataRef
+  [ConstantInt](https://llvm.org/doxygen/classllvm_1_1ConstantInt.html).
 
-namespace ConstantWordRef
+  Such a constant can be used to represent a block of bits (i.e., a word),
+  an unsigned integer (a natural), or a true integer.
+-/
+def ConstantIntRef := ConstantDataRef
+
+namespace ConstantIntRef
 
 /--  Get the LLVM true constant (i.e., `i1 0`). -/
 @[extern "papyrus_get_constant_false"]
-constant getFalse : LlvmM ConstantWordRef
+constant getFalse : LlvmM ConstantIntRef
 
 /--  Get the LLVM true constant (i.e., `i1 1`). -/
 @[extern "papyrus_get_constant_true"]
-constant getTrue : LlvmM ConstantWordRef
+constant getTrue : LlvmM ConstantIntRef
 
 /--  Get an i1 constant for a `Bool` (i.e., `1` for `true`, `0` for `false`). -/
-def ofBool : (value : Bool) → LlvmM ConstantWordRef
+def ofBool : (value : Bool) → LlvmM ConstantIntRef
 | false => getFalse
 | true => getTrue
 
 /--  Get an i8 constant for a `UInt8`. -/
 @[extern "papyrus_get_constant_uint8"]
-constant ofUInt8 (value : UInt8) : LlvmM ConstantWordRef
+constant ofUInt8 (value : UInt8) : LlvmM ConstantIntRef
 
 /--  Get an i16 constant for a `UInt16`. -/
 @[extern "papyrus_get_constant_uint16"]
-constant ofUInt16 (value : UInt16) : LlvmM ConstantWordRef
+constant ofUInt16 (value : UInt16) : LlvmM ConstantIntRef
 
 /--  Get an i32 constant for a `UInt32`. -/
 @[extern "papyrus_get_constant_uint32"]
-constant ofUInt32 (value : UInt32) : LlvmM ConstantWordRef
+constant ofUInt32 (value : UInt32) : LlvmM ConstantIntRef
 
 /--  Get an i64 constant for a `UInt64`. -/
 @[extern "papyrus_get_constant_uint64"]
-constant ofUInt64 (value : UInt64) : LlvmM ConstantWordRef
+constant ofUInt64 (value : UInt64) : LlvmM ConstantIntRef
 
 /-- Get the integer type of this constant.  -/
-def getType (self : @& ConstantWordRef) : IO IntegerTypeRef :=
+def getType (self : @& ConstantIntRef) : IO IntegerTypeRef :=
   ValueRef.getType self
 
 /--
   Get the value of this constant as an `Int`.
   That is, treat its bits as representing a native integer.
 -/
-@[extern "papyrus_constant_word_get_int_value"]
-constant getIntValue (self : @& ConstantWordRef) : IO Int
+@[extern "papyrus_constant_int_get_int_value"]
+constant getIntValue (self : @& ConstantIntRef) : IO Int
 
 /--
   Get the value of this constant as a `Nat`.
   That is, treat its bits as representing a native unsigned integer.
 -/
-@[extern "papyrus_constant_word_get_nat_value"]
-constant getNatValue (self : @& ConstantWordRef) : IO Nat
+@[extern "papyrus_constant_int_get_nat_value"]
+constant getNatValue (self : @& ConstantIntRef) : IO Nat
 
-end ConstantWordRef
-
--- # Constant Int
-
-/--
-  A reference to an external LLVM
-  [ConstantInt](https://llvm.org/doxygen/classllvm_1_1ConstantInt.html)
-  that is treated as an `Int` (i.e., a signed native ).
--/
-def ConstantIntRef := ConstantWordRef
-
-/-- Get the value of this constant (as an `Int`). -/
-def ConstantIntRef.getValue (self : ConstantIntRef) :=
-  ConstantWordRef.getIntValue self
-
--- # Constant Nat
-
-/--
-  A reference to an external LLVM
-  [ConstantInt](https://llvm.org/doxygen/classllvm_1_1ConstantInt.html)
-  that is treated as a `Nat`.
--/
-def ConstantNatRef := ConstantWordRef
-
-/-- Get the value of this constant (as a `Nat`). -/
-def ConstantNatRef.getValue (self : ConstantNatRef) :=
-  ConstantWordRef.getNatValue self
+end ConstantIntRef
 
 -- # Integer Type -> ConstantInt/ConstantNat Convenience Functions
 
@@ -128,7 +104,7 @@ constant getConstantInt (value : @& Int) (self : @& IntegerTypeRef) : IO Constan
   The value will be truncated and/or extended as necessary to make it fit.
 -/
 @[extern "papyrus_get_constant_nat"]
-constant getConstantNat (value : @& Nat) (self : @& IntegerTypeRef) : IO ConstantNatRef
+constant getConstantNat (value : @& Nat) (self : @& IntegerTypeRef) : IO ConstantIntRef
 
 end IntegerTypeRef
 

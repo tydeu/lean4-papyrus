@@ -151,33 +151,33 @@ def testConstants : SuiteT LlvmM PUnit := do
     let int128TypeRef ← IntegerTypeRef.get 128
     let const : ConstantIntRef ← int128TypeRef.getNullConstant
     assertBEq 0 (← const.getNatValue)
-    assertBEq 0 (← const.getValue)
+    assertBEq 0 (← const.getIntValue)
 
   test "big all ones integer constant" do
     let int128TypeRef ← IntegerTypeRef.get 128
     let const : ConstantIntRef ← int128TypeRef.getAllOnesConstant
     assertBEq (2 ^ 128 - 1) (← const.getNatValue)
-    assertBEq (-1) (← const.getValue)
+    assertBEq (-1) (← const.getIntValue)
 
   test "small positive constructed integer constant" do
     let val := 32
     let int8TypeRef ← IntegerTypeRef.get 8
     let const ← int8TypeRef.getConstantInt val
     assertBEq val (← const.getNatValue)
-    assertBEq val (← const.getValue)
+    assertBEq val (← const.getIntValue)
 
   test "small negative constructed integer constant" do
     let absVal := 32; let intVal := -32
     let int8TypeRef ← IntegerTypeRef.get 8
     let const ← int8TypeRef.getConstantInt intVal
     assertBEq (2 ^ 8 - absVal) (← const.getNatValue)
-    assertBEq intVal (← const.getValue)
+    assertBEq intVal (← const.getIntValue)
 
   test "big positive constructed integer constant" do
     let val : Nat := 2 ^ 80 + 12
     let int128TypeRef ← IntegerTypeRef.get 128
     let const ← int128TypeRef.getConstantInt val
-    assertBEq (Int.ofNat val) (← const.getValue)
+    assertBEq (Int.ofNat val) (← const.getIntValue)
     assertBEq val (← const.getNatValue)
 
   test "big negative constructed integer constant" do
@@ -186,7 +186,7 @@ def testConstants : SuiteT LlvmM PUnit := do
     let int128TypeRef ← IntegerTypeRef.get 128
     let const ← int128TypeRef.getConstantInt intVal
     assertBEq (Int.ofNat (2 ^ 128) - absVal) (← const.getNatValue)
-    assertBEq intVal (← const.getValue)
+    assertBEq intVal (← const.getIntValue)
 
 /-- Instruction Unit Tests -/
 def testInstructions : SuiteT LlvmM PUnit := do
@@ -204,7 +204,7 @@ def testInstructions : SuiteT LlvmM PUnit := do
     let some retVal ← inst.getReturnValue
       | assertFail "got unexpected empty return value"
     let retInt : ConstantIntRef := retVal
-    assertBEq val (← retInt.getValue)
+    assertBEq val (← retInt.getIntValue)
 
 /-- Basic Block Unit Tests -/
 def testBasicBlock : SuiteT LlvmM PUnit := do
@@ -409,7 +409,7 @@ def testScript : SuiteT LlvmM PUnit := do
       declare i8 @printf(i8*, ...)
       define i32 @main() do
         call @printf(← stringPtr helloStr)
-        ret (← ConstantWordRef.ofUInt32 0)
+        ret (← ConstantIntRef.ofUInt32 0)
 
     -- Verify, Compile, and Run Module
     assertFalse (← hello.verify)
