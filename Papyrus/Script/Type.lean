@@ -24,7 +24,10 @@ def expandType (stx : Syntax) : MacroM Syntax :=
   expandMacros stx
 
 def expandTypeAsRef (stx : Syntax) : MacroM Syntax := do
-  `(← Type.getRef $(← expandType stx))
+  `(Type.getRef $(← expandType stx))
+
+def expandTypeAsRefArrow (stx : Syntax) : MacroM Syntax := do
+  `(← $(← expandTypeAsRef stx))
 
 scoped macro "llvm " &"type " t:llvmType : term => expandType t
 
@@ -57,7 +60,7 @@ macro t:"token"       : llvmType => mkCIdentFrom t ``tokenType
 
 -- ## Integer Types
 
-macro t:intTypeLit : llvmType => expandIntTypeLit t
+macro t:intTypeLit : llvmType => expandIntTypeLitAsType t
 
 -- ## Function Types
 

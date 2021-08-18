@@ -61,7 +61,7 @@ def intTypeLitFn : ParserFn := fun c s =>
 }
 
 def intTypeLit : Parser :=
-  tokenWithAntiquot intTypeLitNoAntiquot
+  withAntiquot (mkAntiquot "intTypeLit" `Papyrus.Script.intTypeLit) intTypeLitNoAntiquot
 
 end
 
@@ -84,9 +84,15 @@ attribute [runParserAttributeHooks] intTypeLit
 def decodeIntTypeLit? (stx : Lean.Syntax) : Option Nat :=
   OptionM.run do decodeDecimal? (← stx.isLit? ``intTypeLit) 1
 
-def expandIntTypeLit (stx : Syntax) : MacroM Syntax :=
-  match decodeIntTypeLit? stx with
-  | some n => ``(integerType $(quote n))
+def expandIntTypeLitAsNatLit (stx : Syntax) : MacroM Syntax :=
+  match stx.isLit? ``intTypeLit with
+  | some str => Syntax.mkNumLit (str.drop 1) (SourceInfo.fromRef stx)
   | none => Macro.throwErrorAt stx "ill-formed integer type literal"
 
-scoped macro:max (priority := high) x:intTypeLit : term => expandIntTypeLit x
+def expandIntTypeLitAsType (stx : Syntax) : MacroM Syntax := do
+  ``(integerType $(← expandIntTypeLitAsNatLit stx))
+
+def expandIntTypeLitAsRef (stx : Syntax) : MacroM Syntax := do
+  ``(IntegerTypeRef.get $(← expandIntTypeLitAsNatLit stx))
+
+scoped macro:max (priority := high) x:intTypeLit : term => expandIntTypeLitAsType x

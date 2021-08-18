@@ -1,0 +1,9 @@
+(fun (this : ModuleM PUnit) => this)
+  do 
+    let _ ← liftM ConstantIntRef.getFalse 
+    let _ ← liftM ConstantIntRef.getTrue 
+    let _ ← liftM (ConstantIntRef.ofNat 32 0)
+    let _ ← liftM (ConstantIntRef.ofInt 64 (-1))
+    let x ← Builder.stringPtr "hello" "" AddressSpace.default true 
+    let _ ← pure x 
+    pure () : ModuleM PUnit

@@ -46,7 +46,8 @@ SRCS :=\
 	unit.lean\
 
 EVALS :=\
-	script/type.lean
+	script/type.lean\
+	script/value.lean
 
 BINS := $(addprefix $(BUILD_DIR)/,$(SRCS:.lean=))
 

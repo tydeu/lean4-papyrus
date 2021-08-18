@@ -2,6 +2,7 @@ import Lean.Parser
 import Papyrus.Builders
 import Papyrus.Script.Do
 import Papyrus.Script.Type
+import Papyrus.Script.Value
 import Papyrus.Script.Util
 
 namespace Papyrus.Script
@@ -12,7 +13,7 @@ open Builder Lean Parser Term
 @[runParserAttributeHooks]
 def callInst := leading_parser
   nonReservedSymbol "call " >> Parser.optional typeParser >>
-    "@" >> termParser maxPrec >> "(" >> sepBy termParser ","  >> ")"
+    "@" >> termParser maxPrec >> "(" >> sepBy valueParser ","  >> ")"
 
 @[runParserAttributeHooks]
 def instruction :=
@@ -21,10 +22,13 @@ def instruction :=
 def expandInstruction (name : Syntax) : (inst : Syntax) → MacroM Syntax
 | `(instruction| call $[$ty?]? @ $fn:term ($[$args],*)) =>
   match ty? with
-  | none => ``(call $fn #[$[$args],*] $name)
+  | none => do
+    let argsx ← args.mapM expandValueAsRefArrow
+    ``(call $fn #[$[$argsx],*] $name)
   | some ty => do
-    let tyx ← expandTypeAsRef ty
-    ``(callAs $tyx $fn #[$[$args],*] $name)
+    let tyx ← expandTypeAsRefArrow ty
+    let argsx ← args.mapM expandValueAsRefArrow
+    ``(callAs $tyx $fn #[$[$argsx],*] $name)
 | inst => Macro.throwErrorAt inst "unknown instruction"
 
 -- ## Named Instructions
@@ -56,8 +60,8 @@ scoped macro "llvm " inst:instruction : doElem => expandUnnamedInst inst
 -- ## Void Instructions
 
 def expandLlvmRet : (retVal? : Option Syntax) → MacroM Syntax
+| some x => do `(doElem| ret $(← expandValueAsRefArrow x))
 | none => `(doElem| retVoid)
-| some x => `(doElem| ret $x)
 
-macro "ret " x?:optional(term) : bbDoElem => expandLlvmRet x?
-scoped macro "llvm " &"ret " x?:optional(term) : doElem => expandLlvmRet x?
+macro "ret " x?:optional(llvmValue) : bbDoElem => expandLlvmRet x?
+scoped macro "llvm " &"ret " x?:optional(llvmValue) : doElem => expandLlvmRet x?

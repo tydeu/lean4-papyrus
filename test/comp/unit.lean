@@ -407,9 +407,10 @@ def testScript : SuiteT LlvmM PUnit := do
     -- Construct Module
     llvm module hello do
       declare i8 @printf(i8*, ...)
+      let helloPtr ← stringPtr helloStr
       define i32 @main() do
-        call @printf(← stringPtr helloStr)
-        ret (← ConstantIntRef.ofUInt32 0)
+        call @printf(helloPtr)
+        ret i32 0
 
     -- Verify, Compile, and Run Module
     assertFalse (← hello.verify)
