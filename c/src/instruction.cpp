@@ -26,7 +26,7 @@ extern "C" obj_res papyrus_call_inst_create
 	LEAN_ARRAY_TO_REF(Value*, toValue, argsObj, args);
 	auto i = CallInst::Create(toFunctionType(typeRef), toValue(funVal), args,
 		refOfString(nameObj));
-	return io_result_mk_ok(mkValueRef(borrowLink(typeRef), i));
+	return io_result_mk_ok(mkValueRef(copyLink(typeRef), i));
 }
 
 //------------------------------------------------------------------------------
