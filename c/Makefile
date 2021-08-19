@@ -47,7 +47,8 @@ SRCS := \
 	generic_value.cpp\
 	execution_engine.cpp\
 
-LIB := libPapyrusC.a
+LIB_NAME := PapyrusC
+LIB := lib${LIB_NAME}.a
 
 OBJ_FILES := $(addprefix $(OUT_DIR)/,$(SRCS:.cpp=.o))
 HDR_FILES := $(addprefix $(HDR_DIR)/,$(HDRS))

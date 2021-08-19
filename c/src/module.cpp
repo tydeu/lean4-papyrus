@@ -16,7 +16,7 @@ namespace papyrus {
 //------------------------------------------------------------------------------
 
 // Wrap an LLVM Module in a Lean object.
-lean::object* mkModuleRef(lean::object* ctx, llvm::Module* modPtr) {
+lean::object* mkModuleRef(obj_arg ctx, llvm::Module* modPtr) {
 	return mkLinkedOwnedPtr<Module>(ctx, modPtr);
 }
 
@@ -30,7 +30,7 @@ llvm::Module* toModule(lean::object* modRef) {
 //------------------------------------------------------------------------------
 
 // Create a new Lean LLVM Module object with the given ID.
-extern "C" obj_res papyrus_module_new(b_obj_arg modIdObj, obj_arg ctxRef, obj_arg /* w */) {
+extern "C" obj_res papyrus_module_new(obj_arg modIdObj, obj_arg ctxRef, obj_arg /* w */) {
 	auto ctx = toLLVMContext(ctxRef);
 	auto mod = new llvm::Module(refOfString(modIdObj), *ctx);
 	return io_result_mk_ok(mkModuleRef(ctxRef, mod));
