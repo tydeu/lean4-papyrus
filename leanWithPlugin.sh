@@ -1,2 +1,2 @@
 MY_DIR=`dirname $0`
-lean --plugin ${MY_DIR}/plugin/build/PapyrusPlugin "$@"
+LEAN_PATH=${MY_DIR}/build lean --plugin ${MY_DIR}/plugin/build/PapyrusPlugin "$@"
