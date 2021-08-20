@@ -7,6 +7,11 @@ make -C c "$@"
 
 leanpkg build lib "$@"
 
+# Make Plugin
+
+echo "building plugin"
+make -C plugin "$@"
+
 # Make Test Lib
 
 cd test/lib
