@@ -22,6 +22,9 @@ clean-c:
 lib:
 	+$(LEANMAKE) PKG=Papyrus lib
 
+build/%.lean:
+	+$(LEANMAKE) PKG=Papyrus $@
+
 clean-lib:
 	$(RMPATH) build
 
