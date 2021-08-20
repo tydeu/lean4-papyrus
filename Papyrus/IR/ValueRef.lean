@@ -36,9 +36,21 @@ constant getName (self : @& ValueRef) : IO String
 @[extern "papyrus_value_set_name"]
 constant setName (name : @& String) (self : @& ValueRef) : IO PUnit
 
-/-- Print the IR of this value to standard error for debugging. -/
-@[extern "papyrus_value_dump"]
-constant dump (self : @& ValueRef) : IO PUnit
+/-- Print this value (without a newline) to LLVM's standard output (which may not correspond to Lean's) . -/
+@[extern "papyrus_value_print"]
+constant print (self : @& ValueRef) (isForDebug := false) : IO PUnit
+
+/-- Print this value (without a newline) to LLVM's standard error (which may not correspond to Lean's). -/
+@[extern "papyrus_value_eprint"]
+constant eprint (self : @& ValueRef) (isForDebug := false) : IO PUnit
+
+/-- Print this value to a string (without a newline). -/
+@[extern "papyrus_value_eprint"]
+constant sprint (self : @& ValueRef) (isForDebug := false) : IO String
+
+/-- Print this module to Lean's standard output for debugging (with a newline). -/
+def dump (self : @& ValueRef) : IO PUnit := do
+  IO.println (← self.sprint (isForDebug := true))
 
 end ValueRef
 

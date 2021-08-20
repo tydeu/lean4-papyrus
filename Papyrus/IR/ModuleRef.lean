@@ -70,8 +70,38 @@ constant appendFunction (fn : @& FunctionRef) (self : @& ModuleRef) : IO PUnit
 @[extern "papyrus_module_verify"]
 constant verify (self : @& ModuleRef) : IO Bool
 
-/-- Print the IR of this value to standard error for debugging. -/
-@[extern "papyrus_module_dump"]
-constant dump (self : @& ModuleRef) : IO PUnit
+/--
+  Print this module to LLVM's standard output (which may not correspond to Lean's).
+
+  If`shouldPreserveUseListOrder`, the output will include `uselistorder`
+  directives so that use-lists can be recreated  when reading the assembly.
+-/
+@[extern "papyrus_module_print"]
+constant print (self : @& ModuleRef)
+  (shouldPreserveUseListOrder := false) (isForDebug := false) : IO PUnit
+
+/--
+  Print this module to LLVM's standard error (which may not correspond to Lean's).
+
+  If`shouldPreserveUseListOrder`, the output will include `uselistorder`
+  directives so that use-lists can be recreated  when reading the assembly.
+-/
+@[extern "papyrus_module_eprint"]
+constant eprint (self : @& ModuleRef)
+  (shouldPreserveUseListOrder := false) (isForDebug := false) : IO PUnit
+
+/--
+  Print this module to a String.
+
+  If`shouldPreserveUseListOrder`, the output will include `uselistorder`
+  directives so that use-lists can be recreated  when reading the assembly.
+-/
+@[extern "papyrus_module_sprint"]
+constant sprint (self : @& ModuleRef)
+  (shouldPreserveUseListOrder := false) (isForDebug := false) : IO String
+
+/-- Print this module to Lean's standard output for debugging. -/
+def dump (self : @& ModuleRef) : IO PUnit := do
+  IO.print (← self.sprint (isForDebug := true))
 
 end ModuleRef

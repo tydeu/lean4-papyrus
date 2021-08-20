@@ -58,11 +58,30 @@ extern "C" obj_res papyrus_value_set_name
 	return io_result_mk_ok(box(0));
 }
 
-// Dump the given value for debugging (to standard error).
-extern "C" obj_res papyrus_value_dump(b_obj_arg valueRef, obj_arg /* w */) {
-	// simulates Value.dump() since it is not available in release builds
-	toValue(valueRef)->print(llvm::errs(), true); llvm::errs() << "\n";
+// Print the given value to LLVM's standard output.
+extern "C" obj_res papyrus_value_print
+	(b_obj_arg valueRef, uint8 isForDebug, obj_arg /* w */)
+{
+	toValue(valueRef)->print(llvm::outs(), isForDebug);
 	return io_result_mk_ok(box(0));
+}
+
+// Print the given value to LLVM's standard error.
+extern "C" obj_res papyrus_value_eprint
+	(b_obj_arg valueRef, uint8 isForDebug, obj_arg /* w */)
+{
+	toValue(valueRef)->print(llvm::errs(), isForDebug);
+	return io_result_mk_ok(box(0));
+}
+
+// Print the given value to a string.
+extern "C" obj_res papyrus_value_sprint
+	(b_obj_arg valueRef, uint8 isForDebug, obj_arg /* w */)
+{
+	std::string ostr;
+	raw_string_ostream out(ostr);
+	toValue(valueRef)->print(out, isForDebug);
+	return io_result_mk_ok(mk_string(out.str()));
 }
 
 } // end namespace papyrus

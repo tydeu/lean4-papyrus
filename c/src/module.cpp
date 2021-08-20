@@ -92,11 +92,24 @@ extern "C" obj_res papyrus_module_verify(b_obj_arg modRef, obj_arg /* w */) {
 	return io_result_mk_ok(box(llvm::verifyModule(*toModule(modRef))));
 }
 
-// Dump the given module for debugging (to standard error).
-extern "C" obj_res papyrus_module_dump(b_obj_arg modRef, obj_arg /* w */) {
-	// simulates Module.dump() since it is not available in release builds
-	toModule(modRef)->print(llvm::errs(), nullptr, false, true);
+// Print the given module to LLVM's standard output.
+extern "C" obj_res papyrus_module_print(b_obj_arg modRef, uint8 shouldPreserveUseListOrder, uint8 isForDebug, obj_arg /* w */) {
+	toModule(modRef)->print(llvm::outs(), nullptr, shouldPreserveUseListOrder, isForDebug);
 	return io_result_mk_ok(box(0));
+}
+
+// Print the given module to LLVM's standard error.
+extern "C" obj_res papyrus_module_eprint(b_obj_arg modRef, uint8 shouldPreserveUseListOrder, uint8 isForDebug, obj_arg /* w */) {
+	toModule(modRef)->print(llvm::errs(), nullptr, shouldPreserveUseListOrder, isForDebug);
+	return io_result_mk_ok(box(0));
+}
+
+// Print the given module to a string.
+extern "C" obj_res papyrus_module_sprint(b_obj_arg modRef, uint8 shouldPreserveUseListOrder, uint8 isForDebug, obj_arg /* w */) {
+	std::string ostr;
+	raw_string_ostream out(ostr);
+	toModule(modRef)->print(out, nullptr, shouldPreserveUseListOrder, isForDebug);
+	return io_result_mk_ok(mk_string(out.str()));
 }
 
 } // end namespace papyrus
