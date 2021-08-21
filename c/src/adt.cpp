@@ -86,7 +86,7 @@ const llvm::APInt apOfNat(unsigned numBits, lean::object* obj) {
 
 const llvm::APInt apOfInt(unsigned numBits, lean::object* obj) {
   if (lean_is_scalar(obj)) {
-    return llvm::APInt(numBits, lean_unbox(obj), true);
+    return llvm::APInt(numBits, lean_scalar_to_int64(obj), true);
   } else {
     auto mpzObj = lean::mpz_value(obj);
     llvm::APInt apNat = mpz_obj_to_ap_nat(numBits, mpzObj);
