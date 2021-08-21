@@ -17,8 +17,11 @@ LLVM_LIB_FLAGS		:= $(LLVM_LD_FLAGS) $(LLVM_LIBS) $(LLVM_SYS_LIBS)
 
 # Config
 
+MV := mv
+RM := rm
+
 MKPATH := mkdir -p
-RMPATH := rm -rf
+RMPATH := ${RM} -rf
 
 OUT_DIR := build
 
@@ -50,7 +53,12 @@ clean:
 plugin: $(OUT_DIR)/${PLUGIN_LIB}
 
 $(OUT_DIR)/${PLUGIN_LIB}: $(OUT_DIR)/${PLUGIN}.c $(C_LIB_DIR)/$(C_LIB) $(LIB_DIR)/$(LIB) | $(OUT_DIR)
+# rename old lib in case it can't be replaced (e.g., because it is in use)
+	${MV} $@ $@.tmp
 	${LEANC} -shared -o $@ $< -L${LIB_DIR} -Wl,--whole-archive -l$(LIB_NAME) -Wl,--no-whole-archive -L${C_LIB_DIR} -l${C_LIB_NAME} ${LLVM_LIB_FLAGS}
+# try to delete old lib
+	${RM} -f $@.tmp
+
 
 $(OUT_DIR)/${PLUGIN}.c: ${PLUGIN}.lean | $(OUT_DIR)
 	LEAN_PATH=${LEAN_PATH} $(LEAN) -c $@ $<
