@@ -70,11 +70,11 @@ constant ofUInt64 (value : UInt64) : LlvmM ConstantIntRef
 
 /--  Get a constant with the given Nat value truncated to `numBits`. -/
 @[extern "papyrus_get_constant_nat_of_size"]
-constant ofNat (numBits : UInt32) (value : Nat) : LlvmM ConstantIntRef
+constant ofNat (numBits : UInt32) (value : @& Nat) : LlvmM ConstantIntRef
 
 /--  Get a constant with the given Int value truncated to `numBits`. -/
 @[extern "papyrus_get_constant_int_of_size"]
-constant ofInt (numBits : UInt32) (value : Int) : LlvmM ConstantIntRef
+constant ofInt (numBits : UInt32) (value : @& Int) : LlvmM ConstantIntRef
 
 /-- Get the integer type of this constant.  -/
 def getType (self : @& ConstantIntRef) : IO IntegerTypeRef :=
