@@ -54,7 +54,7 @@ constant eprint (self : @& ValueRef) (isForDebug := false) : IO PUnit
 @[extern "papyrus_value_sprint"]
 constant sprint (self : @& ValueRef) (isForDebug := false) : IO String
 
-/-- Print this module to Lean's standard output for debugging (with a newline). -/
+/-- Print this value to Lean's standard output for debugging (with a newline). -/
 def dump (self : @& ValueRef) : IO PUnit := do
   IO.println (← self.sprint (isForDebug := true))
 
