@@ -36,11 +36,17 @@ constant getName (self : @& ValueRef) : IO String
 @[extern "papyrus_value_set_name"]
 constant setName (name : @& String) (self : @& ValueRef) : IO PUnit
 
-/-- Print this value (without a newline) to LLVM's standard output (which may not correspond to Lean's) . -/
+/--
+  Print this value (without a newline)
+  to LLVM's standard output (which may not correspond to Lean's).
+-/
 @[extern "papyrus_value_print"]
 constant print (self : @& ValueRef) (isForDebug := false) : IO PUnit
 
-/-- Print this value (without a newline) to LLVM's standard error (which may not correspond to Lean's). -/
+/--
+  Print this value (without a newline)
+  to LLVM's standard error (which may not correspond to Lean's).
+-/
 @[extern "papyrus_value_eprint"]
 constant eprint (self : @& ValueRef) (isForDebug := false) : IO PUnit
 
