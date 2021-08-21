@@ -1,6 +1,6 @@
 export LEAN_PATH=../../build
 
-# This file and `test_single.sh` where taken from the Lean 4 sources
+# This file and `test_single.sh` where adapted from the Lean 4 sources
 
 set -euo pipefail
 
@@ -54,9 +54,17 @@ function diff_produced {
         else
             echo "ERROR: file $f.produced.out does not match $f.expected.out"
             if [ $INTERACTIVE == "yes" ]; then
-                meld "$f.produced.out" "$f.expected.out"
-                if diff -I "executing external script" "$f.expected.out" "$f.produced.out"; then
-                    echo "-- mismatch was fixed"
+                if ! type "meld" &> /dev/null; then
+                    read -p "copy $f.produced.out (y/n)? "
+                    if [ $REPLY == "y" ]; then
+                        cp -- "$f.produced.out" "$f.expected.out"
+                        echo "-- copied $f.produced.out --> $f.expected.out"
+                    fi
+                else
+                    meld "$f.produced.out" "$f.expected.out"
+                    if diff -I "executing external script" "$f.expected.out" "$f.produced.out"; then
+                        echo "-- mismatch was fixed"
+                    fi
                 fi
             fi
             exit 1
