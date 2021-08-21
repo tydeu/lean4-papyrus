@@ -89,7 +89,7 @@ static inline lean_obj_res copyLink(b_lean_obj_arg linkedPtrObj) {
 }
 
 // Wrap a pointer in a linked pointer object, transfering ownership to of it to Lean.
-template<typename T> lean_obj_res mkLinkedOwnedPtr(b_lean_obj_arg link, T* ptr) {
+template<typename T> lean_obj_res mkLinkedOwnedPtr(lean_obj_arg link, T* ptr) {
 	lean_object* obj = lean_alloc_ctor(0, 2, 0);
 	lean_ctor_set(obj, 0, link);
 	lean_ctor_set(obj, 1, mkOwnedPtr<T>(ptr));
@@ -102,7 +102,7 @@ template<typename T> T* fromLinkedOwnedPtr(b_lean_obj_arg obj) {
 }
 
 // Wrap a loose pointer in a Lean LinkedPtr.
-template<typename T> lean_obj_res mkLinkedLoosePtr(b_lean_obj_arg link, T* ptr) {
+template<typename T> lean_obj_res mkLinkedLoosePtr(lean_obj_arg link, T* ptr) {
 	lean_object* obj = lean_alloc_ctor(0, 2, 0);
 	lean_ctor_set(obj, 0, link);
 	lean_ctor_set(obj, 1, mkLoosePtr<T>(ptr));

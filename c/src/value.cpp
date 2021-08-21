@@ -16,7 +16,7 @@ namespace papyrus {
 //------------------------------------------------------------------------------
 
 // Wrap an LLVM Value pointer in a Lean object.
-obj_res mkValueRef(obj_res ctxRef, llvm::Value* ptr) {
+obj_res mkValueRef(obj_arg ctxRef, llvm::Value* ptr) {
 	return mkLinkedLoosePtr<llvm::Value>(ctxRef, ptr);
 }
 

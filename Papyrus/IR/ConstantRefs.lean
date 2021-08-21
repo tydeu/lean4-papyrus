@@ -81,18 +81,18 @@ def getType (self : @& ConstantIntRef) : IO IntegerTypeRef :=
   ValueRef.getType self
 
 /--
-  Get the value of this constant as an `Int`.
-  That is, treat its bits as representing a native integer.
--/
-@[extern "papyrus_constant_int_get_int_value"]
-constant getIntValue (self : @& ConstantIntRef) : IO Int
-
-/--
   Get the value of this constant as a `Nat`.
   That is, treat its bits as representing a native unsigned integer.
 -/
 @[extern "papyrus_constant_int_get_nat_value"]
 constant getNatValue (self : @& ConstantIntRef) : IO Nat
+
+/--
+  Get the value of this constant as an `Int`.
+  That is, treat its bits as representing a native integer.
+-/
+@[extern "papyrus_constant_int_get_int_value"]
+constant getIntValue (self : @& ConstantIntRef) : IO Int
 
 end ConstantIntRef
 

@@ -100,6 +100,25 @@ extern "C" obj_res papyrus_get_constant_uint64
 	return io_result_mk_ok(mkConstantRef(ctxObj, n));
 }
 
+// Get a reference to a constant of the given Nat value truncated to `numBits`.
+extern "C" obj_res papyrus_get_constant_nat_of_size
+	(uint32 numBits, b_obj_arg intObj, obj_arg ctxRef, obj_arg /* w */)
+{
+	auto n = ConstantInt::get(*toLLVMContext(ctxRef), apOfNat(numBits, intObj));
+	return io_result_mk_ok(mkConstantRef(ctxRef, n));
+}
+
+// Get a reference to a constant of the given Nat value,
+// truncating and/or extending it as necessary to fit in the given type.
+extern "C" obj_res papyrus_get_constant_nat_of_type
+	(b_obj_arg intObj, b_obj_arg typeRef, obj_arg /* w */)
+{
+	auto ctxRef = copyLink(typeRef);
+	auto numBits = toIntegerType(typeRef)->getBitWidth();
+	auto n = ConstantInt::get(*toLLVMContext(ctxRef), apOfNat(numBits, intObj));
+	return io_result_mk_ok(mkConstantRef(ctxRef, n));
+}
+
 // Get a reference to a constant of the given Int value truncated to `numBits`.
 extern "C" obj_res papyrus_get_constant_int_of_size
 	(uint32 numBits, b_obj_arg intObj, obj_arg ctxRef, obj_arg /* w */)
@@ -119,23 +138,9 @@ extern "C" obj_res papyrus_get_constant_int_of_type
 	return io_result_mk_ok(mkConstantRef(ctxObj, n));
 }
 
-// Get a reference to a constant of the given Int value truncated to `numBits`.
-extern "C" obj_res papyrus_get_constant_nat_of_size
-	(uint32 numBits, b_obj_arg intObj, obj_arg ctxRef, obj_arg /* w */)
-{
-	auto n = ConstantInt::get(*toLLVMContext(ctxRef), apOfNat(numBits, intObj));
-	return io_result_mk_ok(mkConstantRef(ctxRef, n));
-}
-
-// Get a reference to a constant of the given Nat value,
-// truncating and/or extending it as necessary to fit in the given type.
-extern "C" obj_res papyrus_get_constant_nat_of_type
-	(b_obj_arg intObj, b_obj_arg typeRef, obj_arg /* w */)
-{
-	auto ctxRef = copyLink(typeRef);
-	auto numBits = toIntegerType(typeRef)->getBitWidth();
-	auto n = ConstantInt::get(*toLLVMContext(ctxRef), apOfNat(numBits, intObj));
-	return io_result_mk_ok(mkConstantRef(ctxRef, n));
+// Get the Nat value of the given integer constant.
+extern "C" obj_res papyrus_constant_int_get_nat_value(b_obj_arg constRef, obj_arg /* w */) {
+	return io_result_mk_ok(mkNatFromAP(toConstantInt(constRef)->getValue()));
 }
 
 // Get the Int value of the given integer constant.
@@ -143,10 +148,6 @@ extern "C" obj_res papyrus_constant_int_get_int_value(b_obj_arg constRef, obj_ar
 	return io_result_mk_ok(mkIntFromAP(toConstantInt(constRef)->getValue()));
 }
 
-// Get the Nat value of the given integer constant.
-extern "C" obj_res papyrus_constant_int_get_nat_value(b_obj_arg constRef, obj_arg /* w */) {
-	return io_result_mk_ok(mkNatFromAP(toConstantInt(constRef)->getValue()));
-}
 
 //------------------------------------------------------------------------------
 // Constant Data Arrays
