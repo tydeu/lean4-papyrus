@@ -1,0 +1,26 @@
+; ModuleID = 'hello'
+source_filename = "hello"
+
+@0 = private unnamed_addr constant [12 x i8] c"Hello World\00", align 1
+
+declare i8 @printf(i8* %0, ...)
+
+define i32 @main() {
+  %1 = call i8 (i8*, ...) @printf(i8* getelementptr inbounds ([12 x i8], [12 x i8]* @0, i32 0, i32 0))
+  ret i32 0
+}
+void
+i32
+i8 (i8*, ...)
+i8 addrspace(5)*
+{ i32, float }
+[2 x i8]
+<4 x i64>
+<vscale x 4 x double>
+i1 true
+i1 false
+i8 -1
+i32 1
+i64 -1
+i128 1208925819614629174706188
+i128 -1208925819614629174706188
