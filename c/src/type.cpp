@@ -56,6 +56,32 @@ extern "C" obj_res papyrus_type_get_id(b_obj_arg typeRef, obj_arg /* w */) {
 	return io_result_mk_ok(box(toType(typeRef)->getTypeID()));
 }
 
+// Print the given type to LLVM's standard output.
+extern "C" obj_res papyrus_type_print
+	(b_obj_arg typeRef, uint8 isForDebug, obj_arg /* w */)
+{
+	toType(typeRef)->print(llvm::outs(), isForDebug);
+	return io_result_mk_ok(box(0));
+}
+
+// Print the given type to LLVM's standard error.
+extern "C" obj_res papyrus_type_eprint
+	(b_obj_arg typeRef, uint8 isForDebug, obj_arg /* w */)
+{
+	toType(typeRef)->print(llvm::errs(), isForDebug);
+	return io_result_mk_ok(box(0));
+}
+
+// Print the given type to a string.
+extern "C" obj_res papyrus_type_sprint
+	(b_obj_arg typeRef, uint8 isForDebug, obj_arg /* w */)
+{
+	std::string ostr;
+	raw_string_ostream out(ostr);
+	toType(typeRef)->print(out, isForDebug);
+	return io_result_mk_ok(mk_string(out.str()));
+}
+
 //------------------------------------------------------------------------------
 // Special types
 //------------------------------------------------------------------------------
