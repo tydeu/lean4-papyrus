@@ -46,7 +46,7 @@ llvm::ConstantInt* toConstantInt(lean::object* ref) {
 
 // Get a reference to an LLVM true constant (`i1 0`).
 extern "C" obj_res papyrus_get_constant_false
-(uint8 val, obj_arg ctxObj, obj_arg /* w */)
+	(obj_arg ctxObj, obj_arg /* w */)
 {
 	auto n = ConstantInt::getFalse(*toLLVMContext(ctxObj));
 	return io_result_mk_ok(mkConstantRef(ctxObj, n));
@@ -54,7 +54,7 @@ extern "C" obj_res papyrus_get_constant_false
 
 // Get a reference to an LLVM true constant (`i1 1`).
 extern "C" obj_res papyrus_get_constant_true
-(uint8 val, obj_arg ctxObj, obj_arg /* w */)
+	(obj_arg ctxObj, obj_arg /* w */)
 {
 	auto n = ConstantInt::getTrue(*toLLVMContext(ctxObj));
 	return io_result_mk_ok(mkConstantRef(ctxObj, n));
@@ -62,7 +62,7 @@ extern "C" obj_res papyrus_get_constant_true
 
 // Get a reference to an i1 constant of the given Bool value.
 extern "C" obj_res papyrus_get_constant_bool
-(uint8 val, obj_arg ctxObj, obj_arg /* w */)
+	(uint8 val, obj_arg ctxObj, obj_arg /* w */)
 {
 	auto n = ConstantInt::getBool(*toLLVMContext(ctxObj), val);
 	return io_result_mk_ok(mkConstantRef(ctxObj, n));
@@ -70,7 +70,7 @@ extern "C" obj_res papyrus_get_constant_bool
 
 // Get a reference to an i8 constant of the given UInt8 value.
 extern "C" obj_res papyrus_get_constant_uint8
-(uint8 val, obj_arg ctxObj, obj_arg /* w */)
+	(uint8 val, obj_arg ctxObj, obj_arg /* w */)
 {
 	auto n = ConstantInt::get(*toLLVMContext(ctxObj), APInt(8, val));
 	return io_result_mk_ok(mkConstantRef(ctxObj, n));
@@ -78,7 +78,7 @@ extern "C" obj_res papyrus_get_constant_uint8
 
 // Get a reference to an i16 constant of the given UInt16 value.
 extern "C" obj_res papyrus_get_constant_uint16
-(uint16 val, obj_arg ctxObj, obj_arg /* w */)
+	(uint16 val, obj_arg ctxObj, obj_arg /* w */)
 {
 	auto n = ConstantInt::get(*toLLVMContext(ctxObj), APInt(16, val));
 	return io_result_mk_ok(mkConstantRef(ctxObj, n));
@@ -86,7 +86,7 @@ extern "C" obj_res papyrus_get_constant_uint16
 
 // Get a reference to an i32 constant of the given UInt32 value.
 extern "C" obj_res papyrus_get_constant_uint32
-(uint32 val, obj_arg ctxObj, obj_arg /* w */)
+	(uint32 val, obj_arg ctxObj, obj_arg /* w */)
 {
 	auto n = ConstantInt::get(*toLLVMContext(ctxObj), APInt(32, val));
 	return io_result_mk_ok(mkConstantRef(ctxObj, n));
@@ -94,7 +94,7 @@ extern "C" obj_res papyrus_get_constant_uint32
 
 // Get a reference to an i64 constant of the given UInt64 value.
 extern "C" obj_res papyrus_get_constant_uint64
-(uint64 val, obj_arg ctxObj, obj_arg /* w */)
+	(uint64 val, obj_arg ctxObj, obj_arg /* w */)
 {
 	auto n = ConstantInt::get(*toLLVMContext(ctxObj), APInt(64, val));
 	return io_result_mk_ok(mkConstantRef(ctxObj, n));
