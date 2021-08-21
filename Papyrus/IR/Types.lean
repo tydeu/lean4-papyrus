@@ -326,7 +326,7 @@ def scalableVectorType (elemType : «Type») (minSize : UInt32) : ScalableVector
   It is the user's responsibility to ensure that the configuration is valid.
 -/
 def ScalableVectorType.getRef (self : ScalableVectorType) : LlvmM ScalableVectorTypeRef := do
-  FixedVectorTypeRef.get (← self.elementType.getRef) self.minSize
+  ScalableVectorTypeRef.get (← self.elementType.getRef) self.minSize
 
 /-- Lift this reference to a pure `ArrayType`. -/
 def ScalableVectorTypeRef.purify (self : ScalableVectorTypeRef) : IO ScalableVectorType := do
