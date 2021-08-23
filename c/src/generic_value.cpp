@@ -22,10 +22,10 @@ GenericValue* toGenericValue(lean::object* ref) {
 
 // Create a new integer GenericValue of the given width from an Int.
 extern "C" obj_res papyrus_generic_value_of_int
-(b_obj_arg intObj, uint32 bitWidth, obj_arg /* w */)
+	(uint32 numBits, b_obj_arg intObj, obj_arg /* w */)
 {
 	auto val = new GenericValue();
-  val->IntVal = apOfInt(bitWidth, intObj);
+  val->IntVal = apOfInt(numBits, intObj);
 	return io_result_mk_ok(mkGenericValueRef(val));
 }
 
@@ -36,10 +36,10 @@ extern "C" obj_res papyrus_generic_value_to_int(b_obj_arg valObj, obj_arg /* w *
 
 // Create a new integer GenericValue of the given width from a Nat.
 extern "C" obj_res papyrus_generic_value_of_nat
-(b_obj_arg natObj, uint32 bitWidth, obj_arg /* w */)
+	(uint32 numBits, b_obj_arg natObj, obj_arg /* w */)
 {
 	auto val = new GenericValue();
-  val->IntVal = apOfNat(bitWidth, natObj);
+  val->IntVal = apOfNat(numBits, natObj);
 	return io_result_mk_ok(mkGenericValueRef(val));
 }
 
