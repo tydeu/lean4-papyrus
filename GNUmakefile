@@ -40,7 +40,7 @@ testlib:
 clean-testlib:
 	$(RMPATH) test/lib/build
 
-test: testlib lib c
+test: testlib plugin
 	$(MAKE) -C test
 
 clean-test:
