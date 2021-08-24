@@ -9,9 +9,9 @@ LEANMAKE := $(MAKE) -f $(LEANMAKEFILE)
 
 all: plugin
 
-clean: clean-c clean-lib clean-plugin clean-testlib clean-test
+clean: clean-c clean-lib clean-plugin clean-test
 
-.PHONY: c lib plugin testlib test clean
+.PHONY: c lib plugin test clean
 
 c:
 	$(MAKE) -C c
@@ -21,9 +21,6 @@ clean-c:
 
 lib:
 	+$(LEANMAKE) PKG=Papyrus lib
-
-build/%.lean:
-	+$(LEANMAKE) PKG=Papyrus $@
 
 clean-lib:
 	$(RMPATH) build
