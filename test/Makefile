@@ -1,105 +1,48 @@
-# Configure Papyrus
-
-PAPYRUS_HOME 			:= ..
-PAPYRUS_LIBDIR	 	:= $(PAPYRUS_HOME)/build/lib
-PAPYRUS_C_LIBDIR	:= $(PAPYRUS_HOME)/c/build
-PAPYRUS_OLEAN_DIR := $(PAPYRUS_HOME)/build
-
-LLVM_COMPONENTS :=\
-	core bitreader bitwriter executionengine mcjit interpreter all-targets
-
-LLVM_CONFIG 			?= llvm-config
-LLVM_LD_FLAGS   	:= $(shell $(LLVM_CONFIG) --ldflags)
-LLVM_LIBS       	:= $(shell $(LLVM_CONFIG) --libs $(LLVM_COMPONENTS))
-LLVM_SYS_LIBS   	:= $(shell $(LLVM_CONFIG) --system-libs)
-LLVM_LIB_FLAGS		:= $(LLVM_LD_FLAGS) $(LLVM_LIBS) $(LLVM_SYS_LIBS)
-
-PAPYRUS_LIB 			:= $(PAPYRUS_LIBDIR)/libPapyrus.a
-PAPYRUS_C_LIB			:= ${PAPYRUS_C_LIBDIR}/libPapyrusC.a
-PAPYRUS_LIBS			:= -lPapyrus -lPapyrusC $(LLVM_LIBS) $(LLVM_SYS_LIBS)
-PAPYRUS_LD_FLAGS	:= -L$(PAPYRUS_LIBDIR) -L$(PAPYRUS_C_LIBDIR) $(LLVM_LD_FLAGS)
-
-# Configure Test Lib
-
-TESTLIB_HOME			:= ./lib
-TESTLIB_BUILD_DIR	:= $(TESTLIB_HOME)/build
-TESTLIB_OLEAN_DIR	:= $(TESTLIB_BUILD_DIR)
-TESTLIB_OLEAN    	:= $(TESTLIB_OLEAN_DIR)/TestLib.olean
-TESTLIB_LIB    		:= $(TESTLIB_BUILD_DIR)/lib/libTestLib.a
-
-# Other Config
-
-CXX			:= c++
-LEAN		:= lean
-LEANC 	:= leanc
+# Config
 
 MKPATH 	:= mkdir -p
 RMPATH 	:= rm -rf
 
-COMP_DIR := comp
-EVAL_DIR := eval
-BUILD_DIR := build
-TEST_OUT_DIR := out
-LEANC_FLAGS	:=
+TEST_RUN := ./test_run.sh
+TEST_OUT := ./test_out.sh
+TEST_MAIN := ./test_main.sh
 
-SRCS :=\
-	unit.lean\
+RUN_TEST_DIR := run
+OUT_TEST_DIR := out
+MAIN_TEST_DIR := main
 
-EVALS :=\
-	script/type.lean\
-	script/value.lean\
-	script/dump.lean
+RUN_TESTS := $(wildcard $(RUN_TEST_DIR)/**/*.lean)
+OUT_TESTS := $(wildcard $(OUT_TEST_DIR)/**/*.lean)
+MAIN_TESTS := $(wildcard $(MAIN_TEST_DIR)/*.lean)
 
-BINS := $(addprefix $(BUILD_DIR)/,$(SRCS:.lean=))
+TESTS := $(MAIN_TESTS) $(RUN_TESTS) $(OUT_TESTS)
+
+TEST_TMP_DIR := tmp
 
 # Rules
 
-all: bin test
+all: test
 
-clean: clean-bin clean-test
+test: $(TESTS)
 
-# Test Suite Build Rules
+clean: clean-out clean-tmp-dir
 
-bin: $(BINS)
-
-$(BUILD_DIR):
-	$(MKPATH) $@
-
-$(BUILD_DIR)/%.c : $(COMP_DIR)/%.lean $(PAPYRUS_LIB) $(TESTLIB_OLEAN) | $(BUILD_DIR)
-	LEAN_PATH="$(PAPYRUS_OLEAN_DIR);$(TESTLIB_OLEAN_DIR)" $(LEAN) -c $@ $<
-
-$(BUILD_DIR)/%.o : $(BUILD_DIR)/%.c | $(BUILD_DIR)
-	$(LEANC) -c -o $@ $< $(LEANC_FLAGS)
-
-$(BUILD_DIR)/% : $(BUILD_DIR)/%.o $(PAPYRUS_C_LIB) $(TESTLIB_LIB) | $(BUILD_DIR)
-	$(LEANC) -o $@ $< $(PAPYRUS_LD_FLAGS) $(PAPYRUS_LIBS) $(TESTLIB_LIB)
-
-.PRECIOUS: $(BUILD_DIR)/%.c
-
-clean-bin:
-	$(RMPATH) $(BUILD_DIR)
-
-# Testing Rules
-
-test: test-eval test-comp
-
-test-comp: bin
-	@echo "Compiled tests:"
-	$(BUILD_DIR)/unit
-
-test-eval: pre-test-eval $(EVALS)
-
-pre-test-eval:
-	@echo "Interpreted tests:"
-
-$(EVALS):
+$(MAIN_TESTS):
 	@echo "Testing $@ ... "
-	@cd ${EVAL_DIR}; ./test_single.sh $@
+	@$(TEST_MAIN) $@
 
-clean-test-eval:
-	$(RMPATH) ${EVAL_DIR}/**/*.lean.produced.out
+$(RUN_TESTS):
+	@echo "Testing $@ ... "
+	@$(TEST_RUN) $@
 
-clean-test-out:
+$(OUT_TESTS):
+	@echo "Testing $@ ... "
+	@$(TEST_OUT) $@
+
+clean-out:
+	$(RMPATH) ${SRC_DIR}/**/*.lean.produced.out
+
+clean-tmp-dir:
 	$(RMPATH) $(TEST_OUT_DIR)
 
-clean-test: clean-test-out clean-test-eval
+.PHONY: all test clean clean-out clean-tmp-dir $(TESTS)

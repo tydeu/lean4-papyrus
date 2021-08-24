@@ -1,6 +1,7 @@
-export LEAN_PATH=../../build
+export LEAN_PATH=../build
+export PAPYRUS_PLUGIN=../plugin/build/PapyrusPlugin
 
-# This file and `test_single.sh` where adapted from the Lean 4 sources
+# This shells scripts in this directory where adapted from the Lean 4 sources
 
 set -euo pipefail
 

@@ -34,13 +34,7 @@ plugin: lib c
 clean-plugin:
 	$(MAKE) -C plugin clean
 
-testlib:
-	+$(LEANMAKE) -C test/lib lib
-
-clean-testlib:
-	$(RMPATH) test/lib/build
-
-test: testlib plugin
+test: plugin
 	$(MAKE) -C test
 
 clean-test:
