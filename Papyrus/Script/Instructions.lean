@@ -12,23 +12,26 @@ open Builder Lean Parser Term
 
 @[runParserAttributeHooks]
 def callInst := leading_parser
-  nonReservedSymbol "call " >> Parser.optional typeParser >>
+  nonReservedSymbol "call " true >> Parser.optional typeParser >>
     "@" >> termParser maxPrec >> "(" >> sepBy valueParser ","  >> ")"
+
+def expandCallInst (name : Syntax) : (stx : Syntax) → MacroM Syntax
+| `(callInst| call $[$ty?]? @ $fn:term ($[$args],*)) => do
+  let argsx ← args.mapM expandValueAsRefArrow
+  match ty? with
+  | none =>
+    ``(call $fn #[$[$argsx],*] $name)
+  | some ty =>
+    let tyx ← expandTypeAsRefArrow ty
+    ``(callAs $tyx $fn #[$[$argsx],*] $name)
+| inst => Macro.throwErrorAt inst "ill-formed call instruction"
 
 @[runParserAttributeHooks]
 def instruction :=
   callInst
 
 def expandInstruction (name : Syntax) : (inst : Syntax) → MacroM Syntax
-| `(instruction| call $[$ty?]? @ $fn:term ($[$args],*)) =>
-  match ty? with
-  | none => do
-    let argsx ← args.mapM expandValueAsRefArrow
-    ``(call $fn #[$[$argsx],*] $name)
-  | some ty => do
-    let tyx ← expandTypeAsRefArrow ty
-    let argsx ← args.mapM expandValueAsRefArrow
-    ``(callAs $tyx $fn #[$[$argsx],*] $name)
+| `(instruction| $inst:callInst) => expandCallInst name inst
 | inst => Macro.throwErrorAt inst "unknown instruction"
 
 -- ## Named Instructions
@@ -59,9 +62,14 @@ scoped macro "llvm " inst:instruction : doElem => expandUnnamedInst inst
 
 -- ## Void Instructions
 
-def expandLlvmRet : (retVal? : Option Syntax) → MacroM Syntax
-| some x => do `(doElem| ret $(← expandValueAsRefArrow x))
-| none => `(doElem| retVoid)
+@[runParserAttributeHooks]
+def retVal := nonReservedSymbol "void" true <|> valueParser
 
-macro "ret " x?:optional(llvmValue) : bbDoElem => expandLlvmRet x?
-scoped macro "llvm " &"ret " x?:optional(llvmValue) : doElem => expandLlvmRet x?
+def expandRetInst (retVal : Syntax) : MacroM Syntax :=
+  if retVal.isOfKind `void then
+    `(doElem| retVoid)
+  else do
+    `(doElem| ret $(← expandValueAsRefArrow retVal))
+
+macro "ret " x:retVal : bbDoElem => expandRetInst x
+scoped macro "llvm " &"ret " x:retVal : doElem => expandRetInst x
