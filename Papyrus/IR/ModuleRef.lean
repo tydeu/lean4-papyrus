@@ -16,7 +16,7 @@ constant Llvm.Module : Type := Unit
   A reference to an external LLVM
   [Module](https://llvm.org/doxygen/classllvm_1_1Module.html).
 -/
-def ModuleRef := LinkedOwnedPtr ContextRef Llvm.Module
+def ModuleRef := LinkedLoosePtr ContextRef Llvm.Module
 
 namespace ModuleRef
 

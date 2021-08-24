@@ -17,12 +17,12 @@ namespace papyrus {
 
 // Wrap an LLVM Module in a Lean object.
 lean::object* mkModuleRef(obj_arg ctx, llvm::Module* modPtr) {
-	return mkLinkedOwnedPtr<Module>(ctx, modPtr);
+	return mkLinkedLoosePtr<Module>(ctx, modPtr);
 }
 
 // Get the LLVM Module wrapped in an object.
 llvm::Module* toModule(lean::object* modRef) {
-	return fromLinkedOwnedPtr<Module>(modRef);
+	return fromLinkedLoosePtr<Module>(modRef);
 }
 
 //------------------------------------------------------------------------------
