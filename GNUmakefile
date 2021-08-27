@@ -20,7 +20,7 @@ clean-c:
 	$(MAKE) -C c clean
 
 lib:
-	+$(LEANMAKE) PKG=Papyrus lib
+	+$(LEANMAKE) lib PKG=Papyrus MORE_DEPS=leanpkg.toml
 
 clean-lib:
 	$(RMPATH) build
