@@ -1,7 +1,6 @@
 import Papyrus
 
 open Papyrus Script
-section end -- needed to end previous line
 
 -- # Module
 
