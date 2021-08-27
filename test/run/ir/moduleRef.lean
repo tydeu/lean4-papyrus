@@ -7,7 +7,7 @@ def assertBEq [Repr α] [BEq α] (expected actual : α) : IO PUnit := do
     throw <| IO.userError s!"expected '{repr expected}', got '{repr actual}'"
 
 -- module renaming
-#eval show IO PUnit from LlvmM.run do
+#eval LlvmM.run do
   let name1 := "foo"
   let mod ← ModuleRef.new name1
   assertBEq name1 (← mod.getModuleID)
@@ -16,7 +16,7 @@ def assertBEq [Repr α] [BEq α] (expected actual : α) : IO PUnit := do
   assertBEq name2 (← mod.getModuleID)
 
 -- single function module
-#eval show IO PUnit from LlvmM.run do
+#eval LlvmM.run do
   let fnName := "foo"
   let mod ← ModuleRef.new "test"
   let voidTypeRef ← getVoidTypeRef

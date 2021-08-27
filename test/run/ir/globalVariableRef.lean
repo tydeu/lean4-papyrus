@@ -7,7 +7,7 @@ def assertBEq [Repr α] [BEq α] (expected actual : α) : IO PUnit := do
     throw <| IO.userError s!"expected '{repr expected}', got '{repr actual}'"
 
 -- global string constant
-#eval show IO PUnit from LlvmM.run do
+#eval LlvmM.run do
   let str := "foo"
   let name := "myConst"
   let gbl ← GlobalVariableRef.ofString str name (withNull := false)

@@ -7,7 +7,7 @@ def assertBEq [Repr α] [BEq α] (expected actual : α) : IO PUnit := do
     throw <| IO.userError s!"expected '{repr expected}', got '{repr actual}'"
 
 -- simple test
-#eval show IO PUnit from LlvmM.run do
+#eval LlvmM.run do
   let name := "foo"
   let bb ← BasicBlockRef.create name
   let actualName ← bb.getName
