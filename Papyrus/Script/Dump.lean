@@ -61,4 +61,4 @@ instance : DumpRef ModuleRef := ⟨ModuleRef.dump⟩
 -- # Dump Command
 
 macro kw:"#dump " x:term : command => do
-  mkEvalAt kw <| ← `(LlvmM.run ($x >>= dump))
+  mkEvalAt kw <| ← ``(LlvmM.run ($x >>= dump))
