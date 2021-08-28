@@ -78,10 +78,20 @@ constant createForModule (mod : @& ModuleRef) (kind : @& EngineKind := EngineKin
 
   MCJIT execution engines can only execute 'main-like' function.
   That is, those returning `void` or `int` and taking no arguments
-  (i.e., `[]`) or argc/argv (i.e., `[int, char**]`).
+  (i.e., `[]`) or `argc`/`argv` (i.e., `[int, char**]`).
 -/
 @[extern "papyrus_execution_engine_run_function"]
-constant runFunction (fn : @& FunctionRef) (args : @& Array GenericValueRef)
-  (self : @& ExecutionEngineRef) : IO GenericValueRef
+constant runFunction (fn : @& FunctionRef) (self : @& ExecutionEngineRef)
+  (args : @& Array GenericValueRef := #[]) : IO GenericValueRef
+
+/--
+  A helper function to wrap the behavior of `runFunction`
+  to handle common task of starting up a `main` function that may take
+  up to three arguments (`i32 argc`, `i8** argv`, and `i8** envp`) and
+  return an `i32` exit code.
+-/
+@[extern "papyrus_execution_engine_run_function_as_main"]
+constant runFunctionAsMain (fn : @& FunctionRef) (self : @& ExecutionEngineRef)
+  (args : @& Array String := #[]) (env : @& Array String := #[]) : IO UInt32
 
 end ExecutionEngineRef
