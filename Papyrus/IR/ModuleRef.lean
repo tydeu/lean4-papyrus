@@ -50,7 +50,17 @@ constant getModuleID (self : @& ModuleRef) : IO String
 @[extern "papyrus_module_set_id"]
 constant setModuleID (self : @& ModuleRef) (modID : @& String) : IO PUnit
 
-/-- Get an array of references to the global variables of this module . -/
+/--
+  Get the function of the given name in this module (if it exists).
+
+  If `allowInternal` is set to true, this function will return globals
+  that have internal linkage. By default, they are not returned.
+-/
+@[extern "papyrus_module_get_global_variable"]
+constant getGlobalVariable? (name : @& String) (self : @& ModuleRef)
+  (allowInternal := false) : IO (Option GlobalVariableRef)
+
+/-- Get an array of references to the global variables of this module. -/
 @[extern "papyrus_module_get_global_variables"]
 constant getGlobalVariables (self : @& ModuleRef) : IO (Array GlobalVariableRef)
 
@@ -58,7 +68,11 @@ constant getGlobalVariables (self : @& ModuleRef) : IO (Array GlobalVariableRef)
 @[extern "papyrus_module_append_global_variable"]
 constant appendGlobalVariable (var : @& GlobalVariableRef) (self : @& ModuleRef) : IO PUnit
 
-/-- Get an array of references to the functions of this module . -/
+/-- Get the function of the given name in this module (if it exists). -/
+@[extern "papyrus_module_get_function"]
+constant getFunction? (name : @& String) (self : @& ModuleRef) : IO (Option FunctionRef)
+
+/-- Get an array of references to the functions of this module. -/
 @[extern "papyrus_module_get_functions"]
 constant getFunctions (self : @& ModuleRef) : IO (Array FunctionRef)
 

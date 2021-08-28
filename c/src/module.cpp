@@ -47,6 +47,17 @@ extern "C" obj_res papyrus_module_set_id(b_obj_arg modRef, b_obj_arg modIdObj, o
 	return io_result_mk_ok(box(0));
 }
 
+// Get the global variable of the given name in the module (or none if it does not exist).
+// If `allowInternal` is set to true, this function will return globals that have internal linkage.
+// By default, they are not returned.
+extern "C" obj_res papyrus_module_get_global_variable
+	(b_obj_arg nameObj, b_obj_arg modRef, uint8 allowInternal, obj_arg /* w */)
+{
+	auto fn = toModule(modRef)->getGlobalVariable(refOfString(nameObj), allowInternal);
+	auto obj = fn ? mk_option_some(mkValueRef(copyLink(modRef), fn)) : mk_option_none();
+	return io_result_mk_ok(obj);
+}
+
 // Get an array of references to the global variables of the given module.
 extern "C" obj_res papyrus_module_get_global_variables(b_obj_arg modRef, obj_arg /* w */) {
 	auto ctxRef = borrowLink(modRef);
@@ -65,6 +76,15 @@ extern "C" obj_res papyrus_module_append_global_variable
 {
 	toModule(modRef)->getGlobalList().push_back(toGlobalVariable(funRef));
 	return io_result_mk_ok(box(0));
+}
+
+// Get the function of the given name in the module (or none if it does not exist).
+extern "C" obj_res papyrus_module_get_function
+	(b_obj_arg nameObj, b_obj_arg modRef, obj_arg /* w */)
+{
+	auto fn = toModule(modRef)->getFunction(refOfString(nameObj));
+	auto obj = fn ? mk_option_some(mkValueRef(copyLink(modRef), fn)) : mk_option_none();
+	return io_result_mk_ok(obj);
 }
 
 // Get an array of references to the functions of the given module.
