@@ -1,0 +1,4 @@
+101
+3
+
+out/script/jit.lean:20:0-20:10: error: Module has no main function
