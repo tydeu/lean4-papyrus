@@ -7,29 +7,29 @@ def checkTypeRoundtrips (type : «Type») : IO PUnit :=
     unless type == (← (← type.getRef).purify) do
       throw <| IO.userError "did not round trip"
 
-macro tk:"#verify" x:term : command => do
+macro tk:"#check_type" x:term : command => do
   Script.mkEvalAt tk <| ← ``(checkTypeRoundtrips $x)
 
-#verify voidType
-#verify labelType
-#verify metadataType
-#verify tokenType
-#verify x86MMXType
-#verify x86AMXType
+#check_type voidType
+#check_type labelType
+#check_type metadataType
+#check_type tokenType
+#check_type x86MMXType
+#check_type x86AMXType
 
-#verify halfType
-#verify bfloatType
-#verify floatType
-#verify doubleType
-#verify x86FP80Type
-#verify fp128Type
-#verify ppcFP128Type
+#check_type halfType
+#check_type bfloatType
+#check_type floatType
+#check_type doubleType
+#check_type x86FP80Type
+#check_type fp128Type
+#check_type ppcFP128Type
 
-#verify integerType 100
-#verify functionType voidType #[int8Type.pointerType] true
-#verify pointerType fp128Type
-#verify structType "foo'" #[integerType 24] true
-#verify arrayType halfType 6
-#verify vectorType int32Type 4 true
-#verify fixedVectorType doubleType 8
-#verify scalableVectorType int1Type 16
+#check_type integerType 100
+#check_type functionType voidType #[int8Type.pointerType] true
+#check_type pointerType fp128Type
+#check_type structType "foo'" #[integerType 24] true
+#check_type arrayType halfType 6
+#check_type vectorType int32Type 4 true
+#check_type fixedVectorType doubleType 8
+#check_type scalableVectorType int1Type 16
