@@ -3,10 +3,9 @@ import Papyrus.ExecutionEngineRef
 
 namespace Papyrus.Script
 
-/-- Verifies a module and runs its `main` function with the given arguments and environment. -/
+/-- Run the  `main` function of a module with the given arguments and environment. -/
 def jitMain (mod : ModuleRef) (args : Array String := #[]) (env : Array String := #[])
 : IO UInt32 := do
-  discard <| mod.verify
   match (← mod.getFunction? "main") with
   | some fn => do
     let ee ← ExecutionEngineRef.createForModule mod
