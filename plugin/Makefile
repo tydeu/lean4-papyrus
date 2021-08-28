@@ -54,7 +54,7 @@ plugin: $(OUT_DIR)/${PLUGIN_LIB}
 
 $(OUT_DIR)/${PLUGIN_LIB}: $(OUT_DIR)/${PLUGIN}.c $(C_LIB_DIR)/$(C_LIB) $(LIB_DIR)/$(LIB) | $(OUT_DIR)
 # rename old lib in case it can't be replaced (e.g., because it is in use)
-	${MV} $@ $@.tmp
+	-${MV} $@ $@.tmp
 	${LEANC} -shared -o $@ $< -L${LIB_DIR} -Wl,--whole-archive -l$(LIB_NAME) -Wl,--no-whole-archive -L${C_LIB_DIR} -l${C_LIB_NAME} ${LLVM_LIB_FLAGS}
 # try to delete old lib
 	${RM} -f $@.tmp
