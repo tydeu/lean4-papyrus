@@ -1,6 +1,7 @@
 import Lean.Parser
 import Papyrus.Script.SyntaxCat
 import Papyrus.Script.ParserUtil
+import Papyrus.Script.AddressSpace
 import Papyrus.Script.IntegerType
 import Papyrus.IR.Type
 
@@ -82,18 +83,6 @@ def expandFunTypeLit (rty : Syntax) (params : Syntax) : MacroM Syntax := do
 macro rt:llvmType ps:params : llvmType => expandFunTypeLit rt ps
 
 -- ## Pointer Types
-
-@[runParserAttributeHooks]
-def addrspace := leading_parser
-  nonReservedSymbol "addrspace" true >> "(" >> termParser >> ")"
-
-def expandAddrspace : (addrSpace : Syntax) → MacroM Syntax
-| `(addrspace| addrspace($x:term)) => x
-| stx => Macro.throwErrorAt stx "ill-formed address space"
-
-def expandOptAddrspace : (addrspace? : Option Syntax) → MacroM Syntax
-| some addrspace => expandAddrspace addrspace
-| none => mkCIdent ``AddressSpace.default
 
 def expandPtrTypeLit (ty : Syntax) (addrspace? : Option Syntax) : MacroM Syntax := do
   ``(pointerType $(← expandType ty) $(← expandOptAddrspace addrspace?))
