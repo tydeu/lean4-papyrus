@@ -47,14 +47,24 @@ extern "C" obj_res papyrus_module_set_id(b_obj_arg modRef, b_obj_arg modIdObj, o
 	return io_result_mk_ok(box(0));
 }
 
-// Get the global variable of the given name in the module (or none if it does not exist).
-// If `allowInternal` is set to true, this function will return globals that have internal linkage.
-// By default, they are not returned.
+// Get the global variable of the given name in the module (or error if it does not exist).
 extern "C" obj_res papyrus_module_get_global_variable
 	(b_obj_arg nameObj, b_obj_arg modRef, uint8 allowInternal, obj_arg /* w */)
 {
-	auto fn = toModule(modRef)->getGlobalVariable(refOfString(nameObj), allowInternal);
-	auto obj = fn ? mk_option_some(mkValueRef(copyLink(modRef), fn)) : mk_option_none();
+	auto gbl = toModule(modRef)->getGlobalVariable(refOfString(nameObj), allowInternal);
+	if (gbl) {
+		return io_result_mk_ok(mkValueRef(copyLink(modRef), gbl));
+	} else {
+		return io_result_mk_error(mk_string("Named global variable does not exist in module."));
+	}
+}
+
+// Get the global variable of the given name in the module (or none if it does not exist).
+extern "C" obj_res papyrus_module_get_global_variable_opt
+	(b_obj_arg nameObj, b_obj_arg modRef, uint8 allowInternal, obj_arg /* w */)
+{
+	auto gbl = toModule(modRef)->getGlobalVariable(refOfString(nameObj), allowInternal);
+	auto obj = gbl ? mk_option_some(mkValueRef(copyLink(modRef), gbl)) : mk_option_none();
 	return io_result_mk_ok(obj);
 }
 
@@ -78,8 +88,20 @@ extern "C" obj_res papyrus_module_append_global_variable
 	return io_result_mk_ok(box(0));
 }
 
-// Get the function of the given name in the module (or none if it does not exist).
+// Get the function of the given name in the module (or error if it does not exist).
 extern "C" obj_res papyrus_module_get_function
+	(b_obj_arg nameObj, b_obj_arg modRef, obj_arg /* w */)
+{
+	auto fn = toModule(modRef)->getFunction(refOfString(nameObj));
+	if (fn) {
+		return io_result_mk_ok(mkValueRef(copyLink(modRef), fn));
+	} else {
+		return io_result_mk_error(mk_string("Named function does not exist in module."));
+	}
+}
+
+// Get the function of the given name in the module (or none if it does not exist).
+extern "C" obj_res papyrus_module_get_function_opt
 	(b_obj_arg nameObj, b_obj_arg modRef, obj_arg /* w */)
 {
 	auto fn = toModule(modRef)->getFunction(refOfString(nameObj));
