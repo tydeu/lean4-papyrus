@@ -1,7 +1,8 @@
+cd ${BASH_SOURCE%/*}
 export LEAN_PATH=../build
 export PAPYRUS_PLUGIN=../plugin/build/PapyrusPlugin
 
-# This shells scripts in this directory where adapted from the Lean 4 sources
+# The shells scripts in this directory were adapted from the Lean 4 sources
 
 set -euo pipefail
 
@@ -16,14 +17,17 @@ function fail {
     exit 1
 }
 
+[ $# -eq 0 ] && fail "Usage: ${0##*/} [-i] test-file.lean"
+
 INTERACTIVE=no
 if [ $1 == "-i" ]; then
     INTERACTIVE=yes
     shift
 fi
-f="$1"
+
+[ $# -eq 1 ] || fail "Usage: ${0##*/} [-i] test-file.lean"
+f=${1##${BASH_SOURCE%/*}/} # test-file path realtive to the test directory
 shift
-[ $# -eq 0 ] || fail "Usage: test_single.sh [-i] test-file.lean"
 
 function compile_lean {
     lean --c="$f.c" "$f" || fail "Failed to compile $f into C file"
