@@ -10,7 +10,7 @@ def assertBEq [Repr α] [BEq α] (expected actual : α) : IO PUnit := do
 #eval LlvmM.run do
   let str := "foo"
   let name := "myConst"
-  let gbl ← GlobalVariableRef.ofString str name (withNull := false)
+  let gbl ← GlobalVariableRef.ofString str (withNull := false) (name := name)
   assertBEq name (← gbl.getName)
   assertBEq Linkage.private (← gbl.getLinkage)
   assertBEq Visibility.default (← gbl.getVisibility)

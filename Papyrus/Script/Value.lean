@@ -1,6 +1,7 @@
 import Lean.Parser
 import Papyrus.Script.SyntaxCat
 import Papyrus.Script.ParserUtil
+import Papyrus.Script.AddressSpace
 import Papyrus.Script.IntegerType
 import Papyrus.IR.ConstantRefs
 import Papyrus.Builders
@@ -53,5 +54,5 @@ macro x:"false" : llvmValue => mkCIdentFrom x ``ConstantIntRef.getFalse
 
 -- # String Pointers
 
-macro s:strLit "*" : llvmValue => do
-  ``(stringPtr $s)
+macro s:strLit addrspace?:optional(addrspace) "*" : llvmValue => do
+  ``(stringPtr $s $(← expandOptAddrspace addrspace?))

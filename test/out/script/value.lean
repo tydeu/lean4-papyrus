@@ -8,5 +8,6 @@ open Papyrus Script
   let x ← llvm i32 0
   let x ← llvm i64 -1
   let x ← llvm "hello"*
+  let x ← llvm "hello" addrspace(5) *
   let x ← llvm %x
   pure ()

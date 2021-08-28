@@ -44,7 +44,7 @@ def ofConstant (init : ConstantRef)
   are not thread local, and their addresses are insignificant.
 -/
 def ofString (value : String)
-(name := "") (addrSpace := AddressSpace.default) (withNull := true)
+(addrSpace := AddressSpace.default) (withNull := true) (name := "")
 : LlvmM GlobalVariableRef := do
   let var ← ofConstant (← ConstantDataArrayRef.ofString value withNull)
     true Linkage.private name ThreadLocalMode.notLocal addrSpace

@@ -57,15 +57,17 @@ def globalVarInit (init : ConstantRef)
 
 /-- Add a string constant to the module. -/
 def string (str : String)
-(name := "") (addrSpace := AddressSpace.default) (withNull := true) : ModuleM GlobalVariableRef := do
-  let gblRef ← GlobalVariableRef.ofString str name addrSpace withNull
+(addrSpace := AddressSpace.default) (withNull := true) (name := "")
+: ModuleM GlobalVariableRef := do
+  let gblRef ← GlobalVariableRef.ofString str addrSpace withNull name
   (← read).appendGlobalVariable gblRef
   return gblRef
 
 /-- Add a string constant to the module and return a constant pointer to its head. -/
 def stringPtr (str : String)
-(name := "") (addrSpace := AddressSpace.default) (withNull := true) : ModuleM ConstantRef := do
-  let gblRef ← string str name addrSpace withNull
+(addrSpace := AddressSpace.default) (withNull := true) (name := "")
+: ModuleM ConstantRef := do
+  let gblRef ← string str addrSpace withNull name
   let zeroRef ← ConstantIntRef.ofUInt32 0
   let ptrRef ← ConstantExprRef.getGetElementPtr gblRef #[zeroRef, zeroRef] true
   return ptrRef
