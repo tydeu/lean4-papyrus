@@ -1,4 +1,5 @@
 import Lean.Parser
+import Papyrus.Script.SyntaxUtil
 import Papyrus.IR.Types
 
 namespace Papyrus.Script
@@ -86,13 +87,13 @@ def decodeIntTypeLit? (stx : Lean.Syntax) : Option Nat :=
 
 def expandIntTypeLitAsNatLit (stx : Syntax) : MacroM Syntax :=
   match stx.isLit? ``intTypeLit with
-  | some str => Syntax.mkNumLit (str.drop 1) (SourceInfo.fromRef stx)
+  | some str => mkNumLitFrom stx (str.drop 1)
   | none => Macro.throwErrorAt stx "ill-formed integer type literal"
 
 def expandIntTypeLitAsType (stx : Syntax) : MacroM Syntax := do
-  ``(integerType $(← expandIntTypeLitAsNatLit stx))
+  mkCAppFrom stx ``integerType #[← expandIntTypeLitAsNatLit stx]
 
 def expandIntTypeLitAsRef (stx : Syntax) : MacroM Syntax := do
-  ``(IntegerTypeRef.get $(← expandIntTypeLitAsNatLit stx))
+  mkCAppFrom stx ``IntegerTypeRef.get #[← expandIntTypeLitAsNatLit stx]
 
 scoped macro:max (priority := high) x:intTypeLit : term => expandIntTypeLitAsType x

@@ -6,15 +6,13 @@ import Papyrus.Script.IntegerType
 import Papyrus.IR.Type
 
 namespace Papyrus.Script
+open Internal Lean Syntax Parser
 
 scoped postfix:max "*" => pointerType
 
 --------------------------------------------------------------------------------
 -- # Type Category
 --------------------------------------------------------------------------------
-
-open Internal
-open Lean Parser
 
 declare_symbol_syntax_cat llvmType
 def typeParser (rbp : Nat := 0) := categoryParser `llvmType rbp
@@ -78,14 +76,14 @@ def expandParams (stx : Syntax) : MacroM (Array Syntax × Syntax) := do
 
 def expandFunTypeLit (rty : Syntax) (params : Syntax) : MacroM Syntax := do
   let (ptys, vararg) ← expandParams params
-  ``(functionType $(← expandType rty) #[$ptys,*] $vararg)
+  mkCAppFrom rty ``functionType #[← expandType rty, quote ptys, vararg]
 
 macro rt:llvmType ps:params : llvmType => expandFunTypeLit rt ps
 
 -- ## Pointer Types
 
 def expandPtrTypeLit (ty : Syntax) (addrspace? : Option Syntax) : MacroM Syntax := do
-  ``(pointerType $(← expandType ty) $(← expandOptAddrspace addrspace?))
+  mkCAppFrom ty ``pointerType #[← expandType ty, ← expandOptAddrspace addrspace?]
 
 macro t:llvmType a?:optional(addrspace) "*" : llvmType => expandPtrTypeLit t a?
 
@@ -110,8 +108,8 @@ def expandStructTypeLit : (stx : Syntax) → MacroM (Array Syntax × Bool)
 | stx => Macro.throwErrorAt stx "ill-formed struct llvmType literal"
 
 def expandLiteralStructTypeLit (stx : Syntax) : MacroM Syntax := do
-  let (tys, packed) ←  expandStructTypeLit stx
-  ``(literalStructType #[$tys,*] $(quote packed))
+  let (tys, packed) ← expandStructTypeLit stx
+  mkCAppFrom stx ``literalStructType #[quote tys, quote packed]
 
 macro t:structTypeLit : llvmType => expandLiteralStructTypeLit t
 
@@ -125,7 +123,8 @@ def arrayTypeLit := leading_parser
   "[" >> termParser maxPrec >> xTk >> typeParser >> "]"
 
 def expandArrayTypeLit : Macro
-| `(arrayTypeLit| [$x x $t]) => do ``(arrayType $(← expandType t) $x)
+| stx@`(arrayTypeLit| [$x x $t]) => do
+  mkCAppFrom stx ``arrayType #[← expandType t, x]
 | stx => Macro.throwErrorAt stx "ill-formed array llvmType literal"
 
 macro t:arrayTypeLit : llvmType => expandArrayTypeLit t
@@ -140,10 +139,10 @@ def vectorTypeLit := leading_parser
  "<" >> optVScale >> termParser maxPrec >> xTk >> typeParser >> ">"
 
 def expandVectorTypeLit : (stx : Syntax) → MacroM Syntax
-| `(vectorTypeLit| <$x x $t>) => do
-  ``(fixedVectorType $(← expandType t) $x)
-| `(vectorTypeLit| <vscale x $x x $t>) => do
-  ``(scalableVectorType $(← expandType t) $x)
+| stx@`(vectorTypeLit| <$x x $t>) => do
+  mkCAppFrom stx ``fixedVectorType #[← expandType t, x]
+| stx@`(vectorTypeLit| <vscale x $x x $t>) => do
+  mkCAppFrom stx ``scalableVectorType #[← expandType t, x]
 | stx => Macro.throwErrorAt stx "ill-formed vector llvmType literal"
 
 macro t:vectorTypeLit : llvmType => expandVectorTypeLit t
