@@ -112,6 +112,7 @@ def expandLiteralStructTypeLit (stx : Syntax) : MacroM Syntax := do
   mkCAppFrom stx ``literalStructType #[quote tys, quote packed]
 
 macro t:structTypeLit : llvmType => expandLiteralStructTypeLit t
+macro "%" id:ident : llvmType => mkCAppFrom id ``opaqueStructType #[identAsStrLit id]
 
 -- ## Array Types
 
