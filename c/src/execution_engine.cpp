@@ -111,6 +111,42 @@ extern "C" obj_res papyrus_execution_engine_run_function
   return io_result_mk_ok(mkGenericValueRef(new GenericValue(ret)));
 }
 
+class ArgvArray {
+public:
+  std::unique_ptr<char[]> argv;
+  std::vector<std::unique_ptr<char[]>> ptrs;
+  // Turn a Lean array of string objects
+  // into a nice argv style null terminated array of pointers.
+  void* set(PointerType* pInt8Ty, ExecutionEngine *ee, const lean_array_object* args);
+};
+
+void* ArgvArray::set
+  (PointerType* pInt8Ty, ExecutionEngine *ee, const lean_array_object* args)
+{
+  auto argc = args->m_size;
+  unsigned ptrSize = ee->getDataLayout().getPointerSize();
+  argv = std::make_unique<char[]>((argc+1)*ptrSize);
+  ptrs.reserve(argc);
+
+  auto data = args->m_data;
+  for (unsigned i = 0; i != argc; ++i) {
+    auto str = lean_to_string(data[i]);
+    // copy the string so that the user may edit it
+    auto ptr = std::make_unique<char[]>(str->m_size);
+    std::copy(str->m_data, str->m_data + str->m_size, ptr.get());
+    // endian safe: argv[i] = ptr.get()
+    ee->StoreValueToMemory(PTOGV(ptr.get()),
+      (GenericValue*)(&argv[i*ptrSize]), pInt8Ty);
+    // pointer will be deallocated when the `ArgvArray` is
+    ptrs.push_back(std::move(ptr));
+  }
+  // null terminate the array
+  ee->StoreValueToMemory(PTOGV(nullptr),
+    (GenericValue*)(&argv[argc*ptrSize]), pInt8Ty);
+
+  return argv.get();
+}
+
 /*
   A helper function to wrap the behavior of `runFunction`
   to handle common task of starting up a `main` function with the usual
@@ -126,7 +162,8 @@ extern "C" obj_res papyrus_execution_engine_run_function_as_main
   auto fnTy = fn->getFunctionType();
   auto& ctx = fnTy->getContext();
   auto fnArgc = fnTy->getNumParams();
-  auto ppInt8Ty = Type::getInt8PtrTy(ctx)->getPointerTo();
+  auto pInt8Ty = Type::getInt8PtrTy(ctx);
+  auto ppInt8Ty = pInt8Ty->getPointerTo();
 
   if (fnArgc > 3)
     return io_result_mk_error(mk_string("Invalid number of arguments of main() supplied"));
@@ -139,47 +176,20 @@ extern "C" obj_res papyrus_execution_engine_run_function_as_main
   if (!fnTy->getReturnType()->isIntegerTy() && !fnTy->getReturnType()->isVoidTy())
     return io_result_mk_error(mk_string("Invalid return type of main() supplied"));
 
+  ArgvArray argv, env;
+  GenericValue fnArgs[fnArgc];
   auto ee = toExecutionEngine(eeRef);
-  unsigned ptrSize = ee->getDataLayout().getPointerSize();
-
-  GenericValue args[fnArgc];
-  auto argsArr = lean_to_array(argsObj);
-  auto argc = argsArr->m_size;
-  auto argv = std::make_unique<char[]>(argc*ptrSize);
-  auto envArr = lean_to_array(envObj);
-  auto envc = envArr->m_size;
-  auto envv = std::make_unique<char[]>(envc*ptrSize);
-
   if (fnArgc > 0) {
-    args[0].IntVal = APInt(32, argc);
+    auto argsArr = lean_to_array(argsObj);
+    fnArgs[0].IntVal = APInt(32, argsArr->m_size); // argc
     if (fnArgc > 1) {
-      auto pInt8Ty = Type::getInt8PtrTy(ctx);
-      auto argsd = argsArr->m_data;
-      for (auto i = 0; i < argc; i++) {
-        auto str = lean_to_string(argsd[i]);
-        auto arg = std::make_unique<char[]>(str->m_size);
-        std::copy(str->m_data, str->m_data + str->m_size, arg.get());
-        // endian safe: argv[i] = arg.get()
-        ee->StoreValueToMemory(PTOGV(arg.get()),
-          (GenericValue*)(&argv[argc*ptrSize]), pInt8Ty);
-      }
-      args[1].PointerVal = argv.get();
+      fnArgs[1].PointerVal = argv.set(pInt8Ty, ee, argsArr);
       if (fnArgc > 2) {
-        auto envd = envArr->m_data;
-        for (auto i = 0; i < envc; i++) {
-          auto str = lean_to_string(envd[i]);
-          auto env = std::make_unique<char[]>(str->m_size);
-          std::copy(str->m_data, str->m_data + str->m_size, env.get());
-          // endian safe: envv[i] = var
-          ee->StoreValueToMemory(PTOGV(env.get()),
-            (GenericValue*)(&envv[envc*ptrSize]), pInt8Ty);
-        }
-        args[2].PointerVal = envv.get();
+        fnArgs[2].PointerVal = env.set(pInt8Ty, ee, lean_to_array(envObj));
       }
     }
   }
-
-  auto gRc = ee->runFunction(toFunction(funRef), ArrayRef<GenericValue>(args, fnArgc));
+  auto gRc = ee->runFunction(toFunction(funRef), ArrayRef<GenericValue>(fnArgs, fnArgc));
   return io_result_mk_ok(box_uint32(gRc.IntVal.getZExtValue()));
 }
 
