@@ -178,10 +178,6 @@ def StructTypeRef := TypeRef
 
 namespace StructTypeRef
 
-/-- Get the struct type with the given name (if it exists). -/
-@[extern "papyrus_struct_type_get_type_by_name"]
-constant getTypeByName? (name : String) : LlvmM (Option StructTypeRef)
-
 /-- Get whether this struct type is literal. -/
 @[extern "papyrus_struct_type_is_literal"]
 constant isLiteral (self : @& StructTypeRef) : IO Bool
@@ -240,6 +236,10 @@ def IdentifiedStructTypeRef := StructTypeRef
 
 namespace IdentifiedStructTypeRef
 
+/-- Get the struct type with the given name (if it exists). -/
+@[extern "papyrus_struct_type_get_type_by_name"]
+constant getTypeByName? (name : String) : LlvmM (Option IdentifiedStructTypeRef)
+
 /--
   Create a new struct type
     with the given name, element types, and packing.
@@ -251,11 +251,32 @@ constant create (name : @& String) (elementTypes : @& Array TypeRef)
   (packed := false) : LlvmM IdentifiedStructTypeRef
 
 /--
+  Get the struct type with the given name or create one if none exists.
+  If one exists, it will *NOT* be verified to have the provided structure.
+-/
+def getOrCreate (name : String)
+(elementTypes : @& Array TypeRef) (packed := false)
+: LlvmM IdentifiedStructTypeRef := do
+  match (← getTypeByName? name) with
+  | none => create name elementTypes packed
+  | some ty => ty
+
+/--
   Create a new opaque struct type with the given name
   (or none if the name string is empty).
 -/
 @[extern "papyrus_opaque_struct_type_create"]
 constant createOpaque (name : @& String) : LlvmM IdentifiedStructTypeRef
+
+/--
+  Get the struct type with the given name or create a new opaque one if none exists.
+  If one exists, it will *NOT* be verified to be opaque.
+-/
+def getOrCreateOpaque (name : String) : LlvmM IdentifiedStructTypeRef := do
+  match (← getTypeByName? name) with
+  | none => createOpaque name
+  | some ty => ty
+
 
 /-- Get the name of this struct type (or the empty string if none). -/
 @[extern "papyrus_struct_type_get_name"]

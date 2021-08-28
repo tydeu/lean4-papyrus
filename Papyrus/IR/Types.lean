@@ -199,9 +199,9 @@ def StructType.getRef : (self : StructType) → LlvmM StructTypeRef
 | literal ⟨elemTypes, isPacked⟩ => do
     LiteralStructTypeRef.get (← elemTypes.mapM (·.getRef)) isPacked
 | complete name ⟨elemTypes, isPacked⟩ => do
-  IdentifiedStructTypeRef.create name (← elemTypes.mapM (·.getRef)) isPacked
+  IdentifiedStructTypeRef.getOrCreate name (← elemTypes.mapM (·.getRef)) isPacked
 | opaque name =>
-  IdentifiedStructTypeRef.createOpaque name
+  IdentifiedStructTypeRef.getOrCreateOpaque name
 
 /-- Lift this reference to a pure literal `StructType`. -/
 def LiteralStructTypeRef.purify (self : LiteralStructTypeRef) : IO StructType := do

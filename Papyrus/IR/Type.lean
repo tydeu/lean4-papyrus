@@ -87,9 +87,9 @@ partial def Type.getRef : (type : «Type») → LlvmM TypeRef
   | literal ⟨elemTypes, isPacked⟩ => do
     LiteralStructTypeRef.get (← elemTypes.mapM getRef) isPacked
   | complete name ⟨elemTypes, isPacked⟩ => do
-    IdentifiedStructTypeRef.create name (← elemTypes.mapM getRef) isPacked
+    IdentifiedStructTypeRef.getOrCreate name (← elemTypes.mapM getRef) isPacked
   | opaque name =>
-    IdentifiedStructTypeRef.createOpaque name
+    IdentifiedStructTypeRef.getOrCreateOpaque name
 | array ⟨elemType, numElems⟩ => do
   ArrayTypeRef.get (← getRef elemType) numElems
 | fixedVector ⟨elemType, numElems⟩ => do
