@@ -1,0 +1,19 @@
+; ModuleID = 'lean_hello'
+source_filename = "lean_hello"
+
+%lean_object = type opaque
+
+@0 = private unnamed_addr constant [13 x i8] c"Hello World!\00", align 1
+
+declare %lean_object* @lean_mk_string(i8* %0)
+
+declare %lean_object* @l_IO_println___at_Lean_instEval___spec__1(%lean_object* %0, %lean_object* %1)
+
+define i32 @main() {
+  %hello = call %lean_object* @lean_mk_string(i8* getelementptr inbounds ([13 x i8], [13 x i8]* @0, i32 0, i32 0))
+  %1 = call %lean_object* @l_IO_println___at_Lean_instEval___spec__1(%lean_object* %hello, %lean_object* %hello)
+  ret i32 0
+}
+
+Hello World!
+0
