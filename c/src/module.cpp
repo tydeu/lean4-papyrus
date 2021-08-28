@@ -87,9 +87,30 @@ extern "C" obj_res papyrus_module_append_function
 	return io_result_mk_ok(box(0));
 }
 
-// Check the given module for errors (returns true if any errors are found).
-extern "C" obj_res papyrus_module_verify(b_obj_arg modRef, obj_arg /* w */) {
-	return io_result_mk_ok(box(llvm::verifyModule(*toModule(modRef))));
+// Check the given module for errors.
+// Errors are reported inside the `IO` monad.
+// If `warnBrokenDebugInfo` is true, DebugInfo verification failures won't be
+// considered as an error and instead the function will return true.
+// Otherwise, the function will always return false.
+extern "C" obj_res papyrus_module_verify
+	(b_obj_arg modRef, uint8 warnBrokenDebugInfo,  obj_arg /* w */)
+{
+	std::string ostr;
+	raw_string_ostream out(ostr);
+	if (warnBrokenDebugInfo) {
+		bool brokenDebugInfo;
+		if (llvm::verifyModule(*toModule(modRef), &out, &brokenDebugInfo)) {
+			return io_result_mk_error(out.str());
+		} else {
+			return io_result_mk_ok(box(brokenDebugInfo));
+		}
+	} else {
+		if (llvm::verifyModule(*toModule(modRef), &out)) {
+			return io_result_mk_error(out.str());
+		} else {
+			return io_result_mk_ok(box(false));
+		}
+	}
 }
 
 // Print the given module to LLVM's standard output.

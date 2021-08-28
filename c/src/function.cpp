@@ -49,9 +49,16 @@ extern "C" obj_res papyrus_function_append_basic_block
 	return io_result_mk_ok(box(0));
 }
 
-// Check the given function for errors (returns true if any errors are found).
+// Check the given function for errors.
+// Errors are reported inside the `IO` monad.
 extern "C" obj_res papyrus_function_verify(b_obj_arg funRef, obj_arg /* w */) {
-	return io_result_mk_ok(box(llvm::verifyFunction(*toFunction(funRef))));
+	std::string ostr;
+	raw_string_ostream out(ostr);
+	if (llvm::verifyFunction(*toFunction(funRef), &out)) {
+		return io_result_mk_error(out.str());
+	} else {
+		return io_result_mk_ok(box(0));
+	}
 }
 
 // Get whether the function has a specified garbage collection algorithm.

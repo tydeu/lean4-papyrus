@@ -54,10 +54,10 @@ def testSimpleExitingProgram : LlvmM PUnit := do
     bb.appendInstruction inst
     fn.appendBasicBlock bb
     mod.appendFunction fn
+    discard mod.verify
 
     -- Verify It
-    if (← mod.verify) then
-      throw <| IO.userError "failed to verify exiting module"
+
 
     -- Run It
     let ee ← ExecutionEngineRef.createForModule mod
@@ -106,8 +106,7 @@ def testHelloWorldProgram : LlvmM PUnit := do
     bb.appendInstruction ret
 
     -- Verify, Compile, and Run Module
-    if (← mod.verify) then
-      throw <| IO.userError "failed to verify hello world module"
+    discard mod.verify
     let out ← compileAndRunModule mod "hello"
     unless out.exitCode == 0 do
       throw <| IO.userError s!"program exited with code {out.exitCode}"

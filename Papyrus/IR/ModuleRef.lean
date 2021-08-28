@@ -66,9 +66,15 @@ constant getFunctions (self : @& ModuleRef) : IO (Array FunctionRef)
 @[extern "papyrus_module_append_function"]
 constant appendFunction (fn : @& FunctionRef) (self : @& ModuleRef) : IO PUnit
 
-/-- Check the module for errors (returns *true* if any errors are found). -/
+/--
+  Check the module for errors. Errors are reported inside the `IO` monad.
+
+  If `warnBrokenDebugInfo` is `true`, DebugInfo verification failures
+  won't be considered as an error and instead the function will return `true`.
+  Otherwise, the function will always return `false`.
+-/
 @[extern "papyrus_module_verify"]
-constant verify (self : @& ModuleRef) : IO Bool
+constant verify (self : @& ModuleRef) (warnBrokenDebugInfo := false) : IO Bool
 
 /--
   Print this module to LLVM's standard output (which may not correspond to Lean's).

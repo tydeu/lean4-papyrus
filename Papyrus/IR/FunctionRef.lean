@@ -41,9 +41,9 @@ constant getBasicBlocks (self : @& FunctionRef) : IO (Array BasicBlockRef)
 @[extern "papyrus_function_append_basic_block"]
 constant appendBasicBlock (bb : @& BasicBlockRef) (self : @& FunctionRef) : IO PUnit
 
-/-- Check the function for errors (returns *true* if any errors are found). -/
+/-- Check this function for errors. Errors are reported inside the `IO` monad. -/
 @[extern "papyrus_function_verify"]
-constant verify (self : @& FunctionRef) : IO Bool
+constant verify (self : @& FunctionRef) : IO PUnit
 
 /-- Get whether this function has a specified garbage collection algorithm. -/
 @[extern "papyrus_function_has_gc"]
