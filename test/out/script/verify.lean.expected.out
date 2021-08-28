@@ -1,0 +1,10 @@
+
+
+
+out/script/verify.lean:15:0-15:11: error: Function return type does not match operand type of return inst!
+  ret i8 0
+ i32
+
+out/script/verify.lean:16:0-16:38: error: Function return type does not match operand type of return inst!
+  ret i8 0
+ i32
