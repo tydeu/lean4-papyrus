@@ -3,7 +3,7 @@ import Papyrus.Builders
 import Papyrus.Script.Do
 import Papyrus.Script.Type
 import Papyrus.Script.Value
-import Papyrus.Script.Util
+import Papyrus.Script.ParserUtil
 
 namespace Papyrus.Script
 open Builder Lean Parser Term

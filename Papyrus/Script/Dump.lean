@@ -3,14 +3,9 @@ import Papyrus.IR.TypeRefs
 import Papyrus.IR.ConstantRefs
 import Papyrus.IR.InstructionRefs
 import Papyrus.IR.ModuleRef
+import Papyrus.Script.SyntaxUtil
 
 namespace Papyrus.Script
-
--- # Utilities
-
-open Lean Syntax Parser in
-def mkEvalAt (tk : Syntax) (stx : Syntax) : Syntax :=
-  mkNode ``Command.eval #[mkAtomFrom tk "#eval ", stx]
 
 -- # Dump Class
 

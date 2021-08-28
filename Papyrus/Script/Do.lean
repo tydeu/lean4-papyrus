@@ -1,4 +1,4 @@
-import Papyrus.Script.Util
+import Papyrus.Script.SyntaxCat
 
 namespace Papyrus.Script
 

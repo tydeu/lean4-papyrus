@@ -1,5 +1,6 @@
 import Lean.Parser
-import Papyrus.Script.Util
+import Papyrus.Script.SyntaxCat
+import Papyrus.Script.ParserUtil
 import Papyrus.Script.IntegerType
 import Papyrus.IR.Type
 

@@ -1,8 +1,8 @@
 import Lean.Parser
 import Papyrus.Builders
 import Papyrus.Script.Do
-import Papyrus.Script.Util
 import Papyrus.Script.Type
+import Papyrus.Script.ParserUtil
 import Papyrus.Script.GlobalModifiers
 
 namespace Papyrus.Script

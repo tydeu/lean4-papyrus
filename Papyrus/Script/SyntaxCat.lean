@@ -1,25 +1,7 @@
 import Lean
 
-namespace Papyrus.Script
+namespace Papyrus.Script.Internal
 
-open Lean Syntax in
-def identAsStrLit (id : Syntax) : Syntax :=
-  mkStrLit (info := SourceInfo.fromRef id) <| id.getId.toString (escape := false)
-
-section
-open Lean Parser
-
-@[runParserAttributeHooks]
-def negNumLit := leading_parser
-  symbol "-" >> checkNoWsBefore >> numLit
-
-def expandNegNumLit : (stx : Syntax) → MacroM Syntax
-| `(negNumLit | -$n:numLit) => ``(-$n)
-| stx => Macro.throwErrorAt stx "ill-formed negative numeric literal"
-
-end
-
-namespace Internal
 open Lean Elab Command
 
 -- Taken from the Lean Core
@@ -49,5 +31,3 @@ def symbolSyntaxCat := leading_parser
     Parser.LeadingIdentBehavior.symbol
   setEnv env
   declareSyntaxCatQuotParser catName
-
-end Internal

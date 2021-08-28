@@ -1,7 +1,7 @@
 import Lean.Parser
 import Papyrus.Builders
 import Papyrus.Script.Do
-import Papyrus.Script.Util
+import Papyrus.Script.ParserUtil
 
 namespace Papyrus.Script
 open Builder Lean Parser Term
