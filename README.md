@@ -23,8 +23,8 @@ llvm module lean_hello do
    call @l_IO_println___at_Lean_instEval___spec__1(%hello, %hello)
    ret i32 0
 
-#dump lean_hello -- Prints Module IR
-#verify lean_hello -- Verifies the Module
+#dump lean_hello -- Prints the module's IR
+#verify lean_hello -- Checks that the IR is valid
 #jit lean_hello -- JITs the `main` function
 
 /- #jit:
