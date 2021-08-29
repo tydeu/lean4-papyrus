@@ -16,4 +16,4 @@ define i32 @main() {
 }
 
 Hello World!
-0
+Exited with code 0
