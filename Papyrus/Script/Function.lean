@@ -15,16 +15,17 @@ def mkFunctionType (ret : Syntax) (params : Array Syntax) (varArg : Syntax) : Ma
 
 @[runParserAttributeHooks]
 def paramBinder := leading_parser
-  Parser.ident >> " : " >> typeParser
+   typeParser >> Parser.optional ("%" >> Parser.ident)
 
 @[runParserAttributeHooks]
 def paramBinders := leading_parser
   "(" >> sepBy paramBinder "," (allowTrailingSep := true) >> Parser.optional vararg >> ")"
 
-def expandParamBinder (binder : Syntax) : MacroM (Syntax × Syntax) := do
-  (binder[0], ← expandType binder[2])
+def expandParamBinder : (binder : Syntax) → MacroM (Syntax × Option Syntax)
+| `(paramBinder| $ty:llvmType $[ % $arg? ]?) => do (← expandType ty, arg?)
+| stx => Macro.throwErrorAt stx "ill-formed function parameter"
 
-def expandParamBinders (binders : Array Syntax)  : MacroM (Array Syntax × Array Syntax) := do
+def expandParamBinders (binders : Array Syntax)  : MacroM (Array Syntax × Array (Option Syntax)) := do
   Array.unzip <| ← binders.mapM expandParamBinder
 
 -- ## Function Declaration
@@ -32,14 +33,15 @@ def expandParamBinders (binders : Array Syntax)  : MacroM (Array Syntax × Array
 @[runParserAttributeHooks]
 def llvmFunDecl := leading_parser
   Parser.optional linkage >>
-  typeParser >> "@" >> Parser.ident >> params >>
+  typeParser >> "@" >> Parser.ident >> paramBinders >>
   Parser.optional addrspace
 
 def expandLlvmFunDecl : Macro
-| `(llvmFunDecl| $[$linkage?]? $rty:llvmType @ $id:ident $ps:params $[$addrspace?:addrspace]?) => do
+| `(llvmFunDecl| $[$linkage?]? $rty:llvmType @ $id:ident ($[$bs:paramBinder],* $[$vararg?:vararg]?) $[$addrspace?:addrspace]?) => do
   let name := identAsStrLit id
   let rtyx ← expandType rty
-  let (ptys, vararg) ← expandParams ps
+  let vararg := quote vararg?.isSome
+  let (ptys, args) ← expandParamBinders bs
   let type ← mkFunctionType rtyx ptys vararg
   let linkage ← expandOptLinkage linkage?
   let addrspace ← expandOptAddrspace addrspace?
@@ -58,12 +60,14 @@ def llvmFunDef := leading_parser
   Parser.optional addrspace >>
   " do " >> bbDoSeq
 
-def mkArgLets (args : Array Syntax) : MacroM (Array Syntax) := do
+def mkArgLets (args : Array (Option Syntax)) : MacroM (Array Syntax) := do
   let mut argLets := #[]
   for argNo in [0:args.size] do
-    let arg := args.get! argNo
-    let argLet ← `(doElem| let $arg:ident ← getArg $(quote argNo))
-    argLets := Array.push argLets argLet
+    if let some arg := args.get! argNo then
+      let argLet ← `(doElem| do
+        let $arg:ident ← getArg $(quote argNo)
+        ValueRef.setName $(identAsStrLit arg) $arg:ident)
+      argLets := Array.push argLets argLet
   return argLets
 
 def expandLlvmFunDef : Macro
@@ -71,8 +75,8 @@ def expandLlvmFunDef : Macro
   let name := identAsStrLit id
   let rtyx ← expandType rty
   let vararg := quote vararg?.isSome
-  let (args, params) ← expandParamBinders bs
-  let type ← mkFunctionType rtyx params vararg
+  let (ptys, args) ← expandParamBinders bs
+  let type ← mkFunctionType rtyx ptys vararg
   let linkage ← expandOptLinkage linkage?
   let addrspace ← expandOptAddrspace addrspace?
   let bbDoElems ← expandBbDoSeq seq

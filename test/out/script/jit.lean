@@ -9,7 +9,7 @@ llvm module exit do
 #jit exit
 
 llvm module echo do
-  define i32 @main(argc : i32) do
+  define i32 @main(i32 %argc) do
    ret %argc
 
 #jit echo #["a", "b", "c"]
