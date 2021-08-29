@@ -36,6 +36,16 @@ def llvmFunDecl := leading_parser
   typeParser >> "@" >> Parser.ident >> paramBinders >>
   Parser.optional addrspace
 
+def mkArgNameSetters (fn : Syntax) (args : Array (Option Syntax)) : MacroM (Array Syntax) := do
+  let mut stmts := #[]
+  for argNo in [0:args.size] do
+    if let some arg := args.get! argNo then
+      stmts := stmts.push <| ← `(doElem| do
+        let x ← FunctionRef.getArg $(quote argNo) $fn:ident
+        ValueRef.setName $(identAsStrLit arg) x)
+  return stmts
+
+
 def expandLlvmFunDecl : Macro
 | `(llvmFunDecl| $[$linkage?]? $rty:llvmType @ $id:ident ($[$bs:paramBinder],* $[$vararg?:vararg]?) $[$addrspace?:addrspace]?) => do
   let name := identAsStrLit id
@@ -45,7 +55,8 @@ def expandLlvmFunDecl : Macro
   let type ← mkFunctionType rtyx ptys vararg
   let linkage ← expandOptLinkage linkage?
   let addrspace ← expandOptAddrspace addrspace?
-  `(doElem| let $id:ident ← declare $type $name $linkage $addrspace)
+  let stmts ← mkArgNameSetters id args
+  `(doElem| do let $id:ident ← declare $type $name $linkage $addrspace; $[$stmts:doElem]*)
 | stx => Macro.throwErrorAt stx "ill-formed declare"
 
 macro "declare " d:llvmFunDecl : modDoElem => expandLlvmFunDecl d
@@ -64,10 +75,9 @@ def mkArgLets (args : Array (Option Syntax)) : MacroM (Array Syntax) := do
   let mut argLets := #[]
   for argNo in [0:args.size] do
     if let some arg := args.get! argNo then
-      let argLet ← `(doElem| do
+      argLets := argLets.push <| ← `(doElem| do
         let $arg:ident ← getArg $(quote argNo)
         ValueRef.setName $(identAsStrLit arg) $arg:ident)
-      argLets := Array.push argLets argLet
   return argLets
 
 def expandLlvmFunDef : Macro
