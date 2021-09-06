@@ -40,7 +40,7 @@ section
 open Parser
 
 def intTypeLitFn : ParserFn := fun c s =>
-  let errorMsg := "expected integer type literal"
+  let errorMsg := "'intTypeLit'"
   let initStackSz := s.stackSize
   let startPos := s.pos
   let s := tokenFn [errorMsg] c s
