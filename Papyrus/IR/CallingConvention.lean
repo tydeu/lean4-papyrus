@@ -1,37 +1,7 @@
-import Lean.Parser
+import Papyrus.Internal.Enum
 
 namespace Papyrus
 
-namespace Internal
-open Lean Parser Command
-
-syntax enumCtor := "\n| " declModifiers ident " := " term
-
-scoped macro (name := enumDecl)
-  mods:declModifiers
-  "enum " id:ident " : " type:term optional(" := " <|> " where ")
-  ctors:many(enumCtor)
-  deriv?:optDeriving
-: command => do
-  let wrap := mkIdent `fromId
-  let unwrap := mkIdent `toId
-  let mut defs : Array Syntax := #[]
-  defs := defs.push <| ←
-    `($mods:declModifiers
-      structure $id where
-        $wrap:ident :: ($unwrap : $type)
-        $deriv?:optDeriving)
-  for ctor in ctors do
-    let ctorId := ctor[2]
-    let ctorQualId := mkIdentFrom ctorId <|
-      id.getId.modifyBase (· ++ ctorId.getId)
-    let ctorVal := ctor[4]
-    let ctorMods := ctor[1]
-    defs := defs.push <| ←
-      `($ctorMods:declModifiers def $ctorQualId:ident : $id := $wrap $ctorVal)
-  mkNullNode defs
-
-end Internal
 open Internal
 
 /--
@@ -263,14 +233,11 @@ namespace CallingConvention
 /-- The default calling convention (i.e., `c`). -/
 def default := c
 
-/--
-  This is the start of the target-specific calling conventions
-  (e.g., `x86FastCall`).
--/
-def firstTargetID : UInt32 := 63
+/-- The start of the target-specific calling conventions (e.g., `x86FastCall`). -/
+def firstTargetVal : UInt32 := 63
 
 /-- The highest possible calling convention ID. -/
-def maxID : UInt32 := 1023
+def maxVal : UInt32 := 1023
 
 end CallingConvention
 
