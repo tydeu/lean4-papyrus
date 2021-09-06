@@ -1,12 +1,12 @@
 import Lean.Parser
-import Papyrus.Script.SyntaxCat
 import Papyrus.Script.ParserUtil
 import Papyrus.Script.AddressSpace
 import Papyrus.Script.IntegerType
 import Papyrus.IR.Type
 
 namespace Papyrus.Script
-open Internal Lean Syntax Parser
+
+open Lean Syntax Parser
 
 scoped postfix:max "*" => pointerType
 
@@ -14,7 +14,7 @@ scoped postfix:max "*" => pointerType
 -- # Type Category
 --------------------------------------------------------------------------------
 
-declare_symbol_syntax_cat llvmType
+declare_syntax_cat llvmType (behavior := symbol)
 def typeParser (rbp : Nat := 0) := categoryParser `llvmType rbp
 
 macro "type" "(" t:term ")" : llvmType => t

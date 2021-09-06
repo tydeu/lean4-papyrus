@@ -1,5 +1,4 @@
 import Lean.Parser
-import Papyrus.Script.SyntaxCat
 import Papyrus.Script.ParserUtil
 import Papyrus.Script.AddressSpace
 import Papyrus.Script.IntegerType
@@ -8,12 +7,11 @@ import Papyrus.Builders
 
 namespace Papyrus.Script
 
-open Internal
 open Builder Lean Parser
 
 -- # Category
 
-declare_symbol_syntax_cat llvmValue
+declare_syntax_cat llvmValue (behavior := symbol)
 def valueParser (rbp : Nat := 0) := categoryParser `llvmValue rbp
 
 -- # Expansion

@@ -1,13 +1,12 @@
-import Papyrus.Script.SyntaxCat
+import Lean.Parser
 
 namespace Papyrus.Script
 
-open Internal
 open Lean Parser
 
 -- # Module Do
 
-declare_symbol_syntax_cat modDoElem
+declare_syntax_cat modDoElem (behavior := symbol)
 def modDoElemParser (rbp : Nat := 0) := categoryParser `modDoElem rbp
 def modDoSeqItem := leading_parser ppLine >> modDoElemParser >> Parser.optional "; "
 def modDoSeqIndent := leading_parser many1Indent modDoSeqItem
@@ -24,7 +23,7 @@ def expandModDoSeq : Syntax → MacroM (Array Syntax)
 
 -- # Basic Block Do
 
-declare_symbol_syntax_cat bbDoElem
+declare_syntax_cat bbDoElem (behavior := symbol)
 def bbDoElemParser (rbp : Nat := 0) := categoryParser `bbDoElem rbp
 def bbDoSeqItem := leading_parser ppLine >> bbDoElemParser >> Parser.optional "; "
 def bbDoSeqIndent := leading_parser many1Indent bbDoSeqItem
