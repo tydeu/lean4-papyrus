@@ -37,7 +37,7 @@ deriving Inhabited, BEq, DecidableEq, Repr
 
 namespace ValueKind
 
-def ofValueID! (id : UInt32) : ValueKind :=
+def ofValueID (id : UInt32) : ValueKind :=
   let id := id.toUInt8
   if h : id ≤ maxVal then
     mk id h

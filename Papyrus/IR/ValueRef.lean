@@ -24,7 +24,7 @@ constant getValueID (self : @& ValueRef) : IO UInt32
 
 /-- Get the `ValueKind` of this value. -/
 def getValueKind (self : ValueRef) : IO ValueKind :=
-  ValueKind.ofValueID! <$> self.getValueID
+  ValueKind.ofValueID <$> self.getValueID
 
 /-- Get a reference to this value's type. -/
 @[extern "papyrus_value_get_type"]
