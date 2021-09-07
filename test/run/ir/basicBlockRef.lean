@@ -10,6 +10,7 @@ def assertBEq [Repr α] [BEq α] (expected actual : α) : IO PUnit := do
 #eval LlvmM.run do
   let name := "foo"
   let bb ← BasicBlockRef.create name
+  assertBEq ValueKind.basicBlock (← bb.getValueKind)
   let actualName ← bb.getName
   assertBEq name actualName
   let inst ← ReturnInstRef.createVoid

@@ -34,6 +34,11 @@ obj_res getValueContext(b_obj_arg valRef) {
 // Basic functions
 //------------------------------------------------------------------------------
 
+// Get the ID of the given value.
+extern "C" obj_res papyrus_value_get_id(b_obj_arg valueRef, obj_arg /* w */) {
+	return io_result_mk_ok(box_uint32(toValue(valueRef)->getValueID()));
+}
+
 // Get a reference to the type of the given value.
 extern "C" obj_res papyrus_value_get_type(b_obj_arg valueRef, obj_arg /* w */) {
 	return io_result_mk_ok(mkTypeRef(getValueContext(valueRef), toValue(valueRef)->getType()));

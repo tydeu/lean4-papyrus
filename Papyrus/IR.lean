@@ -5,9 +5,11 @@ import Papyrus.IR.TypeRefs
 import Papyrus.IR.TypeBases
 import Papyrus.IR.Type
 import Papyrus.IR.Types
+import Papyrus.IR.ValueKind
 import Papyrus.IR.ValueRef
 import Papyrus.IR.ConstantRef
 import Papyrus.IR.ConstantRefs
+import Papyrus.IR.InstructionKind
 import Papyrus.IR.InstructionRef
 import Papyrus.IR.InstructionRefs
 import Papyrus.IR.BasicBlockRef

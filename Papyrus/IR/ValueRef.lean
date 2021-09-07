@@ -1,5 +1,6 @@
 import Papyrus.Context
 import Papyrus.IR.TypeRef
+import Papyrus.IR.ValueKind
 
 namespace Papyrus
 
@@ -16,6 +17,14 @@ constant Llvm.Value : Type := Unit
 def ValueRef := LinkedLoosePtr ContextRef Llvm.Value
 
 namespace ValueRef
+
+/-- Get the raw ID of this value. -/
+@[extern "papyrus_value_get_id"]
+constant getValueID (self : @& ValueRef) : IO UInt32
+
+/-- Get the `ValueKind` of this value. -/
+def getValueKind (self : ValueRef) : IO ValueKind :=
+  ValueKind.ofValueID! <$> self.getValueID
 
 /-- Get a reference to this value's type. -/
 @[extern "papyrus_value_get_type"]

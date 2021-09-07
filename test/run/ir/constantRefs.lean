@@ -6,10 +6,21 @@ def assertBEq [Repr α] [BEq α] (expected actual : α) : IO PUnit := do
   unless expected == actual do
     throw <| IO.userError s!"expected '{repr expected}', got '{repr actual}'"
 
+-- null ptr constant
+#eval LlvmM.run do
+  let const ← (← int8Type.pointerType.getRef).getNullConstant
+  assertBEq ValueKind.constantPointerNull (← const.getValueKind)
+
+-- null token constant
+#eval LlvmM.run do
+  let const ← (← tokenType.getRef).getNullConstant
+  assertBEq ValueKind.constantTokenNone (← const.getValueKind)
+
 -- big null constant
 #eval LlvmM.run do
   let int128TypeRef ← IntegerTypeRef.get 128
   let const : ConstantIntRef ← int128TypeRef.getNullConstant
+  assertBEq ValueKind.constantInt (← const.getValueKind)
   assertBEq 0 (← const.getNatValue)
   assertBEq 0 (← const.getIntValue)
 

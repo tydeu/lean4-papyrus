@@ -14,6 +14,7 @@ def assertBEq [Repr α] [BEq α] (expected actual : α) : IO PUnit := do
   let fnTy ← FunctionTypeRef.get voidTypeRef #[]
   let fn ← FunctionRef.create fnTy name
   assertBEq name (← fn.getName)
+  assertBEq ValueKind.function (← fn.getValueKind)
   assertBEq Linkage.external (← fn.getLinkage)
   assertBEq Visibility.default (← fn.getVisibility)
   assertBEq DLLStorageClass.default (← fn.getDLLStorageClass)
