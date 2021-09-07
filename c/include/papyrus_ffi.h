@@ -76,12 +76,12 @@ template<typename T> T* fromOwnedPtr(b_lean_obj_arg obj) {
 // Linked Pointers
 //------------------------------------------------------------------------------
 
-// Borrow the object linked to the a linked pointer object.
+// Borrow the object linked to the given linked pointer object.
 static inline b_lean_obj_res borrowLink(b_lean_obj_arg linkedPtrObj) {
 	return lean_ctor_get(linkedPtrObj, 0);
 }
 
-// Get the object linked to the a linked pointer object and increment its RC.
+// Get the object linked to the given linked pointer object and increment its RC.
 static inline lean_obj_res copyLink(b_lean_obj_arg linkedPtrObj) {
 	auto link = lean_ctor_get(linkedPtrObj, 0);
 	lean_inc_ref(link);
