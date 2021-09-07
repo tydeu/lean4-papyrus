@@ -27,6 +27,28 @@ def assertBEq [Repr α] [BEq α] (expected actual : α) : IO PUnit := do
   let retInt ← ConstantIntRef.getIntValue retVal
   assertBEq val retInt
 
+-- simple GEP
+#eval LlvmM.run do
+  let i8Ty ← int8Type.getRef
+  let i8pTy ← int8Type.pointerType.getRef
+  let nullptr ← i8pTy.getNullConstant
+  let idxTy ← int64Type.getRef
+  let idx1 ← idxTy.getConstantNat 1
+  let inst ← GetElementPtrInstRef.create i8Ty nullptr #[idx1]
+  assertBEq ValueKind.instruction (← inst.getValueKind)
+  assertBEq InstructionKind.getElementPtr (← inst.getInstructionKind)
+  assertBEq false (← inst.getInbounds)
+  inst.setInbounds
+  assertBEq true (← inst.getInbounds)
+  let op ← inst.getPointerOperand
+  assertBEq ValueKind.constantPointerNull (← op.getValueKind)
+  let indices ← inst.getIndices
+  if h : 0 < indices.size then
+    let idx : ConstantIntRef ← indices.get ⟨0, h⟩
+    assertBEq 1 (← idx.getNatValue)
+  else
+    throw <| IO.userError "unexpected empty array"
+
 -- simple call
 #eval LlvmM.run do
   let fnTy ← Type.getRef <| functionType voidType #[]

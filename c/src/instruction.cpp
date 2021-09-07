@@ -15,6 +15,74 @@ llvm::Instruction* toInstruction(lean::object* instRef) {
 }
 
 //------------------------------------------------------------------------------
+// GetElementPtr instructions
+//------------------------------------------------------------------------------
+
+// Get the LLVM GetElementPtrInst pointer wrapped in an object.
+GetElementPtrInst* toGetElementPtrInst(lean::object* instRef) {
+	return llvm::cast<GetElementPtrInst>(toValue(instRef));
+}
+
+// Get a reference to a newly created `getelementptr` instruction.
+extern "C" obj_res papyrus_getelementptr_inst_create
+	(b_obj_arg typeRef, b_obj_arg ptrVal, b_obj_arg indicesObj,
+		b_obj_arg nameObj, obj_arg /* w */)
+{
+	LEAN_ARRAY_TO_REF(Value*, toValue, indicesObj, indices);
+	auto inst = GetElementPtrInst::Create(
+		toType(typeRef), toValue(ptrVal), indices, refOfString(nameObj));
+	return io_result_mk_ok(mkValueRef(copyLink(typeRef), inst));
+}
+
+// Get a reference to a newly created `getelementptr inbounds` instruction.
+extern "C" obj_res papyrus_getelementptr_inst_create_inbounds
+	(b_obj_arg typeRef, b_obj_arg ptrVal, b_obj_arg indicesObj,
+		b_obj_arg nameObj, obj_arg /* w */)
+{
+	LEAN_ARRAY_TO_REF(Value*, toValue, indicesObj, indices);
+	auto inst = GetElementPtrInst::CreateInBounds(
+		toType(typeRef), toValue(ptrVal), indices, refOfString(nameObj));
+	return io_result_mk_ok(mkValueRef(copyLink(typeRef), inst));
+}
+
+// Get a reference to the referenced GEP instruction's subject.
+extern "C" obj_res papyrus_getelementptr_inst_get_pointer_operand
+	(b_obj_arg instRef, obj_res /* w */)
+{
+	auto op = toGetElementPtrInst(instRef)->getPointerOperand();
+	return io_result_mk_ok(mkValueRef(copyLink(instRef), op));
+}
+
+// Get an array of references to the referenced GEP instruction's indices.
+extern "C" obj_res papyrus_getelementptr_inst_get_indices
+	(b_obj_arg instRef, obj_res /* w */)
+{
+	auto link = borrowLink(instRef);
+	auto is = toGetElementPtrInst(instRef)->indices();
+	lean_object* arr = lean::alloc_array(0, 8);
+	for (auto& i : is) {
+		lean_inc_ref(link);
+		arr = lean_array_push(arr, mkValueRef(link, i.get()));
+	}
+	return io_result_mk_ok(arr);
+}
+
+// Get whether the referenced GEP instruction has an `inbounds` flag.
+extern "C" obj_res papyrus_getelementptr_inst_get_inbounds
+	(b_obj_arg instRef, obj_res /* w */)
+{
+	return io_result_mk_ok(box(toGetElementPtrInst(instRef)->isInBounds()));
+}
+
+// Set whether the referenced GEP instruction has an `inbounds` flag.
+extern "C" obj_res papyrus_getelementptr_inst_set_inbounds
+	(uint8 inbounds, b_obj_arg instRef, obj_res /* w */)
+{
+	toGetElementPtrInst(instRef)->setIsInBounds(inbounds);
+	return io_result_mk_ok(box(0));
+}
+
+//------------------------------------------------------------------------------
 // Call instructions
 //------------------------------------------------------------------------------
 

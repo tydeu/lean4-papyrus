@@ -8,7 +8,57 @@ import Papyrus.IR.FunctionRef
 namespace Papyrus
 
 --------------------------------------------------------------------------------
--- Call Instructions
+-- # GetElementPtr Instructions
+--------------------------------------------------------------------------------
+
+/--
+  A reference to an external LLVM
+  [GetElementPtrInst](https://llvm.org/doxygen/classllvm_1_1GetElementPtrInst.html).
+-/
+def GetElementPtrInstRef := InstructionRef
+
+namespace GetElementPtrInstRef
+
+/--
+  Create a new `getelementptr` instruction.
+-/
+@[extern "papyrus_getelementptr_inst_create"]
+constant create (pointeeType : @& TypeRef) (ptr : @& ValueRef)
+  (indices : @& Array ValueRef) (name : @& String := "") : IO GetElementPtrInstRef
+
+/--
+  Create a new `getelementptr inbounds` instruction.
+
+  With the `inbounds` keyword, the result of the GEP is a poison value
+  if certain rules are violated.
+
+  See the [section](https://llvm.org/docs/LangRef.html#id233) on the GEP
+  instruction in LLVM Language Reference Manual for more details.
+-/
+@[extern "papyrus_getelementptr_inst_create_inbounds"]
+constant createInbounds (pointeeType : @& PointerTypeRef) (ptr : @& ValueRef)
+  (indices : @& Array ValueRef) (name : @& String := "") : IO GetElementPtrInstRef
+
+/-- Get a reference to the subject of this GEP instruction. -/
+@[extern "papyrus_getelementptr_inst_get_pointer_operand"]
+constant getPointerOperand (self : @& GetElementPtrInstRef) : IO ValueRef
+
+/-- Get array of reference to this GEP instruction's indices. -/
+@[extern "papyrus_getelementptr_inst_get_indices"]
+constant getIndices (self : @& GetElementPtrInstRef) : IO (Array ValueRef)
+
+/-- Get whether this GEP instruction has the `inbounds` flag set. -/
+@[extern "papyrus_getelementptr_inst_get_inbounds"]
+constant getInbounds (self : @& GetElementPtrInstRef) : IO Bool
+
+/-- Set whether this GEP instruction has the `inbounds` flag. -/
+@[extern "papyrus_getelementptr_inst_set_inbounds"]
+constant setInbounds (inbounds := true) (self : @& GetElementPtrInstRef) : IO PUnit
+
+end GetElementPtrInstRef
+
+--------------------------------------------------------------------------------
+-- # Call Instructions
 --------------------------------------------------------------------------------
 
 /--
@@ -43,7 +93,7 @@ def createCall
 end FunctionRef
 
 --------------------------------------------------------------------------------
--- Return Instructions
+-- # Return Instructions
 --------------------------------------------------------------------------------
 
 /--
