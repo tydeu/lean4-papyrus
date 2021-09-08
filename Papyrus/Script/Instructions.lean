@@ -8,7 +8,22 @@ import Papyrus.Script.ParserUtil
 namespace Papyrus.Script
 open Builder Lean Parser Term
 
--- ## Instructions
+-- # Instructions
+
+@[runParserAttributeHooks]
+def getElementPtrInst := leading_parser
+  nonReservedSymbol "getelementptr " true >>  Parser.optional (nonReservedSymbol "inbounds " true) >>
+    typeParser >> "," >> valueParser >> "," >> sepBy valueParser ","
+
+def expandGetElementPtrInst (name : Syntax) : (stx : Syntax) → MacroM Syntax
+| `(getElementPtrInst| getelementptr $[inbounds%$inbounds?]? $ty:llvmType, $ptr:llvmValue, $[$idxs:llvmValue],*) => do
+  let tyx ← expandTypeAsRefArrow ty
+  let ptrx ← expandValueAsRefArrow ptr
+  let idxsx ← idxs.mapM expandValueAsRefArrow
+  match inbounds? with
+  | none => ``(getElementPtr $tyx $ptrx #[$[$idxsx],*] $name)
+  | some _ => ``(getElementPtrInbounds $tyx $ptrx #[$[$idxsx],*] $name)
+| inst => Macro.throwErrorAt inst "ill-formed getelementptr instruction"
 
 @[runParserAttributeHooks]
 def callInst := leading_parser
@@ -28,13 +43,15 @@ def expandCallInst (name : Syntax) : (stx : Syntax) → MacroM Syntax
 
 @[runParserAttributeHooks]
 def instruction :=
+  getElementPtrInst <|>
   callInst
 
 def expandInstruction (name : Syntax) : (inst : Syntax) → MacroM Syntax
+| `(instruction| $inst:getElementPtrInst) => expandGetElementPtrInst name inst
 | `(instruction| $inst:callInst) => expandCallInst name inst
 | inst => Macro.throwErrorAt inst "unknown instruction"
 
--- ## Named Instructions
+-- # Named Instructions
 
 @[runParserAttributeHooks]
 def namedInst := leading_parser
@@ -50,7 +67,7 @@ def expandNamedInst : Macro
 macro inst:namedInst : bbDoElem => expandNamedInst inst
 scoped macro "llvm " inst:namedInst : doElem => expandNamedInst inst
 
--- ## Unnamed Instructions
+-- # Unnamed Instructions
 
 def expandUnnamedInst (inst : Syntax) : MacroM  Syntax := do
   let name := Syntax.mkStrLit ""
@@ -60,7 +77,7 @@ def expandUnnamedInst (inst : Syntax) : MacroM  Syntax := do
 macro inst:instruction : bbDoElem => expandUnnamedInst inst
 scoped macro "llvm " inst:instruction : doElem => expandUnnamedInst inst
 
--- ## Void Instructions
+-- # Void Instructions
 
 @[runParserAttributeHooks]
 def retVal := nonReservedSymbol "void" true <|> valueParser

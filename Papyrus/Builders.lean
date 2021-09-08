@@ -103,6 +103,20 @@ def define (type : FunctionTypeRef) (builder : BasicBlockM PUnit) (name : String
 def getArg (argNo : UInt32) : BasicBlockM ArgumentRef := do
   (← read).funRef.getArg argNo
 
+def getElementPtr
+(pointeeType : TypeRef) (ptr : ValueRef) (indices : Array ValueRef := #[])
+(name : String := "") : BasicBlockM InstructionRef := do
+  let inst ← GetElementPtrInstRef.create pointeeType ptr indices name
+  (← read).bbRef.appendInstruction inst
+  return inst
+
+def getElementPtrInbounds
+(pointeeType : TypeRef) (ptr : ValueRef) (indices : Array ValueRef := #[])
+(name : String := "") : BasicBlockM InstructionRef := do
+  let inst ← GetElementPtrInstRef.createInbounds pointeeType ptr indices name
+  (← read).bbRef.appendInstruction inst
+  return inst
+
 def call (fn : FunctionRef) (args : Array ValueRef := #[]) (name : String := "") : BasicBlockM InstructionRef := do
   let inst ← fn.createCall args name
   (← read).bbRef.appendInstruction inst
