@@ -36,3 +36,36 @@ define i32 @main(i32 %argc, i8** %argv) {
 
 b
 Exited with code 0
+; ModuleID = 'lean_select'
+source_filename = "lean_select"
+
+%lean_object = type opaque
+
+declare %lean_object* @lean_mk_string(i8* %0)
+
+declare %lean_object* @l_IO_println___at_Lean_instEval___spec__1(%lean_object* %0, %lean_object* %1)
+
+define i32 @main(i32 %argc, i8** %argv) {
+  %arg0 = load i8*, i8** %argv, align 1
+  %arg0c = load i1, i8* %arg0, align 1
+  br i1 %arg0c, label %br1, label %br2
+
+br1:                                              ; preds = %0
+  %arg1p = getelementptr i8*, i8** %argv, i32 1
+  %arg1 = load i8*, i8** %arg1p, align 1
+  %arg1s = call %lean_object* @lean_mk_string(i8* %arg1)
+  %1 = call %lean_object* @l_IO_println___at_Lean_instEval___spec__1(%lean_object* %arg1s, %lean_object* %arg1s)
+  ret i32 0
+
+br2:                                              ; preds = %0
+  %arg2p = getelementptr i8*, i8** %argv, i32 2
+  %arg2 = load i8*, i8** %arg2p, align 1
+  %arg2s = call %lean_object* @lean_mk_string(i8* %arg2)
+  %2 = call %lean_object* @l_IO_println___at_Lean_instEval___spec__1(%lean_object* %arg2s, %lean_object* %arg2s)
+  ret i32 0
+}
+
+b
+Exited with code 0
+c
+Exited with code 0
