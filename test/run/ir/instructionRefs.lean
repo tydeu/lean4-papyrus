@@ -6,7 +6,7 @@ def assertBEq [Repr α] [BEq α] (expected actual : α) : IO PUnit := do
   unless expected == actual do
     throw <| IO.userError s!"expected '{repr expected}', got '{repr actual}'"
 
--- ret void test
+-- void `ret`
 #eval LlvmM.run do
   let inst ← ReturnInstRef.createVoid
   assertBEq ValueKind.instruction (← inst.getValueKind)
@@ -14,7 +14,7 @@ def assertBEq [Repr α] [BEq α] (expected actual : α) : IO PUnit := do
   unless (← inst.getReturnValue).isNone do
     throw <| IO.userError "got return value when expecting none"
 
--- non-void ret test
+-- non-void `ret`
 #eval LlvmM.run do
   let val := 1
   let intTypeRef ← IntegerTypeRef.get 32
@@ -26,6 +26,38 @@ def assertBEq [Repr α] [BEq α] (expected actual : α) : IO PUnit := do
     |  throw <| IO.userError "got unexpected void return"
   let retInt ← ConstantIntRef.getIntValue retVal
   assertBEq val retInt
+
+-- simple `load`
+#eval LlvmM.run do
+  let i64Ty ← int64Type.getRef
+  let i64pTy ← PointerTypeRef.get i64Ty
+  let nullptr ← i64pTy.getNullConstant
+  let inst ← LoadInstRef.create i64Ty nullptr
+  assertBEq ValueKind.instruction (← inst.getValueKind)
+  assertBEq InstructionKind.load (← inst.getInstructionKind)
+  let op ← inst.getPointerOperand
+  assertBEq ValueKind.constantPointerNull (← op.getValueKind)
+  assertBEq false (← inst.getVolatile)
+  assertBEq 1 (← inst.getAlign)
+  assertBEq AtomicOrdering.notAtomic (← inst.getOrdering)
+  assertBEq SyncScopeID.system (← inst.getSyncScopeID)
+
+-- simple `store`
+#eval LlvmM.run do
+  let n ← ConstantIntRef.ofUInt64 1
+  let i64pTy ← int64Type.pointerType.getRef
+  let nullptr ← i64pTy.getNullConstant
+  let inst ← StoreInstRef.create n nullptr
+  assertBEq ValueKind.instruction (← inst.getValueKind)
+  assertBEq InstructionKind.store (← inst.getInstructionKind)
+  let op : ConstantIntRef ← inst.getValueOperand
+  assertBEq 1 (← op.getNatValue)
+  let op ← inst.getPointerOperand
+  assertBEq ValueKind.constantPointerNull (← op.getValueKind)
+  assertBEq false (← inst.getVolatile)
+  assertBEq 1 (← inst.getAlign)
+  assertBEq AtomicOrdering.notAtomic (← inst.getOrdering)
+  assertBEq SyncScopeID.system (← inst.getSyncScopeID)
 
 -- simple GEP
 #eval LlvmM.run do
@@ -49,7 +81,7 @@ def assertBEq [Repr α] [BEq α] (expected actual : α) : IO PUnit := do
   else
     throw <| IO.userError "unexpected empty array"
 
--- simple call
+-- simple `call`
 #eval LlvmM.run do
   let fnTy ← Type.getRef <| functionType voidType #[]
   let fn ← FunctionRef.create fnTy

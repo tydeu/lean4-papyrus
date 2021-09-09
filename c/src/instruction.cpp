@@ -15,7 +15,7 @@ llvm::Instruction* toInstruction(lean::object* instRef) {
 }
 
 //------------------------------------------------------------------------------
-// Return instructions
+// Return
 //------------------------------------------------------------------------------
 
 // Get the LLVM ReturnInst pointer wrapped in an object.
@@ -46,7 +46,207 @@ extern "C" obj_res papyrus_return_inst_get_value(b_obj_arg instObj, obj_arg /* w
 }
 
 //------------------------------------------------------------------------------
-// GetElementPtr instructions
+// Load
+//------------------------------------------------------------------------------
+
+// Get the LLVM LoadInst pointer wrapped in an object.
+LoadInst* toLoadInst(lean::object* instRef) {
+	return llvm::cast<LoadInst>(toValue(instRef));
+}
+
+// Get a reference to a newly created `load` instruction.
+extern "C" obj_res papyrus_load_inst_create
+	(b_obj_arg typeRef, b_obj_arg ptrValRef, b_obj_arg nameObj, uint8 isVolatile,
+		uint8 align, uint8 order, uint32 ssid, obj_arg /* w */)
+{
+	auto inst = new LoadInst(toType(typeRef), toValue(ptrValRef), refOfString(nameObj),
+		isVolatile, Align(uint64_t(1) << align), AtomicOrdering(order), ssid);
+	return io_result_mk_ok(mkValueRef(copyLink(typeRef), inst));
+}
+
+// Get a reference to the given load instruction's pointer operand.
+extern "C" obj_res papyrus_load_inst_get_pointer_operand
+	(b_obj_arg instRef, obj_res /* w */)
+{
+	auto op = toLoadInst(instRef)->getPointerOperand();
+	return io_result_mk_ok(mkValueRef(copyLink(instRef), op));
+}
+
+// Get whether the given load instruction is volatile.
+extern "C" obj_res papyrus_load_inst_get_volatile
+	(b_obj_arg instRef, obj_arg /* w */)
+{
+	return io_result_mk_ok(box(toLoadInst(instRef)->isVolatile()));
+}
+
+// Set whether the given load instruction is volatile.
+extern "C" obj_res papyrus_load_inst_set_volatile
+	(uint8 isVolatile, b_obj_arg instRef, obj_arg /* w */)
+{
+	toLoadInst(instRef)->setVolatile(isVolatile);
+	return io_result_mk_ok(box(0));
+}
+
+// Get the alignment of the given load instruction.
+extern "C" obj_res papyrus_load_inst_get_align
+	(b_obj_arg instRef, obj_arg /* w */)
+{
+	return io_result_mk_ok(box(Log2(toLoadInst(instRef)->getAlign())));
+}
+
+// Set the alignment of the given load instruction.
+extern "C" obj_res papyrus_load_inst_set_align
+	(uint8 align, b_obj_arg instRef, obj_arg /* w */)
+{
+	toLoadInst(instRef)->setAlignment(Align(uint64_t(1) << align));
+	return io_result_mk_ok(box(0));
+}
+
+// Get the ordering constraint of the given load instruction.
+extern "C" obj_res papyrus_load_inst_get_ordering
+	(b_obj_arg instRef, obj_arg /* w */)
+{
+	return io_result_mk_ok(box(static_cast<uint8>(toLoadInst(instRef)->getOrdering())));
+}
+
+// Set the ordering constraint of the given load instruction.
+extern "C" obj_res papyrus_load_inst_set_ordering
+	(uint8 order, b_obj_arg instRef, obj_arg /* w */)
+{
+	toLoadInst(instRef)->setOrdering(AtomicOrdering(order));
+	return io_result_mk_ok(box(0));
+}
+
+// Get the synchronization scope ID of the given load instruction.
+extern "C" obj_res papyrus_load_inst_get_sync_scope_id
+	(b_obj_arg instRef, obj_arg /* w */)
+{
+	return io_result_mk_ok(box_uint32(toLoadInst(instRef)->getSyncScopeID()));
+}
+
+// Set the synchronization scope ID of the given load instruction.
+extern "C" obj_res papyrus_load_inst_set_sync_scope_id
+	(uint32 ssid, b_obj_arg instRef, obj_arg /* w */)
+{
+	toLoadInst(instRef)->setSyncScopeID(ssid);
+	return io_result_mk_ok(box(0));
+}
+
+// Set the ordering constraint and
+// synchronization scope ID  of the given load instruction.
+extern "C" obj_res papyrus_load_inst_set_atomic
+	(uint8 order, uint32 ssid, b_obj_arg instRef, obj_arg /* w */)
+{
+	toLoadInst(instRef)->setAtomic(AtomicOrdering(order), ssid);
+	return io_result_mk_ok(box(0));
+}
+
+//------------------------------------------------------------------------------
+// Store
+//------------------------------------------------------------------------------
+
+// Get the LLVM StoreInst pointer wrapped in an object.
+StoreInst* toStoreInst(lean::object* instRef) {
+	return llvm::cast<StoreInst>(toValue(instRef));
+}
+
+// Get a reference to a newly created `store` instruction.
+extern "C" obj_res papyrus_store_inst_create
+	(b_obj_arg valRef, b_obj_arg ptrValRef, uint8 isVolatile,
+		uint8 align, uint8 order, uint32 ssid, obj_arg /* w */)
+{
+	auto inst = new StoreInst(toValue(valRef), toValue(ptrValRef),
+		isVolatile, Align(uint64_t(1) << align), AtomicOrdering(order), ssid);
+	return io_result_mk_ok(mkValueRef(copyLink(valRef), inst));
+}
+
+// Get a reference to value the given store instruction is storing.
+extern "C" obj_res papyrus_store_inst_get_value_operand
+	(b_obj_arg instRef, obj_res /* w */)
+{
+	auto op = toStoreInst(instRef)->getValueOperand();
+	return io_result_mk_ok(mkValueRef(copyLink(instRef), op));
+}
+
+// Get a reference to the given store instruction's pointer operand.
+extern "C" obj_res papyrus_store_inst_get_pointer_operand
+	(b_obj_arg instRef, obj_res /* w */)
+{
+	auto op = toStoreInst(instRef)->getPointerOperand();
+	return io_result_mk_ok(mkValueRef(copyLink(instRef), op));
+}
+
+// Get whether the given store instruction is volatile.
+extern "C" obj_res papyrus_store_inst_get_volatile
+	(b_obj_arg instRef, obj_arg /* w */)
+{
+	return io_result_mk_ok(box(toStoreInst(instRef)->isVolatile()));
+}
+
+// Set whether the given store instruction is volatile.
+extern "C" obj_res papyrus_store_inst_set_volatile
+	(uint8 isVolatile, b_obj_arg instRef, obj_arg /* w */)
+{
+	toStoreInst(instRef)->setVolatile(isVolatile);
+	return io_result_mk_ok(box(0));
+}
+
+// Get the alignment of the given store instruction.
+extern "C" obj_res papyrus_store_inst_get_align
+	(b_obj_arg instRef, obj_arg /* w */)
+{
+	return io_result_mk_ok(box(Log2(toStoreInst(instRef)->getAlign())));
+}
+
+// Set the alignment of the given store instruction.
+extern "C" obj_res papyrus_store_inst_set_align
+	(uint8 align, b_obj_arg instRef, obj_arg /* w */)
+{
+	toStoreInst(instRef)->setAlignment(Align(uint64_t(1) << align));
+	return io_result_mk_ok(box(0));
+}
+
+// Get the ordering constraint of the given store instruction.
+extern "C" obj_res papyrus_store_inst_get_ordering
+	(b_obj_arg instRef, obj_arg /* w */)
+{
+	return io_result_mk_ok(box(static_cast<uint8>(toStoreInst(instRef)->getOrdering())));
+}
+
+// Set the ordering constraint of the given store instruction.
+extern "C" obj_res papyrus_store_inst_set_ordering
+	(uint8 order, b_obj_arg instRef, obj_arg /* w */)
+{
+	toStoreInst(instRef)->setOrdering(AtomicOrdering(order));
+	return io_result_mk_ok(box(0));
+}
+
+// Get the synchronization scope ID of the given store instruction.
+extern "C" obj_res papyrus_store_inst_get_sync_scope_id
+	(b_obj_arg instRef, obj_arg /* w */)
+{
+	return io_result_mk_ok(box_uint32(toStoreInst(instRef)->getSyncScopeID()));
+}
+
+// Set the synchronization scope ID of the given store instruction.
+extern "C" obj_res papyrus_store_inst_set_sync_scope_id
+	(uint32 ssid, b_obj_arg instRef, obj_arg /* w */)
+{
+	toStoreInst(instRef)->setSyncScopeID(ssid);
+	return io_result_mk_ok(box(0));
+}
+
+// Set the ordering constraint and
+// synchronization scope ID  of the given store instruction.
+extern "C" obj_res papyrus_store_inst_set_atomic
+	(uint8 order, uint32 ssid, b_obj_arg instRef, obj_arg /* w */)
+{
+	toStoreInst(instRef)->setAtomic(AtomicOrdering(order), ssid);
+	return io_result_mk_ok(box(0));
+}
+
+//------------------------------------------------------------------------------
+// GetElementPtr
 //------------------------------------------------------------------------------
 
 // Get the LLVM GetElementPtrInst pointer wrapped in an object.
@@ -56,12 +256,12 @@ GetElementPtrInst* toGetElementPtrInst(lean::object* instRef) {
 
 // Get a reference to a newly created `getelementptr` instruction.
 extern "C" obj_res papyrus_getelementptr_inst_create
-	(b_obj_arg typeRef, b_obj_arg ptrVal, b_obj_arg indicesObj,
+	(b_obj_arg typeRef, b_obj_arg ptrValRef, b_obj_arg indicesObj,
 		b_obj_arg nameObj, obj_arg /* w */)
 {
 	LEAN_ARRAY_TO_REF(Value*, toValue, indicesObj, indices);
 	auto inst = GetElementPtrInst::Create(
-		toType(typeRef), toValue(ptrVal), indices, refOfString(nameObj));
+		toType(typeRef), toValue(ptrValRef), indices, refOfString(nameObj));
 	return io_result_mk_ok(mkValueRef(copyLink(typeRef), inst));
 }
 
@@ -114,7 +314,7 @@ extern "C" obj_res papyrus_getelementptr_inst_set_inbounds
 }
 
 //------------------------------------------------------------------------------
-// Call instructions
+// Call
 //------------------------------------------------------------------------------
 
 // Get a reference to a newly created call instruction.

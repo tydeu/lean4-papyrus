@@ -1,3 +1,4 @@
+import Papyrus.IR.Align
 import Papyrus.IR.AddressSpace
 import Papyrus.IR.TypeID
 import Papyrus.IR.TypeRef
@@ -10,9 +11,11 @@ import Papyrus.IR.ValueRef
 import Papyrus.IR.ConstantRef
 import Papyrus.IR.ConstantRefs
 import Papyrus.IR.InstructionKind
+import Papyrus.IR.InstructionModifiers
 import Papyrus.IR.InstructionRef
 import Papyrus.IR.InstructionRefs
 import Papyrus.IR.BasicBlockRef
+import Papyrus.IR.GlobalModifiers
 import Papyrus.IR.FunctionRef
 import Papyrus.IR.GlobalVariableRef
 import Papyrus.IR.ModuleRef
