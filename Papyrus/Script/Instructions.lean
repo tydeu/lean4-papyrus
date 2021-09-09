@@ -5,8 +5,6 @@ import Papyrus.Script.Type
 import Papyrus.Script.Value
 import Papyrus.Script.ParserUtil
 
-set_option interpreter.prefer_native false
-
 namespace Papyrus.Script
 open Builder Lean Parser Term
 
@@ -79,6 +77,25 @@ def expandRetInst : (stx : Syntax) → MacroM Syntax
 
 macro x:retInst : bbDoElem => expandRetInst x
 scoped macro "llvm " x:retInst : doElem => expandRetInst x
+
+-- ## `br`
+
+@[runParserAttributeHooks]
+def brInst := leading_parser
+  nonReservedSymbol "br " true >>
+  valueParser >> Parser.optional (", " >> valueParser >> ", " >> valueParser)
+
+def expandBrInst : (stx : Syntax) → MacroM Syntax
+| `(brInst| br $cond, $ifTrue, $ifFalse) => do
+  let cond ← expandValueAsRefArrow cond
+  let ifTrue ← expandValueAsRefArrow ifTrue
+  let ifFalse ← expandValueAsRefArrow ifFalse
+  `(doElem| condBr $cond $ifTrue $ifFalse)
+| `(brInst| br $bb) => do `(doElem| br $(← expandValueAsRefArrow bb))
+| stx => Macro.throwErrorAt stx "ill-formed br instruction"
+
+macro x:brInst : bbDoElem => expandBrInst x
+scoped macro "llvm " x:brInst : doElem => expandBrInst x
 
 -- ## `load`
 

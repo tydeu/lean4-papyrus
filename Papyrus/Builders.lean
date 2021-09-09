@@ -111,6 +111,14 @@ def retVoid : BasicBlockM PUnit := do
 def ret (val : ValueRef)  : BasicBlockM PUnit := do
   (← read).bbRef.appendInstruction <| ← ReturnInstRef.create val
 
+-- ### `br`
+
+def condBr (cond : ValueRef) (ifTrue ifFalse : BasicBlockRef)  : BasicBlockM PUnit := do
+  (← read).bbRef.appendInstruction <| ← CondBrInstRef.create ifTrue ifFalse cond
+
+def br (bb : BasicBlockRef)  : BasicBlockM PUnit := do
+  (← read).bbRef.appendInstruction <| ← BrInstRef.create bb
+
 -- ### `load`
 
 def load (type : TypeRef) (ptr : ValueRef) (name := "") (isVolatile := false)
