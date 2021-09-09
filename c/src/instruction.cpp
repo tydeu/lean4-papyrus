@@ -46,6 +46,111 @@ extern "C" obj_res papyrus_return_inst_get_value(b_obj_arg instObj, obj_arg /* w
 }
 
 //------------------------------------------------------------------------------
+// Branch
+//------------------------------------------------------------------------------
+
+// Get the LLVM BranchInst pointer wrapped in an object.
+BranchInst* toBranchInst(lean::object* instRef) {
+	return llvm::cast<BranchInst>(toValue(instRef));
+}
+
+// Get a reference to a newly created conditional `br` instruction.
+extern "C" obj_res papyrus_branch_inst_create
+	(b_obj_arg ifTrueRef, b_obj_arg ifFalseRef, b_obj_arg condRef, obj_arg /* w */)
+{
+	auto inst = BranchInst::Create(
+			toBasicBlock(ifTrueRef), toBasicBlock(ifFalseRef), toValue(condRef));
+	return io_result_mk_ok(mkValueRef(copyLink(condRef), inst));
+}
+
+// Get a reference to a newly created unconditional `br` instruction.
+extern "C" obj_res papyrus_branch_inst_create_jump
+	(b_obj_arg bbRef, obj_arg /* w */)
+{
+	auto inst = BranchInst::Create(toBasicBlock(bbRef));
+	return io_result_mk_ok(mkValueRef(copyLink(bbRef), inst));
+}
+
+// Get whether the branch instruction is conditional.
+extern "C" obj_res papyrus_branch_inst_is_conditional
+	(b_obj_arg instRef, obj_arg /* w */)
+{
+	return io_result_mk_ok(box(toBranchInst(instRef)->isConditional()));
+}
+
+// Get a reference to the condition of a conditional branch instruction.
+extern "C" obj_res papyrus_branch_inst_get_condition
+	(b_obj_arg instRef, obj_arg /* w */)
+{
+	auto cond = toBranchInst(instRef)->getCondition();
+	return io_result_mk_ok(mkValueRef(copyLink(instRef), cond));
+}
+
+// Set the condition of a conditional branch instruction.
+extern "C" obj_res papyrus_branch_inst_set_condition
+	(b_obj_arg condRef, b_obj_arg instRef, obj_arg /* w */)
+{
+	toBranchInst(instRef)->setCondition(toValue(condRef));
+	return io_result_mk_ok(box(0));
+}
+
+// Get an array of references to the given branch instructions successors.
+extern "C" obj_res papyrus_branch_inst_get_successors
+	(b_obj_arg instRef, obj_arg /* w */)
+{
+	auto inst = toBranchInst(instRef);
+	auto isConditional = inst->isConditional();
+	auto numSuccessors = 1+isConditional;
+	lean_object* arr = lean::alloc_array(numSuccessors, numSuccessors);
+	lean_array_object* arrObj  = (lean_array_object*)(arr);
+	arrObj->m_data[0] = mkValueRef(copyLink(instRef), inst->getSuccessor(0));
+	if (isConditional) {
+		arrObj->m_data[1] = mkValueRef(copyLink(instRef), inst->getSuccessor(1));
+	}
+	return io_result_mk_ok(arr);
+}
+
+// Get a reference to the first successor of a branch instruction.
+extern "C" obj_res papyrus_branch_inst_get_successor0
+	(b_obj_arg instRef, obj_arg /* w */)
+{
+	auto bb = toBranchInst(instRef)->getSuccessor(0);
+	return io_result_mk_ok(mkValueRef(copyLink(instRef), bb));
+}
+
+// Set the first successor of a branch instruction.
+extern "C" obj_res papyrus_branch_inst_set_successor0
+	(b_obj_arg bbRef, b_obj_arg instRef, obj_arg /* w */)
+{
+	toBranchInst(instRef)->setSuccessor(0, toBasicBlock(bbRef));
+	return io_result_mk_ok(box(0));
+}
+
+// Get a reference to the second successor of a (conditional) branch instruction.
+extern "C" obj_res papyrus_branch_inst_get_successor1
+	(b_obj_arg instRef, obj_arg /* w */)
+{
+	auto bb = toBranchInst(instRef)->getSuccessor(1);
+	return io_result_mk_ok(mkValueRef(copyLink(instRef), bb));
+}
+
+// Set the first successor of a  (conditional) branch instruction.
+extern "C" obj_res papyrus_branch_inst_set_successor1
+	(b_obj_arg bbRef, b_obj_arg instRef, obj_arg /* w */)
+{
+	toBranchInst(instRef)->setSuccessor(1, toBasicBlock(bbRef));
+	return io_result_mk_ok(box(0));
+}
+
+// Swap the successors of a conditional branch instruction.
+extern "C" obj_res papyrus_branch_inst_swap_successors
+	(b_obj_arg instRef, obj_arg /* w */)
+{
+	toBranchInst(instRef)->swapSuccessors();
+	return io_result_mk_ok(box(0));
+}
+
+//------------------------------------------------------------------------------
 // Load
 //------------------------------------------------------------------------------
 

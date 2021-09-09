@@ -62,6 +62,87 @@ constant getReturnValue (self : @& ReturnInstRef) : IO (Option ValueRef)
 end ReturnInstRef
 
 --------------------------------------------------------------------------------
+-- # Branch
+--------------------------------------------------------------------------------
+
+/--
+  A reference to an external LLVM
+  [BranchInst](https://llvm.org/doxygen/classllvm_1_1BranchInst.html).
+-/
+def BranchInstRef := InstructionRef
+
+namespace BranchInstRef
+
+/-- Get whether this branch instruction is conditional. -/
+@[extern "papyrus_branch_inst_is_conditional"]
+constant isConditional (self : @& BranchInstRef) : IO Bool
+
+/-- Get the possible jump targets of this branch instruction. -/
+@[extern "papyrus_branch_inst_get_successors"]
+constant getSuccessors (self : @& BranchInstRef) : IO (Array BasicBlockRef)
+
+end BranchInstRef
+
+/-- A reference to a conditional `BranchInst`. -/
+def CondBrInstRef := BranchInstRef
+
+namespace CondBrInstRef
+
+/-- Create a new conditional `br` instruction. -/
+@[extern "papyrus_branch_inst_create"]
+constant create (ifTrue : @& BasicBlockRef) (ifFalse : @& BasicBlockRef)
+  (cond : @& ValueRef) : IO CondBrInstRef
+
+/-- Get the branch condition of this instruction. -/
+@[extern "papyrus_branch_inst_get_condition"]
+constant getCondition (self : @& CondBrInstRef) : IO ValueRef
+
+/-- Set the branch condition of this instruction. -/
+@[extern "papyrus_branch_inst_set_condition"]
+constant setCondition (cond : @& ValueRef) (self : @& CondBrInstRef) : IO PUnit
+
+/-- Get the basic block to jump to if true. -/
+@[extern "papyrus_branch_inst_get_successor0"]
+constant getIfTrue (self : @& CondBrInstRef) : IO BasicBlockRef
+
+/-- Set the basic block to jump to if true. -/
+@[extern "papyrus_branch_inst_set_successor0"]
+constant setIfTrue (bb : @& BasicBlockRef) (self : @& CondBrInstRef) : IO PUnit
+
+/-- Get the basic block to jump to if false. -/
+@[extern "papyrus_branch_inst_get_successor1"]
+constant getIfFalse (self : @& CondBrInstRef) : IO BasicBlockRef
+
+/-- Set the basic block to jump to if false. -/
+@[extern "papyrus_branch_inst_set_successor1"]
+constant setIfFalse (bb : @& BasicBlockRef) (self : @& CondBrInstRef) : IO PUnit
+
+/-- Swap the basic block to jump to (i.e., if true becomes if false and vice versa). -/
+@[extern "papyrus_branch_inst_swap_successors"]
+constant swapSuccessors (self : @& CondBrInstRef) : IO PUnit
+
+end CondBrInstRef
+
+/-- A reference to a unconditional `BranchInst`. -/
+def BrInstRef := BranchInstRef
+
+namespace BrInstRef
+
+/-- Create a new unconditional `br` instruction (i.e., a jump). -/
+@[extern "papyrus_branch_inst_create_jump"]
+constant create (bb : @& BasicBlockRef) : IO BrInstRef
+
+/-- Get the basic block to jump to. -/
+@[extern "papyrus_branch_inst_get_successor0"]
+constant getSuccessor (self : @& BrInstRef) : IO BasicBlockRef
+
+/-- Set the basic block to jump to. -/
+@[extern "papyrus_branch_inst_set_successor0"]
+constant setSuccessor (bb : @& BasicBlockRef) (self : @& BrInstRef) : IO PUnit
+
+end BrInstRef
+
+--------------------------------------------------------------------------------
 -- # Load
 --------------------------------------------------------------------------------
 

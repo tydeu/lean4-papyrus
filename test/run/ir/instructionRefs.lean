@@ -27,6 +27,34 @@ def assertBEq [Repr α] [BEq α] (expected actual : α) : IO PUnit := do
   let retInt ← ConstantIntRef.getIntValue retVal
   assertBEq val retInt
 
+-- conditional `br`
+#eval LlvmM.run do
+  let name0 := "foo"
+  let name1 := "bar"
+  let bb0 ← BasicBlockRef.create name0
+  let bb1 ← BasicBlockRef.create name1
+  let inst ← CondBrInstRef.create bb0 bb1 (← ConstantIntRef.ofBool true)
+  assertBEq ValueKind.instruction (← inst.getValueKind)
+  assertBEq InstructionKind.branch (← inst.getInstructionKind)
+  assertBEq true (← inst.isConditional)
+  let cond : ConstantIntRef ← inst.getCondition
+  assertBEq 1 (← cond.getNatValue)
+  let succ0 ← inst.getIfTrue
+  assertBEq name0 (← succ0.getName)
+  let succ1 ← inst.getIfFalse
+  assertBEq name1 (← succ1.getName)
+
+-- unconditional `br`
+#eval LlvmM.run do
+  let name := "foo"
+  let bb ← BasicBlockRef.create name
+  let inst ← BrInstRef.create bb
+  assertBEq ValueKind.instruction (← inst.getValueKind)
+  assertBEq InstructionKind.branch (← inst.getInstructionKind)
+  assertBEq false (← inst.isConditional)
+  let succ ← inst.getSuccessor
+  assertBEq name (← succ.getName)
+
 -- simple `load`
 #eval LlvmM.run do
   let i64Ty ← int64Type.getRef
