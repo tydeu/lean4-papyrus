@@ -103,6 +103,13 @@ def define (type : FunctionTypeRef) (builder : BasicBlockM PUnit) (name : String
 def getArg (argNo : UInt32) : BasicBlockM ArgumentRef := do
   (← read).funRef.getArg argNo
 
+def label (name : String) (builder : BasicBlockM PUnit) : BasicBlockM BasicBlockRef := do
+  let ctx ← read
+  let bb ← BasicBlockRef.create name
+  ctx.funRef.appendBasicBlock bb
+  builder.runIn {ctx with bbRef := bb}
+  return bb
+
 -- ### `ret`
 
 def retVoid : BasicBlockM PUnit := do
