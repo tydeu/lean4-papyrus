@@ -5,6 +5,8 @@ import Papyrus.Script.Type
 import Papyrus.Script.Value
 import Papyrus.Script.ParserUtil
 
+set_option interpreter.prefer_native false
+
 namespace Papyrus.Script
 open Builder Lean Parser Term
 
@@ -59,6 +61,24 @@ def expandOptAlign (align? : Option Syntax) : MacroM Syntax :=
 --------------------------------------------------------------------------------
 -- # Instructions
 --------------------------------------------------------------------------------
+
+-- ## `ret`
+
+def voidTk := leading_parser
+  nonReservedSymbol "void" true
+
+@[runParserAttributeHooks]
+def retInst := leading_parser
+   nonReservedSymbol "ret " true >>
+   (voidTk <|> valueParser)
+
+def expandRetInst : (stx : Syntax) → MacroM Syntax
+| `(retInst| ret void) => `(doElem| retVoid)
+| `(retInst| ret $v:llvmValue) => do `(doElem| ret $(← expandValueAsRefArrow v))
+| stx => Macro.throwErrorAt stx "ill-formed ret instruction"
+
+macro x:retInst : bbDoElem => expandRetInst x
+scoped macro "llvm " x:retInst : doElem => expandRetInst x
 
 -- ## `load`
 
@@ -221,19 +241,3 @@ def expandUnnamedInst (inst : Syntax) : MacroM  Syntax := do
 
 macro inst:instruction : bbDoElem => expandUnnamedInst inst
 scoped macro "llvm " inst:instruction : doElem => expandUnnamedInst inst
-
---------------------------------------------------------------------------------
--- # Terminator Instructions
---------------------------------------------------------------------------------
-
-@[runParserAttributeHooks]
-def retVal := nonReservedSymbol "void" true <|> valueParser
-
-def expandRetInst (retVal : Syntax) : MacroM Syntax :=
-  if retVal.isOfKind `void then
-    `(doElem| retVoid)
-  else do
-    `(doElem| ret $(← expandValueAsRefArrow retVal))
-
-macro "ret " x:retVal : bbDoElem => expandRetInst x
-scoped macro "llvm " &"ret " x:retVal : doElem => expandRetInst x

@@ -103,6 +103,16 @@ def define (type : FunctionTypeRef) (builder : BasicBlockM PUnit) (name : String
 def getArg (argNo : UInt32) : BasicBlockM ArgumentRef := do
   (← read).funRef.getArg argNo
 
+-- ### `ret`
+
+def retVoid : BasicBlockM PUnit := do
+  (← read).bbRef.appendInstruction <| ← ReturnInstRef.createVoid
+
+def ret (val : ValueRef)  : BasicBlockM PUnit := do
+  (← read).bbRef.appendInstruction <| ← ReturnInstRef.create val
+
+-- ### `load`
+
 def load (type : TypeRef) (ptr : ValueRef) (name := "") (isVolatile := false)
   (align : Align := 1) (order := AtomicOrdering.notAtomic) (ssid := SyncScopeID.system)
   : BasicBlockM InstructionRef := do
@@ -110,12 +120,16 @@ def load (type : TypeRef) (ptr : ValueRef) (name := "") (isVolatile := false)
   (← read).bbRef.appendInstruction inst
   return inst
 
+-- ### `store`
+
 def store (val : ValueRef) (ptr : ValueRef) (isVolatile := false)
   (align : Align := 1) (order := AtomicOrdering.notAtomic) (ssid := SyncScopeID.system)
   : BasicBlockM InstructionRef := do
   let inst ← StoreInstRef.create val ptr isVolatile align order ssid
   (← read).bbRef.appendInstruction inst
   return inst
+
+-- ### `getelementptr`
 
 def getElementPtr
 (pointeeType : TypeRef) (ptr : ValueRef) (indices : Array ValueRef := #[])
@@ -131,6 +145,8 @@ def getElementPtrInbounds
   (← read).bbRef.appendInstruction inst
   return inst
 
+-- ### `call`
+
 def call (fn : FunctionRef) (args : Array ValueRef := #[]) (name : String := "") : BasicBlockM InstructionRef := do
   let inst ← fn.createCall args name
   (← read).bbRef.appendInstruction inst
@@ -140,9 +156,3 @@ def callAs (type : FunctionTypeRef) (fn : ValueRef) (args : Array ValueRef := #[
   let inst ← CallInstRef.create type fn args name
   (← read).bbRef.appendInstruction inst
   return inst
-
-def retVoid : BasicBlockM PUnit := do
-  (← read).bbRef.appendInstruction <| ← ReturnInstRef.createVoid
-
-def ret (val : ValueRef)  : BasicBlockM PUnit := do
-  (← read).bbRef.appendInstruction <| ← ReturnInstRef.create val
