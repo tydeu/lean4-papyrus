@@ -63,3 +63,13 @@ def assertBEq [Repr α] [BEq α] (expected actual : α) : IO PUnit := do
   let const ← int128TypeRef.getConstantInt intVal
   assertBEq (Int.ofNat (2 ^ 128) - absVal) (← const.getNatValue)
   assertBEq intVal (← const.getIntValue)
+
+-- `inttoptr`/`ptrtoint` constant
+#eval LlvmM.run do
+  let ity ← int64Type.getRef
+  let pty ← PointerTypeRef.get ity
+  let cst ← ConstantIntRef.ofUInt64 1
+  let itp ← ConstantExprRef.getIntToPtr cst pty
+  let pti ← ConstantExprRef.getPtrToInt itp ity
+  assertBEq TypeID.pointer (← (← itp.getType).getTypeID)
+  assertBEq TypeID.integer (← (← pti.getType).getTypeID)

@@ -148,7 +148,6 @@ extern "C" obj_res papyrus_constant_int_get_int_value(b_obj_arg constRef, obj_ar
 	return io_result_mk_ok(mkIntFromAP(toConstantInt(constRef)->getValue()));
 }
 
-
 //------------------------------------------------------------------------------
 // Constant Data Arrays
 //------------------------------------------------------------------------------
@@ -187,7 +186,7 @@ extern "C" obj_res papyrus_get_constant_string
 // Constant Expressions
 //------------------------------------------------------------------------------
 
-// Get whether this constant is a string.
+// Get a reference to a constant GEP expression.
 extern "C" obj_res papyrus_constant_expr_get_element_ptr
 	(b_obj_arg aggRef, b_obj_arg indicesObj, uint8 inBounds, obj_arg /* w */)
 {
@@ -197,7 +196,7 @@ extern "C" obj_res papyrus_constant_expr_get_element_ptr
 	return io_result_mk_ok(mkConstantRef(getValueContext(aggRef), k));
 }
 
-// Get the value of a constant as a string by treating its bytes as characters.
+// Get a reference to a constant GEP expression with an additional `inrange` index.
 extern "C" obj_res papyrus_constant_expr_get_element_ptr_in_range
 	(b_obj_arg aggRef, b_obj_arg indicesObj, uint32 inRange,
 		uint8 inBounds, obj_arg /* w */)
@@ -208,6 +207,20 @@ extern "C" obj_res papyrus_constant_expr_get_element_ptr_in_range
 	return io_result_mk_ok(mkConstantRef(getValueContext(aggRef), k));
 }
 
-// Get a reference to a (UTF-8 encoded) string constan
+// Get a reference to a constant `ptrtoint` expression.
+extern "C" obj_res papyrus_constant_expr_get_ptr_to_int
+	(b_obj_arg constRef, b_obj_arg typeRef, obj_arg /* w */)
+{
+	auto k = ConstantExpr::getPtrToInt(toConstant(constRef), toType(typeRef));
+	return io_result_mk_ok(mkConstantRef(getValueContext(constRef), k));
+}
+
+// Get a reference to a constant `inttoptr` expression.
+extern "C" obj_res papyrus_constant_expr_get_int_to_ptr
+	(b_obj_arg constRef, b_obj_arg typeRef, obj_arg /* w */)
+{
+	auto k = ConstantExpr::getIntToPtr(toConstant(constRef), toType(typeRef));
+	return io_result_mk_ok(mkConstantRef(getValueContext(constRef), k));
+}
 
 } // end namespace papyrus

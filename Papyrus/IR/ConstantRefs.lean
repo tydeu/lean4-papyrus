@@ -175,25 +175,47 @@ def ConstantExprRef := ConstantRef
 
 namespace ConstantExprRef
 
+-- ## `getelementptr`
+
 /--
-  Create a constant GEP expression.
-  Calculates the address of the given sub-element of an aggregate data structure.
+  Get a constant GEP expression that
+  calculates the address of the given sub-element of an aggregate data structure.
+
   See the [`getelementptr`](https://llvm.org/docs/LangRef.html#getelementptr-instruction)
   docs for more details.
 -/
 @[extern "papyrus_constant_expr_get_element_ptr"]
 constant getGetElementPtr (aggregate : @& ConstantRef)
   (indices : @& Array ConstantRef) (inBounds := false)
-  : IO ConstantExprRef
+  : IO ConstantRef
 
 /--
-  Create a constant GEP expression with an additional `inrange` index.
+  Get a constant GEP expression with an additional `inrange` index.
+
   See the [`getelementptr`](https://llvm.org/docs/LangRef.html#getelementptr-instruction)
   docs for more details.
 -/
 @[extern "papyrus_constant_expr_get_element_ptr_in_range"]
 constant getGetElementPtrInRange (aggregate : @& ConstantRef)
   (indices : @& Array ConstantRef) (inRange : UInt32) (inBounds := false)
-  : IO ConstantExprRef
+  : IO ConstantRef
+
+-- ## `ptrtoint`
+
+/--
+  Get a reference to a constant `ptrtoint` expression that
+  converts the given constant integer to the given pointer type.
+-/
+@[extern "papyrus_constant_expr_get_ptr_to_int"]
+constant getPtrToInt (const : @& ConstantRef) (type : @& TypeRef) : IO ConstantRef
+
+-- ## `inttoptr`
+
+/--
+  Get a reference to a constant `inttoptr` expression that
+  converts the given constant pointer to the given integer type.
+-/
+@[extern "papyrus_constant_expr_get_int_to_ptr"]
+constant getIntToPtr (const : @& ConstantRef) (type : @& TypeRef) : IO ConstantRef
 
 end ConstantExprRef
