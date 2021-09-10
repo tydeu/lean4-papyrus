@@ -34,7 +34,14 @@ C_LIB_DIR := ../c/build
 C_LIB := lib${C_LIB_NAME}.a
 
 PLUGIN := PapyrusPlugin
-PLUGIN_LIB := ${PLUGIN}.dll
+
+ifeq ($(OS),Windows_NT)
+SHARED_LIB_EXT := dll
+else
+SHARED_LIB_EXT := so
+endif
+
+PLUGIN_LIB := ${PLUGIN}.$(SHARED_LIB_EXT)
 
 LEAN_PATH=../build
 
