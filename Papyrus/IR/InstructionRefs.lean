@@ -10,10 +10,11 @@ import Papyrus.IR.InstructionModifiers
 namespace Papyrus
 
 /--
-  A reference to an external LLVM User.
-  See https://llvm.org/doxygen/classllvm_1_1UnaryInstruction.html.
+  A reference to an external LLVM
+  [UnaryInstruction](https://llvm.org/doxygen/classllvm_1_1UnaryInstruction.html).
 -/
-def UnaryInstructionRef := InstructionRef
+structure UnaryInstructionRef extends InstructionRef
+instance : Coe UnaryInstructionRef InstructionRef := ⟨(·.toInstructionRef)⟩
 
 --------------------------------------------------------------------------------
 -- # Return
@@ -23,9 +24,16 @@ def UnaryInstructionRef := InstructionRef
   A reference to an external LLVM
   [ReturnInst](https://llvm.org/doxygen/classllvm_1_1ReturnInst.html).
 -/
-def ReturnInstRef := InstructionRef
+structure ReturnInstRef extends InstructionRef where
+  is_return_inst : toInstructionRef.instructionKind = InstructionKind.ret
+
+instance : Coe ReturnInstRef InstructionRef := ⟨(·.toInstructionRef)⟩
 
 namespace ReturnInstRef
+
+/-- Cast a general `InstructionRef` to a `ReturnInstRef` given proof it is one. -/
+def castInst (inst : InstructionRef) (h : inst.instructionKind = InstructionKind.ret) : ReturnInstRef :=
+  {toInstructionRef := inst, is_return_inst := h}
 
 /-- Create a new unlinked void return instruction. -/
 @[extern "papyrus_return_inst_create_void"]
@@ -69,13 +77,20 @@ end ReturnInstRef
   A reference to an external LLVM
   [BranchInst](https://llvm.org/doxygen/classllvm_1_1BranchInst.html).
 -/
-def BranchInstRef := InstructionRef
+structure BranchInstRef extends InstructionRef where
+  is_branch_inst : toInstructionRef.instructionKind = InstructionKind.branch
+
+instance : Coe BranchInstRef InstructionRef := ⟨(·.toInstructionRef)⟩
 
 namespace BranchInstRef
 
+/-- Cast a general `InstructionRef` to a `BranchInstRef` given proof it is one. -/
+def castInst (inst : InstructionRef) (h : inst.instructionKind = InstructionKind.branch) : BranchInstRef :=
+  {toInstructionRef := inst, is_branch_inst := h}
+
 /-- Get whether this branch instruction is conditional. -/
 @[extern "papyrus_branch_inst_is_conditional"]
-constant isConditional (self : @& BranchInstRef) : IO Bool
+constant isConditional (self : @& BranchInstRef) : Bool
 
 /-- Get the possible jump targets of this branch instruction. -/
 @[extern "papyrus_branch_inst_get_successors"]
@@ -84,7 +99,10 @@ constant getSuccessors (self : @& BranchInstRef) : IO (Array BasicBlockRef)
 end BranchInstRef
 
 /-- A reference to a conditional `BranchInst`. -/
-def CondBrInstRef := BranchInstRef
+structure CondBrInstRef extends BranchInstRef where
+  is_conditional : toBranchInstRef.isConditional = true
+
+instance : Coe CondBrInstRef BranchInstRef := ⟨(·.toBranchInstRef)⟩
 
 namespace CondBrInstRef
 
@@ -123,8 +141,11 @@ constant swapSuccessors (self : @& CondBrInstRef) : IO PUnit
 
 end CondBrInstRef
 
-/-- A reference to a unconditional `BranchInst`. -/
-def BrInstRef := BranchInstRef
+/-- A reference to an unconditional `BranchInst`. -/
+structure BrInstRef extends BranchInstRef where
+  is_unconditional : toBranchInstRef.isConditional ≠ true
+
+instance : Coe BrInstRef BranchInstRef := ⟨(·.toBranchInstRef)⟩
 
 namespace BrInstRef
 
@@ -151,9 +172,16 @@ end BrInstRef
   A reference to an external LLVM
   [LoadInst](https://llvm.org/doxygen/classllvm_1_1LoadInst.html).
 -/
-def LoadInstRef := InstructionRef
+structure LoadInstRef extends UnaryInstructionRef where
+  is_load_inst : toInstructionRef.instructionKind = InstructionKind.load
+
+instance : Coe LoadInstRef UnaryInstructionRef := ⟨(·.toUnaryInstructionRef)⟩
 
 namespace LoadInstRef
+
+/-- Cast a general `InstructionRef` to a `LoadInstRef` given proof it is one. -/
+def castInst (inst : InstructionRef) (h : inst.instructionKind = InstructionKind.load) : LoadInstRef :=
+  {toInstructionRef := inst, is_load_inst := h}
 
 /-- Create a new `load` instruction. -/
 @[extern "papyrus_load_inst_create"]
@@ -213,9 +241,16 @@ end LoadInstRef
   A reference to an external LLVM
   [StoreInst](https://llvm.org/doxygen/classllvm_1_1StoreInst.html).
 -/
-def StoreInstRef := InstructionRef
+structure StoreInstRef extends InstructionRef where
+  is_store_inst : toInstructionRef.instructionKind = InstructionKind.store
+
+instance : Coe StoreInstRef InstructionRef := ⟨(·.toInstructionRef)⟩
 
 namespace StoreInstRef
+
+/-- Cast a general `InstructionRef` to a `StoreInstRef` given proof it is one. -/
+def castInst (inst : InstructionRef) (h : inst.instructionKind = InstructionKind.store) : StoreInstRef :=
+  {toInstructionRef := inst, is_store_inst := h}
 
 /-- Create a new `store` instruction. -/
 @[extern "papyrus_store_inst_create"]
@@ -279,9 +314,16 @@ end StoreInstRef
   A reference to an external LLVM
   [GetElementPtrInst](https://llvm.org/doxygen/classllvm_1_1GetElementPtrInst.html).
 -/
-def GetElementPtrInstRef := InstructionRef
+structure GetElementPtrInstRef extends InstructionRef where
+  is_get_element_ptr_inst : toInstructionRef.instructionKind = InstructionKind.getElementPtr
+
+instance : Coe GetElementPtrInstRef InstructionRef := ⟨(·.toInstructionRef)⟩
 
 namespace GetElementPtrInstRef
+
+/-- Cast a general `InstructionRef` to a `GetElementPtrInstRef` given proof it is one. -/
+def castInst (inst : InstructionRef) (h : inst.instructionKind = InstructionKind.getElementPtr) : GetElementPtrInstRef :=
+  {toInstructionRef := inst, is_get_element_ptr_inst := h}
 
 /-- Create a new `getelementptr` instruction. -/
 @[extern "papyrus_getelementptr_inst_create"]
@@ -327,15 +369,23 @@ end GetElementPtrInstRef
   A reference to an external LLVM
   [CallBase](https://llvm.org/doxygen/classllvm_1_1CallBase.html).
 -/
-def CallBaseRef := InstructionRef
+structure CallBaseRef extends InstructionRef
+instance : Coe CallBaseRef InstructionRef := ⟨(·.toInstructionRef)⟩
 
 /--
   A reference to an external LLVM
   [CallInst](https://llvm.org/doxygen/classllvm_1_1CallInst.html).
 -/
-def CallInstRef := CallBaseRef
+structure CallInstRef extends CallBaseRef where
+  is_call_inst : toInstructionRef.instructionKind = InstructionKind.call
+
+instance : Coe CallInstRef CallBaseRef := ⟨(·.toCallBaseRef)⟩
 
 namespace CallInstRef
+
+/-- Cast a general `InstructionRef` to a `CallInstRef` given proof it is one. -/
+def castInst (inst : InstructionRef) (h : inst.instructionKind = InstructionKind.call) : CallInstRef :=
+  {toInstructionRef := inst, is_call_inst := h}
 
 /-- Create a new unlinked call instruction. -/
 @[extern "papyrus_call_inst_create"]

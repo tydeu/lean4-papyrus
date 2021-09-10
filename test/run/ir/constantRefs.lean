@@ -2,6 +2,11 @@ import Papyrus
 
 open Papyrus
 
+def assertEq [Repr α] [DecidableEq α]
+(expected actual : α) : IO (PLift (expected = actual)) := do
+  if h : expected = actual then return PLift.up h else
+    throw <| IO.userError s!"expected '{repr expected}', got '{repr actual}'"
+
 def assertBEq [Repr α] [BEq α] (expected actual : α) : IO PUnit := do
   unless expected == actual do
     throw <| IO.userError s!"expected '{repr expected}', got '{repr actual}'"
@@ -9,25 +14,28 @@ def assertBEq [Repr α] [BEq α] (expected actual : α) : IO PUnit := do
 -- null ptr constant
 #eval LlvmM.run do
   let const ← (← int8Type.pointerType.getRef).getNullConstant
-  assertBEq ValueKind.constantPointerNull (← const.getValueKind)
+  assertBEq ValueKind.constantPointerNull const.valueKind
 
 -- null token constant
 #eval LlvmM.run do
   let const ← (← tokenType.getRef).getNullConstant
-  assertBEq ValueKind.constantTokenNone (← const.getValueKind)
+  assertBEq ValueKind.constantTokenNone const.valueKind
 
 -- big null constant
 #eval LlvmM.run do
   let int128TypeRef ← IntegerTypeRef.get 128
-  let const : ConstantIntRef ← int128TypeRef.getNullConstant
-  assertBEq ValueKind.constantInt (← const.getValueKind)
+  let const ← int128TypeRef.getNullConstant
+  let ⟨h⟩ ← assertEq ValueKind.constantInt const.valueKind
+  let const := ConstantIntRef.cast const h.symm
   assertBEq 0 (← const.getNatValue)
   assertBEq 0 (← const.getIntValue)
 
 -- big all ones constant
 #eval LlvmM.run do
   let int128TypeRef ← IntegerTypeRef.get 128
-  let const : ConstantIntRef ← int128TypeRef.getAllOnesConstant
+  let const ← int128TypeRef.getAllOnesConstant
+  let ⟨h⟩ ← assertEq ValueKind.constantInt const.valueKind
+  let const := ConstantIntRef.cast const h.symm
   assertBEq (2 ^ 128 - 1) (← const.getNatValue)
   assertBEq (-1) (← const.getIntValue)
 

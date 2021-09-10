@@ -20,7 +20,8 @@ end TypeRef
   A reference to an external LLVM
   [ConstantData](https://llvm.org/doxygen/classllvm_1_1ConstantData.html).
 -/
-def ConstantDataRef := ConstantRef
+structure ConstantDataRef extends ConstantRef
+instance : Coe ConstantDataRef ConstantRef := ⟨(·.toConstantRef)⟩
 
 --------------------------------------------------------------------------------
 -- Constant Ints (Words / Integers / Natural)
@@ -35,9 +36,15 @@ def ConstantDataRef := ConstantRef
   Such a constant can be used to represent a block of bits (i.e., a word),
   an unsigned integer (a natural), or a true integer.
 -/
-def ConstantIntRef := ConstantDataRef
+structure ConstantIntRef extends ConstantDataRef where
+  is_constant_int : toValueRef.valueKind = ValueKind.constantInt
+
+instance : Coe ConstantIntRef ConstantDataRef := ⟨(·.toConstantDataRef)⟩
 
 namespace ConstantIntRef
+
+def cast (val : ValueRef) (h : val.valueKind = ValueKind.constantInt) : ConstantIntRef :=
+  {toValueRef := val, is_constant_int := h}
 
 /--  Get the LLVM true constant (i.e., `i1 0`). -/
 @[extern "papyrus_get_constant_false"]
@@ -78,7 +85,7 @@ constant ofInt (numBits : UInt32) (value : @& Int) : LlvmM ConstantIntRef
 
 /-- Get the integer type of this constant.  -/
 def getType (self : @& ConstantIntRef) : IO IntegerTypeRef :=
-  ValueRef.getType self
+  self.toValueRef.getType
 
 /--
   Get the value of this constant as a `Nat`.
@@ -124,7 +131,8 @@ end IntegerTypeRef
   A reference to an external LLVM
   [ConstantDataSequential](https://llvm.org/doxygen/classllvm_1_1ConstantDataSequential.html).
 -/
-def ConstantDataSequentialRef := ConstantDataRef
+structure ConstantDataSequentialRef extends ConstantDataRef
+instance : Coe ConstantDataSequentialRef ConstantDataRef := ⟨(·.toConstantDataRef)⟩
 
 namespace ConstantDataSequentialRef
 
@@ -142,13 +150,20 @@ end ConstantDataSequentialRef
   A reference to an external LLVM
   [ConstantDataArray](https://llvm.org/doxygen/classllvm_1_1ConstantDataArray.html).
 -/
-def ConstantDataArrayRef := ConstantDataSequentialRef
+structure ConstantDataArrayRef extends ConstantDataSequentialRef where
+  is_constant_data_array : toValueRef.valueKind = ValueKind.constantDataArray
+
+instance : Coe ConstantDataArrayRef ConstantDataSequentialRef :=
+  ⟨(·.toConstantDataSequentialRef)⟩
 
 namespace ConstantDataArrayRef
 
+def cast (val : ValueRef) (h : val.valueKind = ValueKind.constantDataArray) : ConstantDataArrayRef :=
+  {toValueRef := val, is_constant_data_array := h}
+
 /-- Get the array type of this constant.  -/
 def getType (self : @& ConstantDataArrayRef) : IO ArrayTypeRef :=
-  ValueRef.getType self
+  self.toValueRef.getType
 
 /-- Get the type of elements of this constant.  -/
 def getElementType (self : @& ConstantDataArrayRef) : IO TypeRef := do
@@ -171,9 +186,15 @@ end ConstantDataArrayRef
   A reference to an external LLVM
   [ConstantExpr](https://llvm.org/doxygen/classllvm_1_1ConstantExpr.html).
 -/
-def ConstantExprRef := ConstantRef
+structure ConstantExprRef extends ConstantRef where
+  is_constant_expr : toValueRef.valueKind = ValueKind.constantExpr
+
+instance : Coe ConstantExprRef ConstantRef := ⟨(·.toConstantRef)⟩
 
 namespace ConstantExprRef
+
+def cast (val : ValueRef) (h : val.valueKind = ValueKind.constantExpr) : ConstantExprRef :=
+  {toValueRef := val, is_constant_expr := h}
 
 -- ## `getelementptr`
 

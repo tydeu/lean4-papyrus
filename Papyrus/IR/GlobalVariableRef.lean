@@ -11,9 +11,15 @@ namespace Papyrus
   A reference to an external LLVM
   [GlobalVariable](https://llvm.org/doxygen/classllvm_1_1GlobalVariable.html).
 -/
-def GlobalVariableRef := GlobalObjectRef
+structure GlobalVariableRef extends GlobalObjectRef where
+  is_global_variable : toValueRef.valueKind = ValueKind.globalVariable
+
+instance : Coe GlobalVariableRef GlobalObjectRef := ⟨(·.toGlobalObjectRef)⟩
 
 namespace GlobalVariableRef
+
+def cast (val : ValueRef) (h : val.valueKind = ValueKind.globalVariable) : GlobalVariableRef :=
+  {toValueRef := val, is_global_variable := h}
 
 /-- Create a new unlinked global variable. -/
 @[extern "papyrus_global_variable_new"]
@@ -51,7 +57,6 @@ def ofString (value : String)
   var.setAddressSignificance AddressSignificance.none
   var.setRawAlignment 1
   var
-
 
 /--
   Get whether the this global variable is constant

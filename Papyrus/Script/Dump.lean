@@ -43,18 +43,18 @@ instance : Dump VectorType := ⟨fun t => do dump <| ← t.getRef⟩
 instance : Dump FixedVectorType := ⟨fun t => do dump <| ← t.getRef⟩
 instance : Dump ScalableVectorType := ⟨fun t => do dump <| ← t.getRef⟩
 
-instance : DumpRef ValueRef := ⟨ValueRef.dump⟩
-instance : DumpRef UserRef := ⟨ValueRef.dump⟩
-instance : DumpRef ConstantRef := ⟨ValueRef.dump⟩
-instance : DumpRef ConstantIntRef := ⟨ValueRef.dump⟩
-instance : DumpRef ConstantDataArrayRef := ⟨ValueRef.dump⟩
-instance : DumpRef FunctionRef := ⟨ValueRef.dump⟩
-instance : DumpRef GlobalValueRef := ⟨ValueRef.dump⟩
-instance : DumpRef GlobalObjectRef := ⟨ValueRef.dump⟩
-instance : DumpRef GlobalVariableRef := ⟨ValueRef.dump⟩
+instance : DumpRef ValueRef := ⟨(·.dump)⟩
+instance : DumpRef UserRef := ⟨(·.dump)⟩
+instance : DumpRef ConstantRef := ⟨(·.dump)⟩
+instance : DumpRef ConstantIntRef := ⟨(·.dump)⟩
+instance : DumpRef ConstantDataArrayRef := ⟨(·.dump)⟩
+instance : DumpRef FunctionRef := ⟨(·.dump)⟩
+instance : DumpRef GlobalValueRef := ⟨(·.dump)⟩
+instance : DumpRef GlobalObjectRef := ⟨(·.dump)⟩
+instance : DumpRef GlobalVariableRef := ⟨(·.dump)⟩
 
-instance : DumpRef InstructionRef := ⟨ValueRef.dump⟩
-instance : DumpRef ReturnInstRef := ⟨ValueRef.dump⟩
+instance : DumpRef InstructionRef := ⟨(·.dump)⟩
+instance : DumpRef ReturnInstRef := ⟨(·.dump)⟩
 
 instance : DumpRef ModuleRef := ⟨ModuleRef.dump⟩
 

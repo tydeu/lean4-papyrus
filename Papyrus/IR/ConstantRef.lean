@@ -7,4 +7,5 @@ namespace Papyrus
   A reference to an external LLVM
   [Constant](https://llvm.org/doxygen/classllvm_1_1Constant.html).
 -/
-def ConstantRef := UserRef
+structure ConstantRef extends UserRef
+instance : Coe ConstantRef UserRef := ⟨(·.toUserRef)⟩

@@ -14,7 +14,8 @@ namespace Papyrus
   A reference to an external LLVM
   [GlobalValue](https://llvm.org/doxygen/classllvm_1_1GlobalValue.html).
 -/
-def GlobalValueRef := ConstantRef
+structure GlobalValueRef extends ConstantRef
+instance : Coe GlobalValueRef ConstantRef := ⟨(·.toConstantRef)⟩
 
 namespace GlobalValueRef
 
@@ -23,7 +24,7 @@ namespace GlobalValueRef
   Since globals are always pointers in LLVM, this is the global's actual type.
 -/
 def getPointerType (self : @& GlobalValueRef) : IO PointerTypeRef :=
-  ValueRef.getType self
+  self.getType
 
 /-- Get the type of this global's value.  -/
 def getType (self : @& GlobalValueRef) : IO TypeRef := do
@@ -91,7 +92,8 @@ end GlobalValueRef
   A reference to an external LLVM
   [GlobalObject](https://llvm.org/doxygen/classllvm_1_1GlobalObject.html).
 -/
-def GlobalObjectRef := GlobalValueRef
+structure GlobalObjectRef extends GlobalValueRef
+instance : Coe GlobalObjectRef GlobalValueRef := ⟨(·.toGlobalValueRef)⟩
 
 namespace GlobalObjectRef
 

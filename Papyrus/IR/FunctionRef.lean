@@ -12,9 +12,15 @@ namespace Papyrus
   A reference to an external LLVM
   [Function](https://llvm.org/doxygen/classllvm_1_1Function.html).
 -/
-def FunctionRef := GlobalObjectRef
+structure FunctionRef extends GlobalObjectRef where
+  is_function : toValueRef.valueKind = ValueKind.function
+
+instance : Coe FunctionRef GlobalObjectRef := ⟨(·.toGlobalObjectRef)⟩
 
 namespace FunctionRef
+
+def cast (val : ValueRef) (h : val.valueKind = ValueKind.function) : FunctionRef :=
+  {toValueRef := val, is_function := h}
 
 /--
   Create a new unlinked function with the given type, the optional given name,
@@ -27,7 +33,7 @@ constant create (type : @& FunctionTypeRef) (name : @& String := "")
 
 /-- Get the type of this function.  -/
 def getType (self : @& FunctionRef) : IO FunctionTypeRef :=
-  GlobalValueRef.getType self
+  self.toGlobalValueRef.getType
 
 /-- Get the nth argument of thee this function. -/
 @[extern "papyrus_function_get_arg"]

@@ -72,10 +72,11 @@ extern "C" obj_res papyrus_branch_inst_create_jump
 }
 
 // Get whether the branch instruction is conditional.
-extern "C" obj_res papyrus_branch_inst_is_conditional
+// As this property is immutable, we don't need to wrap it in IO.
+extern "C" uint8 papyrus_branch_inst_is_conditional
 	(b_obj_arg instRef, obj_arg /* w */)
 {
-	return io_result_mk_ok(box(toBranchInst(instRef)->isConditional()));
+	return toBranchInst(instRef)->isConditional();
 }
 
 // Get a reference to the condition of a conditional branch instruction.

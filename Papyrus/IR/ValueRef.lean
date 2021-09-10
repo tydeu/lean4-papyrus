@@ -14,17 +14,18 @@ constant Llvm.Value : Type := Unit
   A reference to an external LLVM
   [Value](https://llvm.org/doxygen/classllvm_1_1Value.html).
 -/
-def ValueRef := LinkedLoosePtr ContextRef Llvm.Value
+structure ValueRef where
+  ptr : LinkedLoosePtr ContextRef Llvm.Value
 
 namespace ValueRef
 
-/-- Get the raw ID of this value. -/
-@[extern "papyrus_value_get_id"]
-constant getValueID (self : @& ValueRef) : IO UInt32
+/-- The raw ID of this value. -/
+@[extern "papyrus_value_id"]
+constant valueID (self : @& ValueRef) : UInt32
 
-/-- Get the `ValueKind` of this value. -/
-def getValueKind (self : ValueRef) : IO ValueKind :=
-  ValueKind.ofValueID <$> self.getValueID
+/-- The `ValueKind` of this value. -/
+def valueKind (self : ValueRef) : ValueKind :=
+  ValueKind.ofValueID self.valueID
 
 /-- Get a reference to this value's type. -/
 @[extern "papyrus_value_get_type"]
@@ -70,7 +71,8 @@ def dump (self : @& ValueRef) : IO PUnit := do
 end ValueRef
 
 /--
-  A reference to an external LLVM User.
-  See https://llvm.org/doxygen/classllvm_1_1User.html.
+  A reference to an external LLVM
+  [User](https://llvm.org/doxygen/classllvm_1_1User.html).
 -/
-def UserRef := ValueRef
+structure UserRef extends ValueRef
+instance : Coe UserRef ValueRef := ⟨(·.toValueRef)⟩
