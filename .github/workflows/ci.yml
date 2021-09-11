@@ -52,12 +52,12 @@ jobs:
       if: matrix.os == 'macOS-latest'
       run: |
         brew install llvm@12
-        echo "LLVM_CONFIG=$(brew --prefix)/opt/llvm/bin/llvm-config" >> $GITHUB_ENV
+        echo "$(brew --prefix)/opt/llvm/bin" >> $GITHUB_PATH
     - name: Install LLVM (Ubuntu)
       if: matrix.os == 'ubuntu-latest'
       run: | 
         sudo apt-get install llvm-12
-        echo "LLVM_CONFIG=llvm-config-12" >> $GITHUB_ENV
+        llvm-config-12 --bindir >> $GITHUB_PATH
     - name: Checkout
       uses: actions/checkout@v2
     - name: Build C Lib
