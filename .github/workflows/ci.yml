@@ -30,10 +30,11 @@ jobs:
       if: matrix.os == 'windows-latest'
       uses: msys2/setup-msys2@v2
       with:
-        install: curl make mingw-w64-x86_64-gcc diffutils
+        install: curl unzip make mingw-w64-x86_64-gcc diffutils
     - name: Install Elan
       run: |
         curl -sSL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh > elan-init.sh
+        chmod +x elan-init.sh
         ./elan-init.sh -y
         echo "$HOME/.elan/bin" >> $GITHUB_PATH
     - name: Checkout
