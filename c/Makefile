@@ -12,6 +12,13 @@ LEAN_INCLUDE := $(LEAN_HOME)/include
 LLVM_CONFIG	?= llvm-config
 LLVM_CXX_FLAGS := $(shell $(LLVM_CONFIG) --cxxflags)
 
+# Detect OS
+
+OS_NAME := ${OS}
+ifneq ($(OS_NAME),Windows_NT)
+OS_NAME := $(shell uname -s)
+endif
+
 # Config
 
 MKPATH := mkdir -p
@@ -19,11 +26,15 @@ RMPATH := rm -rf
 
 AR := ar
 CXX	:= c++
-EXTRA_CXX_FLAGS := -O1
+
+EXTRA_CXX_FLAGS := -O3 -DNDEBUG
+ifneq ($(OS_NAME),Windows_NT)
+EXTRA_CXX_FLAGS += -fPIC
+endif
 
 SRC_DIR := src
 HDR_DIR := include
-OUT_DIR := build
+OUT_DIR := build/$(OS_NAME)
 
 HDRS := \
 	papyrus.h\

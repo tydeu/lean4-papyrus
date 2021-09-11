@@ -23,13 +23,14 @@ def compileAndRunModule (mod : ModuleRef) (fname : String) : IO IO.Process.Outpu
     let llc ← IO.Process.spawn {
       cmd := "llc"
       args := #["-o", asmFile, bcFile]
+      env := #[("LD_PRELOAD","")]
     }
     let exitCode ← llc.wait
     unless exitCode == 0 do
       throw <| IO.userError s!"llc exited with error code {exitCode}"
     let cc ← IO.Process.spawn {
       cmd := "cc"
-      args := #["-o", exeFile, asmFile]
+      args := #["-no-pie", "-o", exeFile, asmFile]
     }
     let exitCode ← cc.wait
     unless exitCode == 0 do
@@ -54,10 +55,9 @@ def testSimpleExitingProgram : LlvmM PUnit := do
     bb.appendInstruction inst
     fn.appendBasicBlock bb
     mod.appendFunction fn
-    discard mod.verify
 
     -- Verify It
-
+    discard mod.verify
 
     -- Run It
     let ee ← ExecutionEngineRef.createForModule mod

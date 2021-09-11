@@ -3,6 +3,11 @@ LEAN ?= lean
 LEAN_HOME := $(shell $(LEAN) --print-prefix)
 endif
 
+OS_NAME := ${OS}
+ifneq ($(OS_NAME),Windows_NT)
+OS_NAME := $(shell uname -s)
+endif
+
 RMPATH := rm -rf
 LEANMAKEFILE := ${LEAN_HOME}/share/lean/lean.mk
 LEANMAKE := $(MAKE) -f $(LEANMAKEFILE)
@@ -20,7 +25,7 @@ clean-c:
 	$(MAKE) -C c clean
 
 lib:
-	+$(LEANMAKE) lib PKG=Papyrus MORE_DEPS=leanpkg.toml
+	+$(LEANMAKE) lib PKG=Papyrus MORE_DEPS=leanpkg.toml OUT=build/$(OS_NAME)
 
 clean-lib:
 	$(RMPATH) build

@@ -1,6 +1,19 @@
 cd ${BASH_SOURCE%/*}
-export LEAN_PATH=../build
-export PAPYRUS_PLUGIN=../plugin/build/PapyrusPlugin
+
+OS_NAME=${OS}
+if [[ "${OS_NAME}" != "Windows_NT" ]]; then
+  OS_NAME=$(uname -s)
+fi
+
+export LEAN_PATH=../build/${OS_NAME}
+PLUGIN=../plugin/build/PapyrusPlugin
+if [[ "${OS_NAME}" == "Windows_NT" ]]; then
+    export LEAN_OPTS="--plugin ${PLUGIN}"
+else
+    LEAN_LIBDIR=$(lean --print-libdir)
+    export LD_PRELOAD="${LEAN_LIBDIR}/libleanshared.so:${PLUGIN}.so"
+    export LEAN_OPTS="--plugin ${PLUGIN}.so"
+fi
 
 # The shells scripts in this directory were adapted from the Lean 4 sources
 
