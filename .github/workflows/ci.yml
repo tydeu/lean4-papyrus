@@ -16,7 +16,7 @@ jobs:
     strategy:
       matrix:
         include:
-        - name: Ubunutu
+        - name: Ubuntu
           os: ubuntu-latest
         - name: MacOS
           os: macos-latest
@@ -68,4 +68,3 @@ jobs:
       run: make plugin -j4
     - name: Test
       run: make test -j4
-
