@@ -26,25 +26,33 @@ jobs:
       # complete all jobs
       fail-fast: false
     steps:
-    - name: Install MSYS2
+    - name: Install MSYS2 (Windows)
       if: matrix.os == 'windows-latest'
       uses: msys2/setup-msys2@v2
       with:
         install: curl unzip make mingw-w64-x86_64-llvm mingw-w64-x86_64-gcc diffutils
-    - name: Install Elan
-      if: matrix.os != 'macOS-latest'
+    - name: Install Elan (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
       run: |
         curl -sSL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh > elan-init.sh
         chmod +x elan-init.sh
         ./elan-init.sh -y
-        dirname $(which elan) >> $GITHUB_PATH
-    - name: Install Elan
+        "$HOME/.elan/bin" >> $GITHUB_PATH
+    - name: Install Elan (Windows)
+      if: matrix.os != 'windows-latest'
+      run: |
+        curl -sSL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh > elan-init.sh
+        ./elan-init.sh -y
+        "$HOMEPATH/.elan/bin" >> $GITHUB_PATH
+    - name: Install Elan (MacOS)
       if: matrix.os == 'macOS-latest'
       run: brew install elan
-    - name: Install LLVM
+    - name: Install LLVM (MacOS)
       if: matrix.os == 'macOS-latest'
-      run: brew install llvm@12
-    - name: Install LLVM
+      run: |
+        brew install llvm@12
+        echo "LLVM_CONFIG=$(brew --prefix)/opt/llvm/bin/llvm-config" >> $GITHUB_ENV
+    - name: Install LLVM (Ubuntu)
       if: matrix.os == 'ubuntu-latest'
       run: sudo apt-get install libllvm12 
     - name: Checkout
