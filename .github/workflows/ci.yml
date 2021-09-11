@@ -43,7 +43,7 @@ jobs:
       run: |
         curl -sSL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh > elan-init.sh
         ./elan-init.sh -y
-        echo "$HOMEPATH/.elan/bin" >> $GITHUB_PATH
+        echo "$USERPROFILE/.elan/bin" >> $GITHUB_PATH
     - name: Install Elan (MacOS)
       if: matrix.os == 'macOS-latest'
       run: brew install elan
@@ -54,15 +54,17 @@ jobs:
         echo "LLVM_CONFIG=$(brew --prefix)/opt/llvm/bin/llvm-config" >> $GITHUB_ENV
     - name: Install LLVM (Ubuntu)
       if: matrix.os == 'ubuntu-latest'
-      run: sudo apt-get install libllvm12 
+      run: | 
+        sudo apt-get install llvm-12
+        echo "LLVM_CONFIG=llvm-config-12" >> $GITHUB_ENV
     - name: Checkout
       uses: actions/checkout@v2
     - name: Build C Lib
-      run: make c
+      run: make c -j4
     - name: Build Lean Lib
-      run: make lib
+      run: make lib -j4
     - name: Build Lean Plugin
-      run: make plugin
+      run: make plugin -j4
     - name: Test
-      run: make test
+      run: make test -j4
 
