@@ -1,4 +1,4 @@
-(fun this => this)
+(fun (this : ModuleM PUnit) => this)
   do 
     let _ ← liftM ConstantIntRef.getFalse 
     let _ ← liftM ConstantIntRef.getTrue 
