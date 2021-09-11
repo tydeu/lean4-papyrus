@@ -19,6 +19,7 @@ instance : Coe FunctionRef GlobalObjectRef := ⟨(·.toGlobalObjectRef)⟩
 
 namespace FunctionRef
 
+/-- Cast a general `ValueRef` to a `FunctionRef` given proof it is one. -/
 def cast (val : ValueRef) (h : val.valueKind = ValueKind.function) : FunctionRef :=
   {toValueRef := val, is_function := h}
 

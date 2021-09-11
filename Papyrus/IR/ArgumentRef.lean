@@ -14,5 +14,6 @@ instance : Coe ArgumentRef ValueRef := ⟨(·.toValueRef)⟩
 
 namespace ArgumentRef
 
+/-- Cast a general `ValueRef` to a `ArgumentRef` given proof it is one. -/
 def cast (val : ValueRef) (h : val.valueKind = ValueKind.argument) : ArgumentRef :=
   {toValueRef := val, is_argument := h}

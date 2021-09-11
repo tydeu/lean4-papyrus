@@ -15,6 +15,7 @@ instance : Coe BasicBlockRef ValueRef := ⟨(·.toValueRef)⟩
 
 namespace BasicBlockRef
 
+/-- Cast a general `ValueRef` to a `BasicBlockRef` given proof it is one. -/
 def cast (val : ValueRef) (h : val.valueKind = ValueKind.basicBlock) : BasicBlockRef :=
   {toValueRef := val, is_basic_block := h}
 

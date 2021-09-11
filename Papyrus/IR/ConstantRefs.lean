@@ -43,6 +43,7 @@ instance : Coe ConstantIntRef ConstantDataRef := ⟨(·.toConstantDataRef)⟩
 
 namespace ConstantIntRef
 
+/-- Cast a general `ValueRef` to a `ConstantIntRef` given proof it is one. -/
 def cast (val : ValueRef) (h : val.valueKind = ValueKind.constantInt) : ConstantIntRef :=
   {toValueRef := val, is_constant_int := h}
 
@@ -158,6 +159,7 @@ instance : Coe ConstantDataArrayRef ConstantDataSequentialRef :=
 
 namespace ConstantDataArrayRef
 
+/-- Cast a general `ValueRef` to a `ConstantDataArrayRef` given proof it is one. -/
 def cast (val : ValueRef) (h : val.valueKind = ValueKind.constantDataArray) : ConstantDataArrayRef :=
   {toValueRef := val, is_constant_data_array := h}
 
@@ -193,6 +195,7 @@ instance : Coe ConstantExprRef ConstantRef := ⟨(·.toConstantRef)⟩
 
 namespace ConstantExprRef
 
+/-- Cast a general `ValueRef` to a `ConstantExprRef` given proof it is one. -/
 def cast (val : ValueRef) (h : val.valueKind = ValueKind.constantExpr) : ConstantExprRef :=
   {toValueRef := val, is_constant_expr := h}
 

@@ -16,11 +16,14 @@ instance : Coe InstructionRef UserRef := ⟨(·.toUserRef)⟩
 
 namespace InstructionRef
 
+/-- Cast a general `ValueRef` to a `InstructionRef` given proof it is one. -/
 def cast (val : ValueRef) (h : val.valueKind = ValueKind.instruction) : InstructionRef :=
   {toValueRef := val, is_instruction := h}
 
+/-- The LLVM opcode of this instruction. -/
 def opcode (self : InstructionRef) : UInt32 :=
   (· - ValueKind.instruction.toValueID) self.valueID
 
+/-- The kind of this instruction. -/
 def instructionKind (self : InstructionRef) : InstructionKind :=
   InstructionKind.ofOpcode! self.opcode

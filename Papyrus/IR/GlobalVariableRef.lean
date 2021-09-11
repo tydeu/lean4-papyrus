@@ -18,6 +18,7 @@ instance : Coe GlobalVariableRef GlobalObjectRef := ⟨(·.toGlobalObjectRef)⟩
 
 namespace GlobalVariableRef
 
+/-- Cast a general `ValueRef` to a `GlobalVariableRef` given proof it is one. -/
 def cast (val : ValueRef) (h : val.valueKind = ValueKind.globalVariable) : GlobalVariableRef :=
   {toValueRef := val, is_global_variable := h}
 
