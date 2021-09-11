@@ -39,7 +39,7 @@ jobs:
         ./elan-init.sh -y
         "$HOME/.elan/bin" >> $GITHUB_PATH
     - name: Install Elan (Windows)
-      if: matrix.os != 'windows-latest'
+      if: matrix.os == 'windows-latest'
       run: |
         curl -sSL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh > elan-init.sh
         ./elan-init.sh -y
