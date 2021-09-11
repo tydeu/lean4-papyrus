@@ -16,9 +16,9 @@ jobs:
     strategy:
       matrix:
         include:
-        - name: Linux
+        - name: Ubunutu
           os: ubuntu-latest
-        - name: macOS
+        - name: MacOS
           os: macos-latest
         - name: Windows
           os: windows-latest
@@ -58,9 +58,6 @@ jobs:
       run: | 
         sudo apt-get install llvm-12
         echo "LLVM_CONFIG=llvm-config-12" >> $GITHUB_ENV
-    - name: Check Path (Windows)
-      if: matrix.os == 'windows-latest'
-      run: echo $PATH
     - name: Checkout
       uses: actions/checkout@v2
     - name: Build C Lib
