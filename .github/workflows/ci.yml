@@ -63,7 +63,7 @@ jobs:
     - name: Build C Lib
       run: make -C c -j4
     - name: Build Lean Lib
-      run: make -C lib -j4
+      run: make lib -j4
     - name: Build Lean Plugin
       run: make -C plugin -j4
     - name: Test
