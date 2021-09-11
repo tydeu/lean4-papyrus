@@ -43,7 +43,8 @@ jobs:
       run: |
         curl -sSL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh > elan-init.sh
         ./elan-init.sh -y
-        echo "$USERPROFILE/.elan/bin" >> $GITHUB_PATH
+        echo "C:/$HOMEPATH/.elan/bin" >> $GITHUB_PATH
+        stat "$USERPROFILE/.elan/bin/lean.exe"
     - name: Install Elan (MacOS)
       if: matrix.os == 'macOS-latest'
       run: brew install elan
