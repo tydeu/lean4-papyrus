@@ -19,16 +19,13 @@ instance : Coe GlobalValueRef ConstantRef := ⟨(·.toConstantRef)⟩
 
 namespace GlobalValueRef
 
-/--
-  Get the pointer type of this global.
-  Since globals are always pointers in LLVM, this is the global's actual type.
--/
-def getPointerType (self : @& GlobalValueRef) : IO PointerTypeRef :=
-  self.getType
+/-- Get the type of this global. All globals are pointers to some value. -/
+@[extern "papyrus_value_get_type"]
+constant getType (self : @& GlobalValueRef) : IO PointerTypeRef
 
 /-- Get the type of this global's value.  -/
-def getType (self : @& GlobalValueRef) : IO TypeRef := do
-  (← self.getPointerType).getPointeeType
+@[extern "papyrus_global_value_get_value_type"]
+constant getValueType (self : @& GlobalValueRef) : IO TypeRef
 
 /-- Get the address space of this global. -/
 @[extern "papyrus_global_value_get_address_space"]

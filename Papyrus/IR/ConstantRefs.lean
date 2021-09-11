@@ -84,8 +84,8 @@ constant ofNat (numBits : UInt32) (value : @& Nat) : LlvmM ConstantIntRef
 constant ofInt (numBits : UInt32) (value : @& Int) : LlvmM ConstantIntRef
 
 /-- Get the integer type of this constant.  -/
-def getType (self : @& ConstantIntRef) : IO IntegerTypeRef :=
-  self.toValueRef.getType
+@[extern "papyrus_value_get_type"]
+constant getType (self : @& ConstantIntRef) : IO IntegerTypeRef
 
 /--
   Get the value of this constant as a `Nat`.
@@ -162,8 +162,8 @@ def cast (val : ValueRef) (h : val.valueKind = ValueKind.constantDataArray) : Co
   {toValueRef := val, is_constant_data_array := h}
 
 /-- Get the array type of this constant.  -/
-def getType (self : @& ConstantDataArrayRef) : IO ArrayTypeRef :=
-  self.toValueRef.getType
+@[extern "papyrus_value_get_type"]
+constant getType (self : @& ConstantDataArrayRef) : IO ArrayTypeRef
 
 /-- Get the type of elements of this constant.  -/
 def getElementType (self : @& ConstantDataArrayRef) : IO TypeRef := do

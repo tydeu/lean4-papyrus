@@ -79,5 +79,5 @@ def assertBEq [Repr α] [BEq α] (expected actual : α) : IO PUnit := do
   let cst ← ConstantIntRef.ofUInt64 1
   let itp ← ConstantExprRef.getIntToPtr cst pty
   let pti ← ConstantExprRef.getPtrToInt itp ity
-  assertBEq TypeID.pointer (← (← itp.getType).getTypeID)
-  assertBEq TypeID.integer (← (← pti.getType).getTypeID)
+  assertBEq TypeID.pointer (← (← itp.getType).typeID)
+  assertBEq TypeID.integer (← (← pti.getType).typeID)

@@ -52,8 +52,9 @@ extern "C" obj_res papyrus_type_get_context(b_obj_arg typeRef, obj_arg /* w */) 
 }
 
 // Get the TypeID of the given type.
-extern "C" obj_res papyrus_type_get_id(b_obj_arg typeRef, obj_arg /* w */) {
-	return io_result_mk_ok(box(toType(typeRef)->getTypeID()));
+// As a type's ID is immutable, we don't need to wrap it in IO.
+extern "C" uint8 papyrus_type_id(b_obj_arg typeRef, obj_arg /* w */) {
+	return toType(typeRef)->getTypeID();
 }
 
 // Print the given type to LLVM's standard output.
@@ -303,8 +304,9 @@ extern "C" obj_res papyrus_struct_type_create
 }
 
 // Get whether the given struct type is literal.
-extern "C" obj_res papyrus_struct_type_is_literal(b_obj_arg typeRef, obj_arg /* w */) {
-	return io_result_mk_ok(box(toStructType(typeRef)->isLiteral()));
+// As this property is immutable, we don't need to wrap it in IO.
+extern "C" uint8 papyrus_struct_type_is_literal(b_obj_arg typeRef, obj_arg /* w */) {
+	return toStructType(typeRef)->isLiteral();
 }
 
 // Get whether the given struct type is non-literal and opaque.
@@ -386,12 +388,19 @@ llvm::VectorType* toVectorType(b_obj_arg typeRef) {
 	return llvm::cast<VectorType>(toType(typeRef));
 }
 
-// Get a reference to the vector type
-// with the given element type, element quantity, and scalability.
-extern "C" obj_res papyrus_get_vector_type(
-	b_obj_arg elemTypeRef, uint32_t numElems, uint8_t isScalable, obj_arg /* w */)
+// Get a reference to the fixed vector type with the given element type and size.
+extern "C" obj_res papyrus_get_fixed_vector_type(
+	b_obj_arg elemTypeRef, uint32 numElems, obj_arg /* w */)
 {
-	auto type = VectorType::get(toType(elemTypeRef), numElems, isScalable);
+	auto type = FixedVectorType::get(toType(elemTypeRef), numElems);
+	return io_result_mk_ok(mkTypeRef(copyLink(elemTypeRef), type));
+}
+
+// Get a reference to the scalable vector type with the given element type and min size.
+extern "C" obj_res papyrus_get_scalable_vector_type(
+	b_obj_arg elemTypeRef, uint32 minNumElems, obj_arg /* w */)
+{
+	auto type = ScalableVectorType::get(toType(elemTypeRef), minNumElems);
 	return io_result_mk_ok(mkTypeRef(copyLink(elemTypeRef), type));
 }
 
@@ -404,11 +413,6 @@ extern "C" obj_res papyrus_vector_type_get_element_type(b_obj_arg typeRef, obj_a
 // Get the number of element quantity of the given vector type.
 extern "C" obj_res papyrus_vector_type_get_element_quantity(b_obj_arg typeRef, obj_arg /* w */) {
 	return io_result_mk_ok(box_uint32(toVectorType(typeRef)->getElementCount().getKnownMinValue()));
-}
-
-// Get whether this vector type is scalable.
-extern "C" obj_res papyrus_vector_type_is_scalable(b_obj_arg typeRef, obj_arg /* w */) {
-	return io_result_mk_ok(box_uint32(toVectorType(typeRef)->getElementCount().isScalable()));
 }
 
 } // end namespace papyrus

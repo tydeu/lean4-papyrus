@@ -124,7 +124,7 @@ def assertBEq [Repr α] [BEq α] (expected actual : α) : IO PUnit := do
 
 -- simple `call`
 #eval LlvmM.run do
-  let fnTy ← Type.getRef <| functionType voidType #[]
+  let fnTy ← functionType voidType #[] |>.getRef
   let fn ← FunctionRef.create fnTy
   let inst ← CallInstRef.create fnTy fn #[]
   assertBEq ValueKind.instruction inst.valueKind

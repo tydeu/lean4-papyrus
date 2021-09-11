@@ -31,9 +31,12 @@ constant create (type : @& FunctionTypeRef) (name : @& String := "")
   (linkage := Linkage.external) (addrSpace := AddressSpace.default)
   : IO FunctionRef
 
-/-- Get the type of this function.  -/
-def getType (self : @& FunctionRef) : IO FunctionTypeRef :=
-  self.toGlobalValueRef.getType
+/-- Get the function type of this function.  -/
+@[extern "papyrus_global_value_get_value_type"]
+constant getValueType (self : @& FunctionRef) : IO FunctionTypeRef
+
+/-- Get the function type of this function.  -/
+abbrev getFunctionType (self : FunctionRef) := self.getValueType
 
 /-- Get the nth argument of thee this function. -/
 @[extern "papyrus_function_get_arg"]

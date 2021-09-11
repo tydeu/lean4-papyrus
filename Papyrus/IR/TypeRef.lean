@@ -14,13 +14,14 @@ constant Llvm.Type : Type := Unit
   A reference to an external LLVM
   [Type](https://llvm.org/doxygen/classllvm_1_1Type.html).
 -/
-def TypeRef := LinkedLoosePtr ContextRef Llvm.Type
+structure TypeRef where
+  ptr : LinkedLoosePtr ContextRef Llvm.Type
 
 namespace TypeRef
 
-/-- Get the `TypeID` of this type. -/
-@[extern "papyrus_type_get_id"]
-constant getTypeID (self : TypeRef) : IO TypeID
+/-- The `TypeID` of this type. -/
+@[extern "papyrus_type_id"]
+constant typeID (self : TypeRef) : TypeID
 
 /-- Get the owning LLVM context of this type. -/
 @[extern "papyrus_type_get_context"]
@@ -55,5 +56,3 @@ constant sprint (self : @& TypeRef) (isForDebug := false) (noDetails := false) :
 /-- Print this type to Lean's standard output for debugging (with a newline). -/
 def dump (self : @& TypeRef) : IO PUnit := do
   IO.println (← self.sprint (isForDebug := true))
-
-end TypeRef

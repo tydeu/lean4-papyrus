@@ -102,7 +102,7 @@ partial def Type.getRef : (type : «Type») → LlvmM TypeRef
 open TypeID in
 /-- Lift this reference to a pure `Type`. -/
 partial def TypeRef.purify (self : TypeRef) : IO «Type» := do
-  match (← self.getTypeID) with
+  match h:self.typeID with
   | half => Type.half
   | bfloat => Type.bfloat
   | float => Type.float
@@ -117,34 +117,34 @@ partial def TypeRef.purify (self : TypeRef) : IO «Type» := do
   | x86AMX => Type.x86AMX
   | token => Type.token
   | integer =>
-    let self : IntegerTypeRef := self
+    let self := IntegerTypeRef.cast self h
     Type.integer ⟨← self.getBitWidth⟩
   | function =>
-    let self : FunctionTypeRef := self
+    let self := FunctionTypeRef.cast self h
     Type.function ⟨← purify <| ← self.getReturnType,
       ← Array.mapM purify <| ← self.getParameterTypes, ← self.isVarArg⟩
   | pointer =>
-    let self : PointerTypeRef := self
+    let self := PointerTypeRef.cast self h
     Type.pointer ⟨← purify <| ← self.getPointeeType, ← self.getAddressSpace⟩
   | struct =>
-    let self : StructTypeRef := self
-    if (← self.isLiteral) then
-      let self : LiteralStructTypeRef := self
+    let self := StructTypeRef.cast self h
+    if h : self.isLiteral then
+      let self := LiteralStructTypeRef.cast self h
       Type.struct <| BaseStructType.literal
         ⟨← Array.mapM purify <| ← self.getElementTypes, ← self.isPacked⟩
     else
-      let self : IdentifiedStructTypeRef := self
+      let self := IdentifiedStructTypeRef.cast self h
       if (← self.isOpaque) then
         Type.struct <| BaseStructType.opaque (← self.getName)
       else
         Type.struct <| BaseStructType.complete (← self.getName)
           ⟨← Array.mapM purify <| ← self.getElementTypes, ← self.isPacked⟩
   | array =>
-    let self : ArrayTypeRef := self
+    let self := ArrayTypeRef.cast self h
     Type.array ⟨← purify <| ← self.getElementType, ← self.getSize⟩
   | fixedVector =>
-    let self : FixedVectorTypeRef := self
+    let self := FixedVectorTypeRef.cast self h
     Type.fixedVector ⟨← purify <| ← self.getElementType, ← self.getSize⟩
   | scalableVector =>
-    let self : ScalableVectorTypeRef := self
+    let self := ScalableVectorTypeRef.cast self h
     Type.scalableVector ⟨← purify <| ← self.getElementType, ← self.getMinSize⟩

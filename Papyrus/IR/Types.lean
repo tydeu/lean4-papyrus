@@ -217,10 +217,10 @@ def IdentifiedStructTypeRef.purify (self : IdentifiedStructTypeRef) : IO StructT
 
 /-- Lift this reference to a pure `StructType`. -/
 def StructTypeRef.purify (self : StructTypeRef) : IO StructType := do
-  if (← self.isLiteral) then
-    LiteralStructTypeRef.purify self
+  if h : self.isLiteral then
+    LiteralStructTypeRef.mk self h |>.purify
   else
-    IdentifiedStructTypeRef.purify self
+    IdentifiedStructTypeRef.mk self h |>.purify
 
 --------------------------------------------------------------------------------
 -- # ArrayType

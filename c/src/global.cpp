@@ -1,4 +1,5 @@
 #include "papyrus.h"
+#include "papyrus_ffi.h"
 
 #include <lean/io.h>
 #include <llvm/IR/GlobalValue.h>
@@ -16,6 +17,14 @@ namespace papyrus {
 // Get the LLVM GlobalValue pointer wrapped in an object.
 llvm::GlobalValue* toGlobalValue(lean::object* ref) {
 	return llvm::cast<GlobalValue>(toValue(ref));
+}
+
+// Get the type of the given global's value.
+extern "C" obj_res papyrus_global_value_get_value_type
+	(b_obj_arg gblRef, obj_arg /* w */)
+{
+	auto type = toGlobalValue(gblRef)->getValueType();
+	return io_result_mk_ok(mkTypeRef(copyLink(gblRef), type));
 }
 
 // Get the linkage of a global value.

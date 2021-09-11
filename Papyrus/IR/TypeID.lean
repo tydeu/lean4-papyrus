@@ -37,7 +37,6 @@ inductive TypeID
   fixedVector
 | /-- Scalable SIMD vector type -/
   scalableVector
-
-deriving BEq, Repr
+deriving Inhabited, BEq, DecidableEq, Repr
 
 attribute [unbox] TypeID

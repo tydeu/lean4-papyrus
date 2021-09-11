@@ -72,9 +72,15 @@ constant getPPCFP128TypeRef : LlvmM TypeRef
   A reference to an external LLVM
   [IntegerType](https://llvm.org/doxygen/classllvm_1_1IntegerType.html).
 -/
-def IntegerTypeRef := TypeRef
+structure IntegerTypeRef extends TypeRef where
+  is_integer_type : toTypeRef.typeID = TypeID.integer
+
+instance : Coe IntegerTypeRef TypeRef := ⟨(·.toTypeRef)⟩
 
 namespace IntegerTypeRef
+
+/-- Cast a general `TypeRef` to a `IntegerTypeRef` given proof it is one. -/
+def cast (type : TypeRef) (h : type.typeID = TypeID.integer) := mk type h
 
 /-- Minimum bit width of an LLVM integer type. -/
 def MIN_INT_BITS : UInt32 := 1
@@ -108,9 +114,16 @@ end IntegerTypeRef
   A reference to an external LLVM
   [FunctionType](https://llvm.org/doxygen/classllvm_1_1FunctionType.html).
 -/
-def FunctionTypeRef := TypeRef
+structure FunctionTypeRef extends TypeRef where
+  is_function_type : toTypeRef.typeID = TypeID.function
+
+instance : Coe FunctionTypeRef TypeRef := ⟨(·.toTypeRef)⟩
 
 namespace FunctionTypeRef
+
+/-- Cast a general `TypeRef` to a `FunctionTypeRef` given proof it is one. -/
+def cast (type : TypeRef) (h : type.typeID = TypeID.function) : FunctionTypeRef :=
+  {toTypeRef := type, is_function_type := h}
 
 /--
   Get a reference to the LLVM function type with
@@ -143,9 +156,15 @@ end FunctionTypeRef
   A reference to an external LLVM
   [PointerType](https://llvm.org/doxygen/classllvm_1_1PointerType.html).
 -/
-def PointerTypeRef := TypeRef
+structure PointerTypeRef extends TypeRef where
+  is_pointer_type : toTypeRef.typeID = TypeID.pointer
+
+instance : Coe PointerTypeRef TypeRef := ⟨(·.toTypeRef)⟩
 
 namespace PointerTypeRef
+
+/-- Cast a general `TypeRef` to a `FunctionTypeRef` given proof it is one. -/
+def cast (type : TypeRef) (h : type.typeID = TypeID.pointer) := mk type h
 
 /--
   Get a reference to the LLVM pointer type of
@@ -174,13 +193,19 @@ end PointerTypeRef
   A reference to an external LLVM
   [StructType](https://llvm.org/doxygen/classllvm_1_1StructType.html).
 -/
-def StructTypeRef := TypeRef
+structure StructTypeRef extends TypeRef where
+  is_struct_type : toTypeRef.typeID = TypeID.struct
+
+instance : Coe StructTypeRef TypeRef := ⟨(·.toTypeRef)⟩
 
 namespace StructTypeRef
 
+/-- Cast a general `TypeRef` to a `StructTypeRef` given proof it is one. -/
+def cast (type : TypeRef) (h : type.typeID = TypeID.struct) := mk type h
+
 /-- Get whether this struct type is literal. -/
 @[extern "papyrus_struct_type_is_literal"]
-constant isLiteral (self : @& StructTypeRef) : IO Bool
+constant isLiteral (self : @& StructTypeRef) : Bool
 
 /-- Get whether this struct type is non-literal and opaque. -/
 @[extern "papyrus_struct_type_is_opaque"]
@@ -205,9 +230,15 @@ end StructTypeRef
   Literal struct types (e.g., `{ i32, i32 }`) are uniqued structurally,
     and must always have a body when created.
 -/
-def LiteralStructTypeRef := StructTypeRef
+structure LiteralStructTypeRef extends StructTypeRef where
+  is_literal : toStructTypeRef.isLiteral = true
+
+instance : Coe LiteralStructTypeRef StructTypeRef := ⟨(·.toStructTypeRef)⟩
 
 namespace LiteralStructTypeRef
+
+/-- Cast a general `StructTypeRef` to a `LiteralStructTypeRef` given proof it is one. -/
+def cast (type : StructTypeRef) (h : type.isLiteral = true) := mk type h
 
 /--
   Get a reference to the LLVM literal struct type of
@@ -232,9 +263,15 @@ end LiteralStructTypeRef
     a particular context.
   Identified structs may also optionally be opaque (have no body specified).
 -/
-def IdentifiedStructTypeRef := StructTypeRef
+structure IdentifiedStructTypeRef extends StructTypeRef where
+  is_identified : toStructTypeRef.isLiteral ≠ true
+
+instance : Coe IdentifiedStructTypeRef StructTypeRef := ⟨(·.toStructTypeRef)⟩
 
 namespace IdentifiedStructTypeRef
+
+/-- Cast a general `StructTypeRef` to a `IdentifiedStructTypeRef` given proof it is one. -/
+def cast (type : StructTypeRef) (h : type.isLiteral ≠ true) := mk type h
 
 /-- Get the struct type with the given name (if it exists). -/
 @[extern "papyrus_struct_type_get_type_by_name"]
@@ -312,9 +349,15 @@ end IdentifiedStructTypeRef
   A reference to an external LLVM
   [ArrayType](https://llvm.org/doxygen/classllvm_1_1ArrayType.html).
 -/
-def ArrayTypeRef := TypeRef
+structure ArrayTypeRef extends TypeRef where
+  is_array_type : toTypeRef.typeID = TypeID.array
+
+instance : Coe ArrayTypeRef TypeRef := ⟨(·.toTypeRef)⟩
 
 namespace ArrayTypeRef
+
+/-- Cast a general `TypeRef` to a `ArrayTypeRef` given proof it is one. -/
+def cast (type : TypeRef) (h : type.typeID = TypeID.array) := mk type h
 
 /--
   Get a reference to the LLVM array type of
@@ -342,18 +385,17 @@ end ArrayTypeRef
   A reference to an external LLVM
   [VectorType](https://llvm.org/doxygen/classllvm_1_1VectorType.html).
 -/
-def VectorTypeRef := TypeRef
+structure VectorTypeRef extends TypeRef where
+  is_vector_type :
+    toTypeRef.typeID = TypeID.fixedVector ∨
+    toTypeRef.typeID = TypeID.scalableVector
+
+instance : Coe VectorTypeRef TypeRef := ⟨(·.toTypeRef)⟩
 
 namespace VectorTypeRef
 
-/--
-  Get a reference to the LLVM vector type of
-    the given element type, element quantity, and scalability.
-  It is the user's responsibility to ensure they are valid.
--/
-@[extern "papyrus_get_vector_type"]
-constant get (elemType : @& TypeRef) (elemQuant : UInt32)
-  (isScalable := false) : IO VectorTypeRef
+/-- Cast a general `TypeRef` to a `VectorTypeRef` given proof it is one. -/
+def cast (type : TypeRef) (h) := mk type h
 
 /-- Get a reference to the element type of this vector type. -/
 @[extern "papyrus_vector_type_get_element_type"]
@@ -368,10 +410,11 @@ constant getElementType (self : @& VectorTypeRef) : IO TypeRef
 constant getMinSize (self : @& VectorTypeRef) : IO UInt32
 
 /-- Get whether this vector type is scalable. -/
-@[extern "papyrus_vector_type_is_scalable"]
-constant isScalable (self : @& VectorTypeRef) : IO Bool
+def isScalable (self : @& VectorTypeRef) : Bool :=
+  self.typeID = TypeID.scalableVector
 
 end VectorTypeRef
+
 
 -- # Fixed Vector Types
 
@@ -379,17 +422,25 @@ end VectorTypeRef
   A reference to an external LLVM
   [FixedVectorType](https://llvm.org/doxygen/classllvm_1_1FixedVectorType.html).
 -/
-def FixedVectorTypeRef := VectorTypeRef
+structure FixedVectorTypeRef extends VectorTypeRef where
+  is_fixed_vector_type : toTypeRef.typeID = TypeID.fixedVector
+  is_vector_type := Or.inl is_fixed_vector_type
+
+instance : Coe FixedVectorTypeRef VectorTypeRef := ⟨(·.toVectorTypeRef)⟩
 
 namespace FixedVectorTypeRef
+
+/-- Cast a general `TypeRef` to a `FixedVectorTypeRef` given proof it is one. -/
+def cast (type : TypeRef) (h : type.typeID = TypeID.fixedVector) : FixedVectorTypeRef :=
+  {toTypeRef := type, is_fixed_vector_type := h}
 
 /--
   Get a reference to the fixed LLVM vector type of
     the given element type and number of elements.
   It is the user's responsibility to ensure they are valid.
 -/
-def  get (elemType : TypeRef) (numElems : UInt32) :=
-  VectorTypeRef.get elemType numElems false
+@[extern "papyrus_get_fixed_vector_type"]
+constant get (elemType : TypeRef) (numElems : UInt32) : IO FixedVectorTypeRef
 
 /-- Get the number of elements in this vector type. -/
 def getSize (self : @& FixedVectorTypeRef) :=
@@ -403,16 +454,39 @@ end FixedVectorTypeRef
   A reference to an external LLVM
   [ScalableVectorType](https://llvm.org/doxygen/classllvm_1_1ScalableVectorType.html).
 -/
-def ScalableVectorTypeRef := VectorTypeRef
+structure ScalableVectorTypeRef extends VectorTypeRef where
+  is_scalable_vector_type : toTypeRef.typeID = TypeID.scalableVector
+  is_vector_type := Or.inr is_scalable_vector_type
+
+instance : Coe ScalableVectorTypeRef VectorTypeRef := ⟨(·.toVectorTypeRef)⟩
 
 namespace ScalableVectorTypeRef
+
+/-- Cast a general `TypeRef` to a `ScalableVectorTypeRef` given proof it is one. -/
+def cast (type : TypeRef) (h : type.typeID = TypeID.scalableVector) : ScalableVectorTypeRef :=
+  {toTypeRef := type, is_scalable_vector_type := h}
 
 /--
   Get a reference to the scalable LLVM vector type of
     the given element type and minimum number of elements.
   It is the user's responsibility to ensure they are valid.
 -/
-def  get (elemType : TypeRef) (minNumElems : UInt32) :=
-  VectorTypeRef.get elemType minNumElems true
+@[extern "papyrus_get_scalable_vector_type"]
+constant get (elemType : TypeRef) (minNumElems : UInt32) : IO ScalableVectorTypeRef
 
 end ScalableVectorTypeRef
+
+namespace VectorTypeRef
+
+/--
+  Get a reference to the LLVM vector type of
+    the given element type, element quantity, and scalability.
+  It is the user's responsibility to ensure they are valid.
+-/
+def get (elemType : @& TypeRef) (elemQuant : UInt32) (isScalable := false) : IO VectorTypeRef :=
+  if isScalable then
+    ScalableVectorTypeRef.get elemType elemQuant
+  else
+    FixedVectorTypeRef.get elemType elemQuant
+
+end VectorTypeRef

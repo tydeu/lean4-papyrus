@@ -21,17 +21,17 @@ export Dump (dump)
 
 instance [DumpRef α] : Dump α := ⟨liftM ∘ dumpRef⟩
 
-instance : DumpRef TypeRef := ⟨TypeRef.dump⟩
-instance : DumpRef IntegerTypeRef := ⟨TypeRef.dump⟩
-instance : DumpRef FunctionTypeRef := ⟨TypeRef.dump⟩
-instance : DumpRef PointerTypeRef := ⟨TypeRef.dump⟩
-instance : DumpRef StructTypeRef := ⟨TypeRef.dump⟩
-instance : DumpRef LiteralStructTypeRef := ⟨TypeRef.dump⟩
-instance : DumpRef IdentifiedStructTypeRef := ⟨TypeRef.dump⟩
-instance : DumpRef ArrayTypeRef := ⟨TypeRef.dump⟩
-instance : DumpRef VectorTypeRef := ⟨TypeRef.dump⟩
-instance : DumpRef FixedVectorTypeRef := ⟨TypeRef.dump⟩
-instance : DumpRef ScalableVectorTypeRef := ⟨TypeRef.dump⟩
+instance : DumpRef TypeRef := ⟨(·.dump)⟩
+instance : DumpRef IntegerTypeRef := ⟨(·.dump)⟩
+instance : DumpRef FunctionTypeRef := ⟨(·.dump)⟩
+instance : DumpRef PointerTypeRef := ⟨(·.dump)⟩
+instance : DumpRef StructTypeRef := ⟨(·.dump)⟩
+instance : DumpRef LiteralStructTypeRef := ⟨(·.dump)⟩
+instance : DumpRef IdentifiedStructTypeRef := ⟨(·.dump)⟩
+instance : DumpRef ArrayTypeRef := ⟨(·.dump)⟩
+instance : DumpRef VectorTypeRef := ⟨(·.dump)⟩
+instance : DumpRef FixedVectorTypeRef := ⟨(·.dump)⟩
+instance : DumpRef ScalableVectorTypeRef := ⟨(·.dump)⟩
 
 instance : Dump «Type» := ⟨fun t => do dump <| ← t.getRef⟩
 instance : Dump IntegerType := ⟨fun t => do dump <| ← t.getRef⟩

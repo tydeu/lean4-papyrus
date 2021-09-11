@@ -340,7 +340,7 @@ constant create (pointeeType : @& TypeRef) (ptr : @& ValueRef)
   instruction in LLVM Language Reference Manual for more details.
 -/
 @[extern "papyrus_getelementptr_inst_create_inbounds"]
-constant createInbounds (pointeeType : @& PointerTypeRef) (ptr : @& ValueRef)
+constant createInbounds (pointeeType : @& TypeRef) (ptr : @& ValueRef)
   (indices : @& Array ValueRef) (name : @& String := "") : IO GetElementPtrInstRef
 
 /-- Get a reference to the subject of this GEP instruction. -/
@@ -400,6 +400,6 @@ namespace FunctionRef
 def createCall
 (args : @& Array ValueRef) (self : @& FunctionRef) (name : @& String := "")
 : IO CallInstRef := do
-  CallInstRef.create (← self.getType) self args name
+  CallInstRef.create (← self.getFunctionType) self args name
 
 end FunctionRef
