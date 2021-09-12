@@ -196,7 +196,7 @@ extern "C" lean_obj_res papyrus_module_sprint
 	std::string ostr;
 	raw_string_ostream out(ostr);
 	toModule(modRef)->print(out, nullptr, shouldPreserveUseListOrder, isForDebug);
-	return lean_io_result_mk_ok(mkStdStringError(out.str()));
+	return lean_io_result_mk_ok(mkStringFromStd(out.str()));
 }
 
 } // end namespace papyrus

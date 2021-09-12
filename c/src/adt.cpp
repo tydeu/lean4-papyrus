@@ -53,6 +53,7 @@ lean_object* mkNatFromAP(const llvm::APInt& ap) {
     return lean_box(ap.getZExtValue());
   } else {
     mpz_t val;
+    mpz_init(val);
     mpz_import(val, ap.getNumWords(), -1,
       llvm::APInt::APINT_WORD_SIZE, 0, 0, ap.getRawData());
     return lean_alloc_mpz(val);
@@ -64,6 +65,7 @@ lean_object* mkIntFromAP(const llvm::APInt& ap) {
     return lean_box((unsigned)((int)ap.getSExtValue()));
   } else {
     mpz_t val;
+    mpz_init(val);
     auto apAbs = ap.abs();
     mpz_import(val, apAbs.getNumWords(), -1,
       llvm::APInt::APINT_WORD_SIZE, 0, 0, apAbs.getRawData());
@@ -87,6 +89,7 @@ llvm::APInt apOfNat(unsigned numBits, b_lean_obj_arg obj) {
     return llvm::APInt(numBits, lean_unbox(obj), false);
   } else {
     mpz_t val;
+    mpz_init(val);
     assert(lean_is_mpz(obj));
     lean_mpz_value(obj, val);
     return apNatOfMpz(numBits, val);
@@ -98,6 +101,7 @@ llvm::APInt apOfInt(unsigned numBits, b_lean_obj_arg obj) {
     return llvm::APInt(numBits, lean_scalar_to_int64(obj), true);
   } else {
     mpz_t val;
+    mpz_init(val);
     assert(lean_is_mpz(obj));
     lean_mpz_value(obj, val);
     llvm::APInt apNat = apNatOfMpz(numBits, val);

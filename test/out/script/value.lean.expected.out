@@ -1,4 +1,4 @@
-(fun (this : ModuleM PUnit) => this)
+let_fun this :=
   do 
     let _ ← liftM ConstantIntRef.getFalse 
     let _ ← liftM ConstantIntRef.getTrue 
@@ -7,4 +7,5 @@
     let _ ← Builder.stringPtr "hello" AddressSpace.default true ""
     let x ← Builder.stringPtr "hello" 5 true ""
     let _ ← pure x 
-    pure () : ModuleM PUnit
+    pure ();
+this : ModuleM PUnit

@@ -21,7 +21,7 @@ def assertBEq [Repr α] [BEq α] (expected actual : α) : IO PUnit := do
   let const ← (← tokenType.getRef).getNullConstant
   assertBEq ValueKind.constantTokenNone const.valueKind
 
--- big null constant
+-- "big" null integer constant
 #eval LlvmM.run do
   let int128TypeRef ← IntegerTypeRef.get 128
   let const ← int128TypeRef.getNullConstant
@@ -29,15 +29,6 @@ def assertBEq [Repr α] [BEq α] (expected actual : α) : IO PUnit := do
   let const := ConstantIntRef.cast const h.symm
   assertBEq 0 (← const.getNatValue)
   assertBEq 0 (← const.getIntValue)
-
--- big all ones constant
-#eval LlvmM.run do
-  let int128TypeRef ← IntegerTypeRef.get 128
-  let const ← int128TypeRef.getAllOnesConstant
-  let ⟨h⟩ ← assertEq ValueKind.constantInt const.valueKind
-  let const := ConstantIntRef.cast const h.symm
-  assertBEq (2 ^ 128 - 1) (← const.getNatValue)
-  assertBEq (-1) (← const.getIntValue)
 
 -- small positive integer constant
 #eval LlvmM.run do
@@ -71,6 +62,15 @@ def assertBEq [Repr α] [BEq α] (expected actual : α) : IO PUnit := do
   let const ← int128TypeRef.getConstantInt intVal
   assertBEq (Int.ofNat (2 ^ 128) - absVal) (← const.getNatValue)
   assertBEq intVal (← const.getIntValue)
+
+-- big all ones integer constant
+#eval LlvmM.run do
+  let int128TypeRef ← IntegerTypeRef.get 128
+  let const ← int128TypeRef.getAllOnesConstant
+  let ⟨h⟩ ← assertEq ValueKind.constantInt const.valueKind
+  let const := ConstantIntRef.cast const h.symm
+  assertBEq (2 ^ 128 - 1) (← const.getNatValue)
+  assertBEq (-1) (← const.getIntValue)
 
 -- `inttoptr`/`ptrtoint` constant
 #eval LlvmM.run do
