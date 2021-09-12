@@ -1,32 +1,46 @@
 #include "papyrus.h"
 
-#include <lean/utf8.h>
+#include <lean/lean.h>
+#include <lean/lean_gmp.h>
 #include <llvm/ADT/ArrayRef.h>
 #include <llvm/ADT/StringRef.h>
 #include <llvm/ADT/APInt.h>
 
-using namespace lean;
-using namespace llvm;
+// Forward declarations
 
 namespace papyrus {
 
-lean::object* mkStringFromRef(const llvm::StringRef& str) {
-  size_t size  = str.size();
-  size_t len = lean::utf8_strlen(str.data(), size);
-  size_t realSize = size + 1;
-  lean::object* obj = lean_alloc_string(realSize, realSize, len);
-  char* data = lean_to_string(obj)->m_data;
-  memcpy(data, str.data(), size);
-  data[size] = 0;
+// Makes a Lean `String` from a non-null terminated string of the given size.
+lean_obj_res mkStringFromSized(const char* str, size_t size) {
+  size_t real_size = size + 1;
+  size_t len = lean_utf8_n_strlen(str, size);
+  lean_object* obj = lean_alloc_string(real_size, real_size, len);
+  auto lean_data = lean_to_string(obj)->m_data;
+  memcpy(lean_data, str, size);
+  lean_data[size] = 0;
   return obj;
 }
 
-const llvm::StringRef refOfString(lean::object* str) {
+lean_obj_res mkStringFromStd(const std::string& str) {
+  return mkStringFromSized(str.data(), str.size());
+}
+
+std::string stdOfString(b_lean_obj_arg str) {
+  auto strObj = lean_to_string(str);
+  assert(strObj->m_size > 0);
+  return std::string(strObj->m_data, strObj->m_size - 1);
+}
+
+lean_obj_res mkStringFromRef(const llvm::StringRef& str) {
+  return mkStringFromSized(str.data(), str.size());
+}
+
+llvm::StringRef refOfString(b_lean_obj_arg str) {
   auto strObj = lean_to_string(str);
   return llvm::StringRef(strObj->m_data, strObj->m_size - 1);
 }
 
-const llvm::StringRef refOfStringWithNull(lean::object* str) {
+llvm::StringRef refOfStringWithNull(b_lean_obj_arg str) {
   auto strObj = lean_to_string(str);
   return llvm::StringRef(strObj->m_data, strObj->m_size);
 }
@@ -34,63 +48,60 @@ const llvm::StringRef refOfStringWithNull(lean::object* str) {
 #define LEAN_SMALL_NAT_BITS (CHAR_BIT*sizeof(size_t)-1)
 #define LEAN_SMALL_INT_BITS (sizeof(void*) == 8 ? (CHAR_BIT*sizeof(int)-1) : 30)
 
-lean::object* mkNatFromAP(const llvm::APInt& ap) {
+lean_object* mkNatFromAP(const llvm::APInt& ap) {
   if (LEAN_LIKELY(ap.getActiveBits() <= LEAN_SMALL_NAT_BITS)) {
     return lean_box(ap.getZExtValue());
   } else {
-    mpz mpzObj;
-    // Hack to get the mpz_t of a lean::mpz
-    auto mpzVal = reinterpret_cast<mpz_t&>(mpzObj);
-    mpz_import(mpzVal, ap.getNumWords(), -1,
-      APInt::APINT_WORD_SIZE, 0, 0, ap.getRawData());
-    return lean::alloc_mpz(mpzObj);
+    mpz_t val;
+    mpz_import(val, ap.getNumWords(), -1,
+      llvm::APInt::APINT_WORD_SIZE, 0, 0, ap.getRawData());
+    return lean_alloc_mpz(val);
   }
 }
 
-lean::object* mkIntFromAP(const llvm::APInt& ap) {
+lean_object* mkIntFromAP(const llvm::APInt& ap) {
   if (LEAN_LIKELY(ap.getMinSignedBits() <= LEAN_SMALL_INT_BITS)) {
     return lean_box((unsigned)((int)ap.getSExtValue()));
   } else {
-    mpz mpzObj;
-    // Hack to get the mpz_t of a lean::mpz
-    auto mpzVal = reinterpret_cast<mpz_t&>(mpzObj);
-    // APInt -> mpz conversion
+    mpz_t val;
     auto apAbs = ap.abs();
-    mpz_import(mpzVal, apAbs.getNumWords(), -1,
-      APInt::APINT_WORD_SIZE, 0, 0, apAbs.getRawData());
-    if (ap.isNegative()) mpz_neg(mpzVal, mpzVal);
-    return lean::alloc_mpz(mpzObj);
+    mpz_import(val, apAbs.getNumWords(), -1,
+      llvm::APInt::APINT_WORD_SIZE, 0, 0, apAbs.getRawData());
+    if (ap.isNegative()) mpz_neg(val, val);
+    return lean_alloc_mpz(val);
   }
 }
 
-const llvm::APInt mpz_obj_to_ap_nat(unsigned numBits, const lean::mpz& z) {
-  // Hack to extract the `mpz_t` from a lean object
-  auto mpzVal = reinterpret_cast<const mpz_t&>(z);
-  // mpz -> APInt conversion
-  auto realNumBits = mpz_sizeinbase(mpzVal, 2);
-  auto bitsPerWord = APInt::APINT_BITS_PER_WORD;
+llvm::APInt apNatOfMpz(unsigned numBits, const mpz_t& val) {
+  auto realNumBits = mpz_sizeinbase(val, 2);
+  auto bitsPerWord = llvm::APInt::APINT_BITS_PER_WORD;
   size_t numWords = (realNumBits + (bitsPerWord - 1)) / bitsPerWord;
-  APInt::WordType words[numWords];
-  mpz_export(&words, nullptr, -1, APInt::APINT_WORD_SIZE, 0, 0, mpzVal);
+  llvm::APInt::WordType words[numWords];
+  mpz_export(&words, nullptr, -1, llvm::APInt::APINT_WORD_SIZE, 0, 0, val);
   llvm::ArrayRef<uint64_t> wordsRef(words, numWords);
   return llvm::APInt(numBits, wordsRef);
 }
 
-const llvm::APInt apOfNat(unsigned numBits, lean::object* obj) {
+llvm::APInt apOfNat(unsigned numBits, b_lean_obj_arg obj) {
   if (lean_is_scalar(obj)) {
     return llvm::APInt(numBits, lean_unbox(obj), false);
   } else {
-    return mpz_obj_to_ap_nat(numBits, lean::mpz_value(obj));
+    mpz_t val;
+    assert(lean_is_mpz(obj));
+    lean_mpz_value(obj, val);
+    return apNatOfMpz(numBits, val);
   }
 }
 
-const llvm::APInt apOfInt(unsigned numBits, lean::object* obj) {
+llvm::APInt apOfInt(unsigned numBits, b_lean_obj_arg obj) {
   if (lean_is_scalar(obj)) {
     return llvm::APInt(numBits, lean_scalar_to_int64(obj), true);
   } else {
-    auto mpzObj = lean::mpz_value(obj);
-    llvm::APInt apNat = mpz_obj_to_ap_nat(numBits, mpzObj);
-    return mpzObj.is_neg() ? -apNat : apNat;
+    mpz_t val;
+    assert(lean_is_mpz(obj));
+    lean_mpz_value(obj, val);
+    llvm::APInt apNat = apNatOfMpz(numBits, val);
+    return mpz_sgn(val) < 0 ? -apNat : apNat;
   }
 }
 

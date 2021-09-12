@@ -1,4 +1,4 @@
 [package]
 name = "papyrus"
 version = "0.2"
-lean_version = "leanprover/lean4:nightly-2021-09-07"
+lean_version = "leanprover/lean4:nightly-2021-09-12"

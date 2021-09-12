@@ -1,5 +1,6 @@
 #pragma once
-#include <lean/object.h>
+#include <string>
+#include <lean/lean.h>
 
 // Forward declarations
 namespace llvm {
@@ -22,14 +23,44 @@ namespace llvm {
 
 namespace papyrus {
 
-lean::object* mkNatFromAP(const llvm::APInt& ap);
-lean::object* mkIntFromAP(const llvm::APInt& ap);
-const llvm::APInt apOfNat(unsigned numBits, b_lean_obj_arg nat);
-const llvm::APInt apOfInt(unsigned numBits, b_lean_obj_arg intObj);
+//------------------------------------------------------------------------------
+// Lean Helpers
+//------------------------------------------------------------------------------
+
+#define PAPYRUS_DEFAULT_ARRAY_CAPCITY 8
+
+std::string stdOfString(b_lean_obj_arg str);
+lean_obj_res mkStringFromStd(const std::string& str);
+
+// Option.some
+static inline lean_obj_res mkSome(lean_obj_arg val) {
+	lean_obj_res obj = lean_alloc_ctor(1, 1, 0);
+	lean_ctor_set(obj, 0, val);
+	return obj;
+}
+
+extern "C" lean_object* mk_io_user_error(lean_object* str);
+
+static inline lean_obj_res mkStringError(const char* msg) {
+	return lean_io_result_mk_error(mk_io_user_error(lean_mk_string(msg)));
+}
+
+static inline lean_obj_res mkStdStringError(const std::string& msg) {
+	return lean_io_result_mk_error(mk_io_user_error(mkStringFromStd(msg)));
+}
+
+//------------------------------------------------------------------------------
+// LLVM Interface
+//------------------------------------------------------------------------------
+
+lean_object* mkNatFromAP(const llvm::APInt& ap);
+lean_object* mkIntFromAP(const llvm::APInt& ap);
+llvm::APInt apOfNat(unsigned numBits, b_lean_obj_arg natObj);
+llvm::APInt apOfInt(unsigned numBits, b_lean_obj_arg intObj);
 
 lean_obj_res mkStringFromRef(const llvm::StringRef& str);
-const llvm::StringRef refOfString(b_lean_obj_arg str);
-const llvm::StringRef refOfStringWithNull(b_lean_obj_arg str);
+llvm::StringRef refOfString(b_lean_obj_arg str);
+llvm::StringRef refOfStringWithNull(b_lean_obj_arg str);
 
 llvm::MemoryBuffer* toMemoryBuffer(b_lean_obj_arg ref);
 

@@ -1,12 +1,11 @@
 #include "papyrus.h"
 #include "papyrus_ffi.h"
 
-#include <lean/io.h>
+#include <lean/lean.h>
 #include <llvm/IR/Value.h>
 #include <llvm/ADT/Twine.h>
 #include <llvm/Support/raw_ostream.h>
 
-using namespace lean;
 using namespace llvm;
 
 namespace papyrus {
@@ -16,17 +15,17 @@ namespace papyrus {
 //------------------------------------------------------------------------------
 
 // Wrap an LLVM Value pointer in a Lean object.
-obj_res mkValueRef(obj_arg ctxRef, llvm::Value* ptr) {
+lean_obj_res mkValueRef(lean_obj_arg ctxRef, llvm::Value* ptr) {
 	return mkLinkedLoosePtr<llvm::Value>(ctxRef, ptr);
 }
 
 // Get the LLVM Value pointer wrapped in an object.
-llvm::Value* toValue(b_obj_arg valueRef) {
+llvm::Value* toValue(b_lean_obj_res valueRef) {
 	return fromLinkedLoosePtr<llvm::Value>(valueRef);
 }
 
 // Get the owning LLVM context object of the given value and increments its RC.
-obj_res getValueContext(b_obj_arg valRef) {
+lean_obj_res getValueContext(b_lean_obj_res valRef) {
   return copyLink(valRef);
 }
 
@@ -36,58 +35,64 @@ obj_res getValueContext(b_obj_arg valRef) {
 
 // Get the ID of the given value.
 // As a value's ID is immutable, we don't need to wrap it in IO.
-extern "C" uint32 papyrus_value_id(b_obj_arg valueRef) {
+extern "C" uint32_t papyrus_value_id(b_lean_obj_res valueRef) {
 	return toValue(valueRef)->getValueID();
 }
 
 // Get a reference to the type of the given value.
-extern "C" obj_res papyrus_value_get_type(b_obj_arg valueRef, obj_arg /* w */) {
-	return io_result_mk_ok(mkTypeRef(getValueContext(valueRef), toValue(valueRef)->getType()));
+extern "C" lean_obj_res papyrus_value_get_type
+	(b_lean_obj_res valueRef, lean_obj_arg /* w */)
+{
+	return lean_io_result_mk_ok(mkTypeRef(getValueContext(valueRef), toValue(valueRef)->getType()));
 }
 
 // Get whether the the given value has a name.
-extern "C" obj_res papyrus_value_has_name(b_obj_arg valueRef, obj_arg /* w */) {
-  return io_result_mk_ok(lean_box(toValue(valueRef)->hasName()));
+extern "C" lean_obj_res papyrus_value_has_name
+	(b_lean_obj_res valueRef, lean_obj_arg /* w */)
+{
+  return lean_io_result_mk_ok(lean_box(toValue(valueRef)->hasName()));
 }
 
 // Get the name of the given value (or the empty string if none).
-extern "C" obj_res papyrus_value_get_name(b_obj_arg valueRef, obj_arg /* w */) {
-	return io_result_mk_ok(mkStringFromRef(toValue(valueRef)->getName()));
+extern "C" lean_obj_res papyrus_value_get_name
+	(b_lean_obj_res valueRef, lean_obj_arg /* w */)
+{
+	return lean_io_result_mk_ok(mkStringFromRef(toValue(valueRef)->getName()));
 }
 
 // Set the name of the given value.
 // An empty string will remove the value's name.
-extern "C" obj_res papyrus_value_set_name
-(b_obj_arg strObj, b_obj_arg valueRef, obj_arg /* w */)
+extern "C" lean_obj_res papyrus_value_set_name
+(b_lean_obj_res strObj, b_lean_obj_res valueRef, lean_obj_arg /* w */)
 {
 	toValue(valueRef)->setName(refOfString(strObj));
-	return io_result_mk_ok(box(0));
+	return lean_io_result_mk_ok(lean_box(0));
 }
 
 // Print the given value to LLVM's standard output.
-extern "C" obj_res papyrus_value_print
-	(b_obj_arg valueRef, uint8 isForDebug, obj_arg /* w */)
+extern "C" lean_obj_res papyrus_value_print
+	(b_lean_obj_res valueRef, uint8_t isForDebug, lean_obj_arg /* w */)
 {
 	toValue(valueRef)->print(llvm::outs(), isForDebug);
-	return io_result_mk_ok(box(0));
+	return lean_io_result_mk_ok(lean_box(0));
 }
 
 // Print the given value to LLVM's standard error.
-extern "C" obj_res papyrus_value_eprint
-	(b_obj_arg valueRef, uint8 isForDebug, obj_arg /* w */)
+extern "C" lean_obj_res papyrus_value_eprint
+	(b_lean_obj_res valueRef, uint8_t isForDebug, lean_obj_arg /* w */)
 {
 	toValue(valueRef)->print(llvm::errs(), isForDebug);
-	return io_result_mk_ok(box(0));
+	return lean_io_result_mk_ok(lean_box(0));
 }
 
 // Print the given value to a string.
-extern "C" obj_res papyrus_value_sprint
-	(b_obj_arg valueRef, uint8 isForDebug, obj_arg /* w */)
+extern "C" lean_obj_res papyrus_value_sprint
+	(b_lean_obj_res valueRef, uint8_t isForDebug, lean_obj_arg /* w */)
 {
 	std::string ostr;
 	raw_string_ostream out(ostr);
 	toValue(valueRef)->print(out, isForDebug);
-	return io_result_mk_ok(mk_string(out.str()));
+	return lean_io_result_mk_ok(mkStringFromStd(out.str()));
 }
 
 } // end namespace papyrus

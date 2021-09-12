@@ -1,5 +1,5 @@
 #pragma once
-#include <lean/object.h>
+#include <lean/lean.h>
 
 namespace papyrus {
 
