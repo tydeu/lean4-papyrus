@@ -39,14 +39,12 @@ static inline lean_obj_res mkSome(lean_obj_arg val) {
 	return obj;
 }
 
-extern "C" lean_object* mk_io_user_error(lean_object* str);
-
 static inline lean_obj_res mkStringError(const char* msg) {
-	return lean_io_result_mk_error(mk_io_user_error(lean_mk_string(msg)));
+	return lean_io_result_mk_error(lean_mk_io_user_error(lean_mk_string(msg)));
 }
 
 static inline lean_obj_res mkStdStringError(const std::string& msg) {
-	return lean_io_result_mk_error(mk_io_user_error(mkStringFromStd(msg)));
+	return lean_io_result_mk_error(lean_mk_io_user_error(mkStringFromStd(msg)));
 }
 
 //------------------------------------------------------------------------------

@@ -91,7 +91,7 @@ llvm::APInt apOfNat(unsigned numBits, b_lean_obj_arg obj) {
     mpz_t val;
     mpz_init(val);
     assert(lean_is_mpz(obj));
-    lean_mpz_value(obj, val);
+    lean_extract_mpz_value(obj, val);
     return apNatOfMpz(numBits, val);
   }
 }
@@ -103,7 +103,7 @@ llvm::APInt apOfInt(unsigned numBits, b_lean_obj_arg obj) {
     mpz_t val;
     mpz_init(val);
     assert(lean_is_mpz(obj));
-    lean_mpz_value(obj, val);
+    lean_extract_mpz_value(obj, val);
     llvm::APInt apNat = apNatOfMpz(numBits, val);
     return mpz_sgn(val) < 0 ? -apNat : apNat;
   }
