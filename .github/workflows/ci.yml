@@ -55,11 +55,13 @@ jobs:
         echo "$(brew --prefix)/opt/llvm/bin" >> $GITHUB_PATH
     - name: Install LLVM (Ubuntu)
       if: matrix.os == 'ubuntu-latest'
-      run: | 
+      run: |
         sudo apt-get install llvm-12
         llvm-config-12 --bindir >> $GITHUB_PATH
     - name: Checkout
       uses: actions/checkout@v2
+    - name: Check Lean
+      run: lean --version
     - name: Build C Lib
       run: make -C c -j4
     - name: Build Lean Lib
