@@ -168,7 +168,7 @@ def expandStoreInst : (stx : Syntax) → MacroM Syntax
   let isVolatile := quote volatile?.isSome
   let order ← expandAtomicOrdering order
   let ssid ← expandOptSyncScope ssid?
-  ``(store $val $ptr $isVolatile $align $order $ssid)
+  `(doElem| store $val $ptr $isVolatile $align $order $ssid)
 | `(storeInst|
   store $[volatile%$volatile?]? $val:llvmValue, $ptr:llvmValue
     $[, align $align?]?) => do
@@ -176,7 +176,7 @@ def expandStoreInst : (stx : Syntax) → MacroM Syntax
   let ptr ← expandValueAsRefArrow ptr
   let isVolatile := quote volatile?.isSome
   let align ← expandOptAlign align?
-  ``(store $val $ptr $isVolatile $align)
+  `(doElem| store $val $ptr $isVolatile $align)
 | inst => Macro.throwErrorAt inst "ill-formed store instruction"
 
 macro x:storeInst : bbDoElem => expandStoreInst x
