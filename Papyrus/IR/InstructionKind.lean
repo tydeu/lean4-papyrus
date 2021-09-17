@@ -94,3 +94,6 @@ def ofOpcode! (opcode : UInt32) : InstructionKind :=
 
 def toOpcode (self : InstructionKind) : UInt32 :=
   self.val.toUInt32 + 1
+
+def is_binary_op (self : InstructionKind) : Prop :=
+  (self.val < InstructionKind.alloca.val) && (InstructionKind.fneg.val < self.val) 
