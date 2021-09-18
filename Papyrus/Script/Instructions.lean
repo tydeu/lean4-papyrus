@@ -217,6 +217,26 @@ def expandCallInst (name : Syntax) : (stx : Syntax) → MacroM Syntax
     ``(callAs $tyx $fn #[$[$argsx],*] $name)
 | inst => Macro.throwErrorAt inst "ill-formed call instruction"
 
+-- ## `phi`
+@[runParserAttributeHooks]
+def phiNodeFields := leading_parser
+  "[" >>  valueParser >> "," >> valueParser >> "]" 
+
+@[runParserAttributeHooks]
+def phiNode := leading_parser
+  nonReservedSymbol "phi " true >> typeParser >> sepBy phiNodeFields ","
+
+def expandPhiNode (name : Syntax) : (stx : Syntax) → MacroM Syntax
+| `(phiNode| phi $ty $fields:phiNodeFields,*) => do
+  let fieldsx ← fields.getElems.mapM fun stx => do
+    let vx ← expandValueAsRefArrow stx[1]
+    let bbx ← expandValueAsRefArrow stx[3]
+    ``(($vx,$bbx))
+  let tyx ← expandTypeAsRefArrow ty
+  ``(phi $tyx #[$[$fieldsx],*] $name)
+| inst => Macro.throwErrorAt inst "ill-formed Phi instruction"
+
+
 --------------------------------------------------------------------------------
 -- # Namable Instructions
 --------------------------------------------------------------------------------
@@ -225,12 +245,14 @@ def expandCallInst (name : Syntax) : (stx : Syntax) → MacroM Syntax
 def instruction :=
   loadInst <|>
   getElementPtrInst <|>
-  callInst
+  callInst <|>
+  phiNode
 
 def expandInstruction (name : Syntax) : (inst : Syntax) → MacroM Syntax
 | `(instruction| $inst:loadInst) => expandLoadInst name inst
 | `(instruction| $inst:getElementPtrInst) => expandGetElementPtrInst name inst
 | `(instruction| $inst:callInst) => expandCallInst name inst
+| `(instruction| $inst:phiNode) => expandPhiNode name inst
 | inst => Macro.throwErrorAt inst "unknown instruction"
 
 -- ## Named Instructions

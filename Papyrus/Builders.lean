@@ -174,7 +174,7 @@ def callAs (type : FunctionTypeRef) (fn : ValueRef) (args : Array ValueRef := #[
 
 -- ### `phi`
 def phi (ty : TypeRef) (args : Array (ValueRef × BasicBlockRef) := #[]) (name : String := "") : BasicBlockM InstructionRef := do
-  let inst ← PHINodeRef.create ty
+  let inst ← PHINodeRef.create ty (name := name)
   for (value, block) in args do
     inst.addIncoming value block
   (← read).bbRef.appendInstruction inst

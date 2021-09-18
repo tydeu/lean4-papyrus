@@ -428,22 +428,6 @@ constant createAtEnd (type : @& TypeRef) (numReservedValues : UInt32 := 0) (name
 @[extern "papyrus_phi_node_create_after"]
 constant createAfter (type : @& TypeRef) (numReservedValues : UInt32 := 0) (name : @& String := "") (inst : @& InstructionRef) : IO PHINodeRef
 
-/-- get incoming value number i  -/
-@[extern "papyrus_phi_node_get_incoming_value"]
-constant getIncomingValue! (node : @& PHINodeRef) (i : UInt32) : IO ValueRef
-
-/-- set incoming value number i -/
-@[extern "papyrus_phi_node_set_incoming_value"]
-constant setIncomingValue! (node : @& PHINodeRef) (i : UInt32) (value : @& ValueRef) : IO PUnit
-
-/-- get incoming block number i  -/
-@[extern "papyrus_phi_node_get_incoming_block"]
-constant getIncomingBlock! (node : @& PHINodeRef) (i : UInt32) : IO BasicBlockRef
-
-/-- set incoming block number i -/
-@[extern "papyrus_phi_node_set_incoming_block"]
-constant setIncomingBlock! (node : @& PHINodeRef) (i : UInt32) (value : @& BasicBlockRef) : IO PUnit
-
 /-- add an incoming value to the phi node list -/
 @[extern "papyrus_phi_node_add_incoming"]
 constant addIncoming (node : @& PHINodeRef) (value : @& ValueRef) (bb : @& BasicBlockRef) : IO PUnit
@@ -459,6 +443,12 @@ constant getBlocks (node : @& PHINodeRef) : IO (Array BasicBlockRef)
 /-- get incoming values to this phi node -/
 @[extern "papyrus_phi_node_incoming_values"]
 constant getValues (node : @& PHINodeRef) : IO (Array ValueRef)
+
+/-- get incoming values and basic blocks to this phi node -/
+def getIncoming (node : @& PHINodeRef) : IO (Array (ValueRef × BasicBlockRef)) := do
+  let values ← node.getValues
+  let blocks ← node.getBlocks
+  Array.zip values blocks
 
 /-- set incoming value for block -/
 @[extern "papyrus_phi_node_set_incoming_value_for_block"]

@@ -466,36 +466,6 @@ extern "C" lean_obj_res papyrus_phi_node_create_after
 	return lean_io_result_mk_ok(mkValueRef(copyLink(typeRef), i));
 }
 
-// return incoming value number i
-extern "C" lean_obj_res papyrus_phi_node_get_incoming_value
-	(b_lean_obj_res instRef, unsigned i, lean_obj_arg /* w */)
-{
-	auto val = toPHINode(instRef)->getIncomingValue(i);
-	return lean_io_result_mk_ok(mkValueRef(copyLink(instRef), val));
-}
-
-// set incoming value number i
-extern "C" lean_obj_res papyrus_phi_node_set_incoming_value
-	(b_lean_obj_res instRef, unsigned i, b_lean_obj_res val, lean_obj_arg /* w */) {
-	toPHINode(instRef)->setIncomingValue(i, toValue(val));
-	return lean_io_result_mk_ok(lean_box(0));
-}
-
-// return incoming block number i
-extern "C" lean_obj_res papyrus_phi_node_get_incoming_block
-	(b_lean_obj_res instRef, unsigned i, lean_obj_arg /* w */)
-{
-	auto bb = toPHINode(instRef)->getIncomingBlock(i);
-	return lean_io_result_mk_ok(mkValueRef(copyLink(instRef), bb));
-}
-
-// set incoming block number i
-extern "C" lean_obj_res papyrus_phi_node_set_incoming_block
-	(b_lean_obj_res instRef, unsigned i, b_lean_obj_res val, lean_obj_arg /* w */) {
-	toPHINode(instRef)->setIncomingBlock(i, toBasicBlock(val));
-	return lean_io_result_mk_ok(lean_box(0));
-}
-
 // add an incoming value to the end of the PHI list
 extern "C" lean_obj_res papyrus_phi_node_add_incoming
 	(b_lean_obj_res instRef, b_lean_obj_res val, b_lean_obj_res bb, lean_obj_arg /* w */) {
