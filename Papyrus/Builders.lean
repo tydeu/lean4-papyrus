@@ -174,6 +174,11 @@ def callAs (type : FunctionTypeRef) (fn : ValueRef) (args : Array ValueRef := #[
 
 -- ## Binary Operators
 
+def binop (op : InstructionKind) (s1 s2 : ValueRef) (name : String := "") (h : op.is_binary_op := by trivial) : BasicBlockM BinaryOperatorRef := do
+  let inst ← BinaryOperatorRef.create op s1 s2 name h
+  (← read).bbRef.appendInstruction inst
+  return inst
+
 def add (s1 s2 : ValueRef) (name : String := "") : BasicBlockM BinaryOperatorRef := do
   let inst ← BinaryOperatorRef.create InstructionKind.add s1 s2 name
   (← read).bbRef.appendInstruction inst
@@ -260,6 +265,6 @@ def or (s1 s2 : ValueRef) (name : String := "") : BasicBlockM BinaryOperatorRef 
   return inst
 
 def xor (s1 s2 : ValueRef) (name : String := "") : BasicBlockM BinaryOperatorRef := do
-  let inst ← BinaryOperatorRef.create InstructionKind.xor   s1 s2 name
+  let inst ← BinaryOperatorRef.create InstructionKind.xor s1 s2 name
   (← read).bbRef.appendInstruction inst
   return inst

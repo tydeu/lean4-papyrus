@@ -217,6 +217,42 @@ def expandCallInst (name : Syntax) : (stx : Syntax) → MacroM Syntax
     ``(callAs $tyx $fn #[$[$argsx],*] $name)
 | inst => Macro.throwErrorAt inst "ill-formed call instruction"
 
+-- ## `binary operator`
+
+-- @[runParserAttributeHooks]
+ def binOp := 
+   nonReservedSymbol "add " true <|>
+   nonReservedSymbol "fadd " true <|>
+   nonReservedSymbol "sub " true <|>
+   nonReservedSymbol "fsub " true <|>
+   nonReservedSymbol "mul " true <|>
+   nonReservedSymbol "fmul " true <|>
+   nonReservedSymbol "udiv " true <|>
+   nonReservedSymbol "sdiv " true <|>
+   nonReservedSymbol "fdiv " true <|>
+   nonReservedSymbol "urem " true <|>
+   nonReservedSymbol "srem " true <|>
+   nonReservedSymbol "frem " true <|>
+   nonReservedSymbol "shl " true <|>
+   nonReservedSymbol "lshr " true <|>
+   nonReservedSymbol "ashr " true <|>
+   nonReservedSymbol "and " true <|>
+   nonReservedSymbol "or " true <|>
+   nonReservedSymbol "xor " true
+
+ @[runParserAttributeHooks]
+ def binaryOpInst := leading_parser
+   binOp >> typeParser >> valueParser >> "," >> valueParser
+
+def expandBinaryOpInst (name : Syntax) : (stx : Syntax) → MacroM Syntax
+ | `(binaryOpInst| add%$x $ty:llvmType $s1:llvmValue, $s2:llvmValue) => do
+   let fn := mkCIdentFrom x (`Papyrus.Builder ++ x.getKind)
+   let s1x ← expandValueAsRefArrow s1
+   let s2x ← expandValueAsRefArrow s2
+   `($fn $s1x $s2x $name)
+ | inst => Macro.throwErrorAt inst "ill-formed binary operator"
+
+
 --------------------------------------------------------------------------------
 -- # Namable Instructions
 --------------------------------------------------------------------------------
@@ -225,12 +261,14 @@ def expandCallInst (name : Syntax) : (stx : Syntax) → MacroM Syntax
 def instruction :=
   loadInst <|>
   getElementPtrInst <|>
-  callInst
+  callInst <|>
+  binaryOpInst
 
 def expandInstruction (name : Syntax) : (inst : Syntax) → MacroM Syntax
 | `(instruction| $inst:loadInst) => expandLoadInst name inst
 | `(instruction| $inst:getElementPtrInst) => expandGetElementPtrInst name inst
 | `(instruction| $inst:callInst) => expandCallInst name inst
+| `(instruction| $inst:binaryOpInst) => expandBinaryOpInst name inst
 | inst => Macro.throwErrorAt inst "unknown instruction"
 
 -- ## Named Instructions

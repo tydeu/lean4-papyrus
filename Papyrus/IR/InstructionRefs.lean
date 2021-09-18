@@ -414,7 +414,6 @@ end FunctionRef
 -/
 structure  BinaryOperatorRef extends InstructionRef
 instance : Coe BinaryOperatorRef InstructionRef := ⟨(·.toInstructionRef)⟩
-instance : Coe BinaryOperatorRef ValueRef := ⟨(·.toValueRef)⟩
 
 namespace BinaryOperatorRef
 /-- Create a new binary instruction, given the opcode and the two operands.  -/

@@ -437,8 +437,8 @@ extern "C" lean_obj_res papyrus_call_inst_create
 // Binary Operator
 //------------------------------------------------------------------------------
 extern "C" lean_obj_res papyrus_binary_operator_create
-	(uint8_t opcodeKind, b_lean_obj_res s1, b_lean_obj_res s2,  b_lean_obj_res nameObj, lean_obj_arg /* w */) {
-	auto inst = BinaryOperator::Create(static_cast<Instruction::BinaryOps>(opcodeKind+1), toValue(s1), toValue(s1), refOfString(nameObj));
+	(uint32_t opCode, b_lean_obj_res s1, b_lean_obj_res s2,  b_lean_obj_res nameObj, lean_obj_arg /* w */) {
+	auto inst = BinaryOperator::Create(static_cast<Instruction::BinaryOps>(opCode + 1), toValue(s1), toValue(s2), refOfString(nameObj));
 	return lean_io_result_mk_ok(mkValueRef(copyLink(s1), inst));
 }
 
