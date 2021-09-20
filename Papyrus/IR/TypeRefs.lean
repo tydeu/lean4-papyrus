@@ -10,59 +10,164 @@ namespace Papyrus
 
 -- # Special Types
 
-/-- An empty type. -/
+/-- A reference to an external LLVM `void` type. -/
+structure VoidTypeRef extends TypeRef where
+  is_void_type : toTypeRef.typeID = TypeID.void
+
+instance : Coe VoidTypeRef TypeRef := ⟨(·.toTypeRef)⟩
+
+/-- Get a reference to the `void` type of the current context. -/
 @[extern "papyrus_get_void_type"]
-constant getVoidTypeRef : LlvmM TypeRef
+constant VoidTypeRef.get : LlvmM VoidTypeRef
 
-/-- A label type. -/
+/-- A reference to an external LLVM `label` type. -/
+structure LabelTypeRef extends TypeRef where
+  is_label_type : toTypeRef.typeID = TypeID.void
+
+instance : Coe LabelTypeRef TypeRef := ⟨(·.toTypeRef)⟩
+
+/-- Get a reference to the `label` type of the current context. -/
 @[extern "papyrus_get_label_type"]
-constant getLabelTypeRef : LlvmM TypeRef
+constant LabelTypeRef.get : LlvmM LabelTypeRef
 
-/-- A metadata type. -/
+/-- A reference to an external LLVM `metadata` type. -/
+structure MetadataTypeRef extends TypeRef where
+  is_metadata_type : toTypeRef.typeID = TypeID.metadata
+
+instance : Coe MetadataTypeRef TypeRef := ⟨(·.toTypeRef)⟩
+
+/-- Get a reference to the `metadata` type of the current context. -/
 @[extern "papyrus_get_metadata_type"]
-constant getMetadataTypeRef : LlvmM TypeRef
+constant MetadataTypeRef.get : LlvmM MetadataTypeRef
 
-/-- A token type. -/
+/-- A reference to an external LLVM `token` type. -/
+structure TokenTypeRef extends TypeRef where
+  is_token_type : toTypeRef.typeID = TypeID.token
+
+instance : Coe TokenTypeRef TypeRef := ⟨(·.toTypeRef)⟩
+
+/-- Get a reference to the `token` type of the current context. -/
 @[extern "papyrus_get_token_type"]
-constant getTokenTypeRef : LlvmM TypeRef
+constant TokenTypeRef.get : LlvmM TokenTypeRef
 
-/-- A 64-bit X86 MMX vector type. -/
+/--
+  A reference to an external LLVM `x86_mmx` type,
+  which is a 64-bit X86 MMX vector type.
+-/
+structure X86MMXTypeRef extends TypeRef where
+  is_x86MMX_type : toTypeRef.typeID = TypeID.x86MMX
+
+instance : Coe X86MMXTypeRef TypeRef := ⟨(·.toTypeRef)⟩
+
+/-- Get a reference to the `x86_mmx` type of the current context. -/
 @[extern "papyrus_get_x86_mmx_type"]
-constant getX86MMXTypeRef : LlvmM TypeRef
+constant X86MMXTypeRef.get : LlvmM X86MMXTypeRef
 
-/-- A 8192-bit X86 AMX vector type. -/
+/--
+  A reference to an external LLVM `x86_mmx` type,
+  which is a 8192-bit X86 AMX vector type.
+-/
+structure X86AMXTypeRef extends TypeRef where
+  is_x86AMX_type : toTypeRef.typeID = TypeID.x86AMX
+
+instance : Coe X86AMXTypeRef TypeRef := ⟨(·.toTypeRef)⟩
+
+/-- Get a reference to the `x86_mmx` type of the current context. -/
 @[extern "papyrus_get_x86_amx_type"]
-constant getX86AMXTypeRef : LlvmM TypeRef
+constant X86AMXTypeRef.get : LlvmM X86AMXTypeRef
 
 -- # Floating Point Types
 
-/-- A 16-bit floating point type. -/
+/--
+  A reference to an external LLVM `half` type,
+   which is an IEEE half-precision (16-bit) floating point type.
+-/
+structure HalfTypeRef extends TypeRef where
+  is_half_type : toTypeRef.typeID = TypeID.half
+
+instance : Coe HalfTypeRef TypeRef := ⟨(·.toTypeRef)⟩
+
+/-- Get a reference to the `half` type of the current context. -/
 @[extern "papyrus_get_half_type"]
-constant getHalfTypeRef : LlvmM TypeRef
+constant HalfTypeRef.get : LlvmM HalfTypeRef
 
-/-- A 16-bit (7-bit significand) floating point type. -/
+/--
+  A reference to an external LLVM `bfloat` type,
+  which is a brain floating point type (16-bits with a 7-bit significand).
+-/
+structure BFloatTypeRef extends TypeRef where
+  is_bfloat_type : toTypeRef.typeID = TypeID.bfloat
+
+instance : Coe BFloatTypeRef TypeRef := ⟨(·.toTypeRef)⟩
+
+/-- Get a reference to the `bfloat` type of the current context. -/
 @[extern "papyrus_get_bfloat_type"]
-constant getBFloatTypeRef : LlvmM TypeRef
+constant BFloatTypeRef.get : LlvmM BFloatTypeRef
 
-/-- A 32-bit floating point type. -/
+/--
+  A reference to an external LLVM `float` type,
+  which is an IEEE single-precision (32-bit) floating point type.
+-/
+structure FloatTypeRef extends TypeRef where
+  is_float_type : toTypeRef.typeID = TypeID.float
+
+instance : Coe FloatTypeRef TypeRef := ⟨(·.toTypeRef)⟩
+
+/-- Get a reference to the `float` type of the current context. -/
 @[extern "papyrus_get_float_type"]
-constant getFloatTypeRef : LlvmM TypeRef
+constant FloatTypeRef.get : LlvmM FloatTypeRef
 
-/-- A 64-bit floating point type. -/
+/--
+  A reference to an external LLVM `float` type,
+  which is an IEEE double-precision (64-bit) floating point type.
+-/
+structure DoubleTypeRef extends TypeRef where
+  is_double_type : toTypeRef.typeID = TypeID.double
+
+instance : Coe DoubleTypeRef TypeRef := ⟨(·.toTypeRef)⟩
+
+/-- Get a reference to the `double` type of the current context. -/
 @[extern "papyrus_get_double_type"]
-constant getDoubleTypeRef : LlvmM TypeRef
+constant DoubleTypeRef.get : LlvmM DoubleTypeRef
 
-/-- An X87 80-bit floating point type. -/
+/--
+  A reference to an external LLVM `x86_fp80` type,
+  which is an Intel X87 80-bit floating point type.
+-/
+structure X86FP80TypeRef extends TypeRef where
+  is_x86FP80_type : toTypeRef.typeID = TypeID.x86FP80
+
+instance : Coe X86FP80TypeRef TypeRef := ⟨(·.toTypeRef)⟩
+
+/-- Get a reference to the `x86_fp80` type of the current context. -/
 @[extern "papyrus_get_x86_fp80_type"]
-constant getX86FP80TypeRef : LlvmM TypeRef
+constant X86FP80TypeRef.get : LlvmM X86FP80TypeRef
 
-/-- A 128-bit (112-bit significand) floating point type. -/
+/--
+  A reference to an external LLVM `fp128` type,
+  which is an IEEE quadruple-precision (128-bit) floating point type.
+-/
+structure FP128TypeRef extends TypeRef where
+  is_fp128_type : toTypeRef.typeID = TypeID.fp128
+
+instance : Coe FP128TypeRef TypeRef := ⟨(·.toTypeRef)⟩
+
+/-- Get a reference to the `fp128` type of the current context. -/
 @[extern "papyrus_get_fp128_type"]
-constant getFP128TypeRef : LlvmM TypeRef
+constant FP128TypeRef.get : LlvmM FP128TypeRef
 
-/-- A PowerPC 128-bit floating point type. -/
+/--
+  A reference to an external LLVM `ppc_fp128` type,
+  which is a PowerPC 128-bit floating point type.
+-/
+structure PPCFP128TypeRef extends TypeRef where
+  is_ppcFP128_type : toTypeRef.typeID = TypeID.ppcFP128
+
+instance : Coe PPCFP128TypeRef TypeRef := ⟨(·.toTypeRef)⟩
+
+/-- Get a reference to the `ppc_fp128` type of the current context. -/
 @[extern "papyrus_get_ppc_fp128_type"]
-constant getPPCFP128TypeRef : LlvmM TypeRef
+constant PPCFP128TypeRef.get : LlvmM PPCFP128TypeRef
 
 --------------------------------------------------------------------------------
 -- Integer Type References

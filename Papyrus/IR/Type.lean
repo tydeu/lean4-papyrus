@@ -63,19 +63,19 @@ def Type.typeID : (self : @& «Type») → TypeID
 open BaseStructType in
 /-- Get a reference to an external LLVM representation of this type. -/
 partial def Type.getRef : (type : «Type») → LlvmM TypeRef
-| half => getHalfTypeRef
-| bfloat => getBFloatTypeRef
-| float => getFloatTypeRef
-| double => getDoubleTypeRef
-| x86FP80 => getX86FP80TypeRef
-| fp128 => getFP128TypeRef
-| ppcFP128 => getPPCFP128TypeRef
-| void => getVoidTypeRef
-| label => getLabelTypeRef
-| metadata => getMetadataTypeRef
-| x86MMX => getX86MMXTypeRef
-| x86AMX => getX86AMXTypeRef
-| token => getTokenTypeRef
+| half => HalfTypeRef.get
+| bfloat => BFloatTypeRef.get
+| float => FloatTypeRef.get
+| double => DoubleTypeRef.get
+| x86FP80 => X86FP80TypeRef.get
+| fp128 => FP128TypeRef.get
+| ppcFP128 => PPCFP128TypeRef.get
+| void => VoidTypeRef.get
+| label => LabelTypeRef.get
+| metadata => MetadataTypeRef.get
+| x86MMX => X86MMXTypeRef.get
+| x86AMX => X86AMXTypeRef.get
+| token => TokenTypeRef.get
 | integer ⟨bitWidth⟩ =>
   IntegerTypeRef.get bitWidth
 | function ⟨retType, paramTypes, isVarArg⟩ => do

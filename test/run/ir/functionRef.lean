@@ -10,7 +10,7 @@ def assertBEq [Repr α] [BEq α] (expected actual : α) : IO PUnit := do
 -- empty function
 #eval LlvmM.run do
   let name := "foo"
-  let voidTypeRef ← getVoidTypeRef
+  let voidTypeRef ← VoidTypeRef.get
   let fnTy ← FunctionTypeRef.get voidTypeRef #[]
   let fn ← FunctionRef.create fnTy name
   assertBEq name (← fn.getName)
@@ -29,7 +29,7 @@ def assertBEq [Repr α] [BEq α] (expected actual : α) : IO PUnit := do
 -- single block function
 #eval LlvmM.run do
   let bbName := "foo"
-  let voidTypeRef ← getVoidTypeRef
+  let voidTypeRef ← VoidTypeRef.get
   let fnTy ← FunctionTypeRef.get voidTypeRef #[]
   let fn ← FunctionRef.create fnTy "test"
   let bb ← BasicBlockRef.create bbName

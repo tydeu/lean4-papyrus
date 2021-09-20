@@ -19,7 +19,7 @@ def assertBEq [Repr α] [BEq α] (expected actual : α) : IO PUnit := do
 #eval LlvmM.run do
   let fnName := "foo"
   let mod ← ModuleRef.new "test"
-  let voidTypeRef ← getVoidTypeRef
+  let voidTypeRef ← VoidTypeRef.get
   let fnTy ← FunctionTypeRef.get voidTypeRef #[]
   let fn ← FunctionRef.create fnTy fnName
   mod.appendFunction fn

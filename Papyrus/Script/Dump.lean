@@ -22,6 +22,19 @@ export Dump (dump)
 instance [DumpRef α] : Dump α := ⟨liftM ∘ dumpRef⟩
 
 instance : DumpRef TypeRef := ⟨(·.dump)⟩
+instance : DumpRef VoidTypeRef := ⟨(·.dump)⟩
+instance : DumpRef LabelTypeRef := ⟨(·.dump)⟩
+instance : DumpRef MetadataTypeRef := ⟨(·.dump)⟩
+instance : DumpRef TokenTypeRef := ⟨(·.dump)⟩
+instance : DumpRef X86MMXTypeRef := ⟨(·.dump)⟩
+instance : DumpRef X86AMXTypeRef := ⟨(·.dump)⟩
+instance : DumpRef HalfTypeRef := ⟨(·.dump)⟩
+instance : DumpRef BFloatTypeRef := ⟨(·.dump)⟩
+instance : DumpRef FloatTypeRef := ⟨(·.dump)⟩
+instance : DumpRef DoubleTypeRef := ⟨(·.dump)⟩
+instance : DumpRef X86FP80TypeRef := ⟨(·.dump)⟩
+instance : DumpRef FP128TypeRef := ⟨(·.dump)⟩
+instance : DumpRef PPCFP128TypeRef := ⟨(·.dump)⟩
 instance : DumpRef IntegerTypeRef := ⟨(·.dump)⟩
 instance : DumpRef FunctionTypeRef := ⟨(·.dump)⟩
 instance : DumpRef PointerTypeRef := ⟨(·.dump)⟩
