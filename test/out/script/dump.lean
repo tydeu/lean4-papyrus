@@ -32,3 +32,38 @@ llvm module hello do
 #dump llvm i64 -1
 #dump llvm i128 1208925819614629174706188 -- 2^80 + 12
 #dump llvm i128 -1208925819614629174706188
+
+
+-- # Ops
+
+llvm module ops do
+  define i32 @opsEx(i32 %a, i32 %b) do
+    %c = add i32 %a, %b
+    %d = mul i32 %a, %b
+    %e = sub i32 %a, %b
+    %f = udiv i32 %a, %b 
+    %g = sdiv i32 %a, %b 
+    %h = urem i32 %a, %b
+    %i = srem i32 %a, %b
+    %j = shl i32 %a, %b
+    %k = lshr i32 %a, %b
+    %l = ashr i32 %a, %b
+    %m = and i32 %a, %b
+    %n = or i32 %a, %b
+    %o = xor i32 %a, %b
+    ret i32 0
+
+  define i32 @mulEx(i32 %a, i32 %b) do
+    %d = mul i32 %a, %b
+    ret i32 0
+
+  define float @fopsEx(float %a, float %b) do
+    %c = fadd float %a, %b
+    %d = fsub float %a, %b
+    %e = fmul float %a, %b
+    %f = fdiv float %a, %b
+    %g = frem float %a, %b
+    ret i32 0
+
+
+#dump ops

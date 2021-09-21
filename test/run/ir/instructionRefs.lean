@@ -129,3 +129,9 @@ def assertBEq [Repr α] [BEq α] (expected actual : α) : IO PUnit := do
   let inst ← CallInstRef.create fnTy fn #[]
   assertBEq ValueKind.instruction inst.valueKind
   assertBEq InstructionKind.call inst.instructionKind
+
+-- binary operations
+#eval LlvmM.run do
+  let n ← ConstantIntRef.ofUInt64 20
+  let m ← ConstantIntRef.ofUInt64 10
+  let op ← BinaryOperatorRef.create InstructionKind.add n m

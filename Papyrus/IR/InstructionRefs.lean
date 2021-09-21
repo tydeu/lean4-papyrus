@@ -403,3 +403,20 @@ def createCall
   CallInstRef.create (← self.getFunctionType) self args name
 
 end FunctionRef
+
+--------------------------------------------------------------------------------
+-- # Binary Operators
+--------------------------------------------------------------------------------
+
+/--
+  A reference to an external LLVM
+  [Binary Operator](https://llvm.org/doxygen/classllvm_1_1BinaryOperator.html).
+-/
+structure  BinaryOperatorRef extends InstructionRef
+instance : Coe BinaryOperatorRef InstructionRef := ⟨(·.toInstructionRef)⟩
+
+namespace BinaryOperatorRef
+/-- Create a new binary instruction, given the opcode and the two operands.  -/
+@[extern "papyrus_binary_operator_create"]
+constant create (op : InstructionKind) (s1 : @& ValueRef) (s2 : @& ValueRef) (name : @& String := "") (h : op.is_binary_op := by trivial) : IO BinaryOperatorRef
+end BinaryOperatorRef

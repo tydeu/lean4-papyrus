@@ -171,3 +171,100 @@ def callAs (type : FunctionTypeRef) (fn : ValueRef) (args : Array ValueRef := #[
   let inst ← CallInstRef.create type fn args name
   (← read).bbRef.appendInstruction inst
   return inst
+
+-- ## Binary Operators
+
+def binop (op : InstructionKind) (s1 s2 : ValueRef) (name : String := "") (h : op.is_binary_op := by trivial) : BasicBlockM BinaryOperatorRef := do
+  let inst ← BinaryOperatorRef.create op s1 s2 name h
+  (← read).bbRef.appendInstruction inst
+  return inst
+
+def add (s1 s2 : ValueRef) (name : String := "") : BasicBlockM BinaryOperatorRef := do
+  let inst ← BinaryOperatorRef.create InstructionKind.add s1 s2 name
+  (← read).bbRef.appendInstruction inst
+  return inst
+
+def fadd (s1 s2 : ValueRef) (name : String := "") : BasicBlockM BinaryOperatorRef := do
+  let inst ← BinaryOperatorRef.create InstructionKind.fadd s1 s2 name
+  (← read).bbRef.appendInstruction inst
+  return inst
+
+def sub (s1 s2 : ValueRef) (name : String := "") : BasicBlockM BinaryOperatorRef := do
+  let inst ← BinaryOperatorRef.create InstructionKind.sub s1 s2 name
+  (← read).bbRef.appendInstruction inst
+  return inst
+
+def fsub (s1 s2 : ValueRef) (name : String := "") : BasicBlockM BinaryOperatorRef := do
+  let inst ← BinaryOperatorRef.create InstructionKind.fsub s1 s2 name
+  (← read).bbRef.appendInstruction inst
+  return inst
+
+def mul (s1 s2 : ValueRef) (name : String := "") : BasicBlockM BinaryOperatorRef := do
+  let inst ← BinaryOperatorRef.create InstructionKind.mul s1 s2 name
+  (← read).bbRef.appendInstruction inst
+  return inst
+
+def fmul (s1 s2 : ValueRef) (name : String := "") : BasicBlockM BinaryOperatorRef := do
+  let inst ← BinaryOperatorRef.create InstructionKind.fmul s1 s2 name
+  (← read).bbRef.appendInstruction inst
+  return inst
+
+def udiv (s1 s2 : ValueRef) (name : String := "") : BasicBlockM BinaryOperatorRef := do
+  let inst ← BinaryOperatorRef.create InstructionKind.udiv s1 s2 name
+  (← read).bbRef.appendInstruction inst
+  return inst
+
+def sdiv (s1 s2 : ValueRef) (name : String := "") : BasicBlockM BinaryOperatorRef := do
+  let inst ← BinaryOperatorRef.create InstructionKind.sdiv s1 s2 name
+  (← read).bbRef.appendInstruction inst
+  return inst
+
+def fdiv (s1 s2 : ValueRef) (name : String := "") : BasicBlockM BinaryOperatorRef := do
+  let inst ← BinaryOperatorRef.create InstructionKind.fdiv s1 s2 name
+  (← read).bbRef.appendInstruction inst
+  return inst
+
+def urem (s1 s2 : ValueRef) (name : String := "") : BasicBlockM BinaryOperatorRef := do
+  let inst ← BinaryOperatorRef.create InstructionKind.urem s1 s2 name
+  (← read).bbRef.appendInstruction inst
+  return inst
+
+def srem (s1 s2 : ValueRef) (name : String := "") : BasicBlockM BinaryOperatorRef := do
+  let inst ← BinaryOperatorRef.create InstructionKind.srem s1 s2 name
+  (← read).bbRef.appendInstruction inst
+  return inst
+
+def frem (s1 s2 : ValueRef) (name : String := "") : BasicBlockM BinaryOperatorRef := do
+  let inst ← BinaryOperatorRef.create InstructionKind.frem s1 s2 name
+  (← read).bbRef.appendInstruction inst
+  return inst
+
+def shl (s1 s2 : ValueRef) (name : String := "") : BasicBlockM BinaryOperatorRef := do
+  let inst ← BinaryOperatorRef.create InstructionKind.shl s1 s2 name
+  (← read).bbRef.appendInstruction inst
+  return inst
+
+def lshr (s1 s2 : ValueRef) (name : String := "") : BasicBlockM BinaryOperatorRef := do
+  let inst ← BinaryOperatorRef.create InstructionKind.lshr s1 s2 name
+  (← read).bbRef.appendInstruction inst
+  return inst
+
+def ashr (s1 s2 : ValueRef) (name : String := "") : BasicBlockM BinaryOperatorRef := do
+  let inst ← BinaryOperatorRef.create InstructionKind.ashr s1 s2 name
+  (← read).bbRef.appendInstruction inst
+  return inst
+
+def and (s1 s2 : ValueRef) (name : String := "") : BasicBlockM BinaryOperatorRef := do
+  let inst ← BinaryOperatorRef.create InstructionKind.and s1 s2 name
+  (← read).bbRef.appendInstruction inst
+  return inst
+
+def or (s1 s2 : ValueRef) (name : String := "") : BasicBlockM BinaryOperatorRef := do
+  let inst ← BinaryOperatorRef.create InstructionKind.or s1 s2 name
+  (← read).bbRef.appendInstruction inst
+  return inst
+
+def xor (s1 s2 : ValueRef) (name : String := "") : BasicBlockM BinaryOperatorRef := do
+  let inst ← BinaryOperatorRef.create InstructionKind.xor s1 s2 name
+  (← read).bbRef.appendInstruction inst
+  return inst
