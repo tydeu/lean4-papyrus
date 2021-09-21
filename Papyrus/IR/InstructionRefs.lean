@@ -403,3 +403,67 @@ def createCall
   CallInstRef.create (← self.getFunctionType) self args name
 
 end FunctionRef
+
+--------------------------------------------------------------------------------
+-- # PHI
+--------------------------------------------------------------------------------
+
+/--
+  A reference to an external LLVM
+  [PHINode](https://llvm.org/doxygen/classllvm_1_1PHINode.html).
+-/
+structure PHINodeRef extends InstructionRef
+instance : Coe PHINodeRef InstructionRef := ⟨(·.toInstructionRef)⟩
+
+namespace PHINodeRef
+/-- Create a new phi node instruction. -/
+@[extern "papyrus_phi_node_create"]
+constant create (type : @& TypeRef) (numReservedValues : UInt32 := 0) (name : @& String := "") : IO PHINodeRef
+
+/-- Create a new phi node instruction at the end of a given basic block.  -/
+@[extern "papyrus_phi_node_create_at_end"]
+constant createAtEnd (type : @& TypeRef) (numReservedValues : UInt32 := 0) (name : @& String := "") (bb : @& BasicBlockRef) : IO PHINodeRef
+
+/-- Create a new phi node instruction after the given instruction.  -/
+@[extern "papyrus_phi_node_create_after"]
+constant createAfter (type : @& TypeRef) (numReservedValues : UInt32 := 0) (name : @& String := "") (inst : @& InstructionRef) : IO PHINodeRef
+
+/-- add an incoming value to the phi node list -/
+@[extern "papyrus_phi_node_add_incoming"]
+constant addIncoming (node : @& PHINodeRef) (value : @& ValueRef) (bb : @& BasicBlockRef) : IO PUnit
+
+/-- remove an incoming value to the phi node list -/
+@[extern "papyrus_phi_node_remove_incoming_value"]
+constant removeIncomingValue (node : @& PHINodeRef) (bb : @& BasicBlockRef) (deleteIfPHIEmpty : Bool := true) : IO ValueRef
+
+/-- get blocks branching to this phi node -/
+@[extern "papyrus_phi_node_get_blocks"]
+constant getBlocks (node : @& PHINodeRef) : IO (Array BasicBlockRef)
+
+/-- get incoming values to this phi node -/
+@[extern "papyrus_phi_node_incoming_values"]
+constant getValues (node : @& PHINodeRef) : IO (Array ValueRef)
+
+/-- get incoming values and basic blocks to this phi node -/
+def getIncoming (node : @& PHINodeRef) : IO (Array (ValueRef × BasicBlockRef)) := do
+  let values ← node.getValues
+  let blocks ← node.getBlocks
+  Array.zip values blocks
+
+/-- set incoming value for block -/
+@[extern "papyrus_phi_node_set_incoming_value_for_block"]
+constant setIncomingValueForBlock (node : @& PHINodeRef) (bb : @& BasicBlockRef) (value : @& ValueRef) : IO PUnit
+
+/-- get incoming value for block -/
+@[extern "papyrus_phi_node_get_incoming_value_for_block"]
+constant getIncomingValueForBlock (node : @& PHINodeRef) (bb : @& BasicBlockRef) : IO ValueRef
+
+/-- whether all blocks have an incoming value -/
+@[extern "papyrus_phi_node_is_complete"]
+constant isComplete (node : @& PHINodeRef) : IO Bool
+
+/-- whether the phi node merges together the same value -/
+@[extern "papyrus_phi_node_has_constant_or_undef_value"]
+constant hasConstantOrUndefValue (node : @& PHINodeRef) : IO Bool
+
+end PHINodeRef

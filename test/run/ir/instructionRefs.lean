@@ -129,3 +129,16 @@ def assertBEq [Repr α] [BEq α] (expected actual : α) : IO PUnit := do
   let inst ← CallInstRef.create fnTy fn #[]
   assertBEq ValueKind.instruction inst.valueKind
   assertBEq InstructionKind.call inst.instructionKind
+
+-- `PHI Node`
+#eval LlvmM.run do
+  let i8Ty ← int8Type.getRef -- type of the PHI Node
+  let then_ ← BasicBlockRef.create "then"
+  let else_ ← BasicBlockRef.create "else"
+  let merge_ ← BasicBlockRef.create "ifcont"
+  let inst ← CondBrInstRef.create then_ else_ (← ConstantIntRef.ofBool true)
+  let thenValue ← ConstantIntRef.ofUInt8 0
+  let elseValue ← ConstantIntRef.ofUInt8 2
+  let phi ← PHINodeRef.createAtEnd i8Ty (numReservedValues := 2) (name := "iftmp") (bb := merge_)
+  phi.addIncoming thenValue then_
+  phi.addIncoming elseValue else_

@@ -433,4 +433,108 @@ extern "C" lean_obj_res papyrus_call_inst_create
 	return lean_io_result_mk_ok(mkValueRef(copyLink(typeRef), i));
 }
 
+//------------------------------------------------------------------------------
+// PHI
+//------------------------------------------------------------------------------
+
+// Get the LLVM StoreInst pointer wrapped in an object.
+PHINode* toPHINode(lean_object* instRef) {
+	return llvm::cast<PHINode>(toValue(instRef));
+}
+
+// Get a reference to a newly created phi instruction.
+extern "C" lean_obj_res papyrus_phi_node_create
+	(b_lean_obj_res typeRef, unsigned numReservedValues, b_lean_obj_res nameObj, lean_obj_arg /* w */)
+{
+	auto i = PHINode::Create(toType(typeRef), numReservedValues, refOfString(nameObj));
+	return lean_io_result_mk_ok(mkValueRef(copyLink(typeRef), i));
+}
+
+// Get a reference to a newly created phi instruction inserted at the end of the given basic block
+extern "C" lean_obj_res papyrus_phi_node_create_at_end
+	(b_lean_obj_res typeRef, unsigned numReservedValues, b_lean_obj_res nameObj, b_lean_obj_res bb, lean_obj_arg /* w */)
+{
+	auto i = PHINode::Create(toType(typeRef), numReservedValues, refOfString(nameObj), toBasicBlock(bb));
+	return lean_io_result_mk_ok(mkValueRef(copyLink(typeRef), i));
+}
+
+// Get a reference to a newly created phi instruction inserted after the given instruction
+extern "C" lean_obj_res papyrus_phi_node_create_after
+	(b_lean_obj_res typeRef, unsigned numReservedValues, b_lean_obj_res nameObj, b_lean_obj_res inst, lean_obj_arg /* w */)
+{
+	auto i = PHINode::Create(toType(typeRef), numReservedValues, refOfString(nameObj), toInstruction(inst));
+	return lean_io_result_mk_ok(mkValueRef(copyLink(typeRef), i));
+}
+
+// add an incoming value to the end of the PHI list
+extern "C" lean_obj_res papyrus_phi_node_add_incoming
+	(b_lean_obj_res instRef, b_lean_obj_res val, b_lean_obj_res bb, lean_obj_arg /* w */) {
+	toPHINode(instRef)->addIncoming(toValue(val), toBasicBlock(bb));
+	return lean_io_result_mk_ok(lean_box(0));
+} 
+
+// remove an incoming value for the given block
+extern "C" lean_obj_res papyrus_phi_node_remove_incoming_value
+	(b_lean_obj_res instRef,  b_lean_obj_res bb, uint8_t deleteIfPHIEmpty, lean_obj_arg /* w */) {
+	auto val = toPHINode(instRef)->removeIncomingValue(toBasicBlock(bb), deleteIfPHIEmpty);
+	return lean_io_result_mk_ok(mkValueRef(copyLink(instRef), val));
+} 
+
+// get the array of blocks of this phi node
+extern "C" lean_obj_res papyrus_phi_node_blocks
+	(b_lean_obj_res instRef, lean_obj_arg /* w */) {
+	auto link = borrowLink(instRef);
+	auto blocks = toPHINode(instRef)->blocks();
+	lean_object* arr = lean_alloc_array(0, PAPYRUS_DEFAULT_ARRAY_CAPCITY);
+	for (auto& block : blocks) {
+		lean_inc_ref(link);
+		arr = lean_array_push(arr, mkValueRef(link, block));
+	}
+	return lean_io_result_mk_ok(arr);
+}
+
+// get array of incoming values for phi node
+extern "C" lean_obj_res papyrus_phi_node_incoming_values
+	(b_lean_obj_res instRef, lean_obj_arg /* w */) {
+
+	auto link = borrowLink(instRef);
+	auto values = toPHINode(instRef)->incoming_values();
+	lean_object* arr = lean_alloc_array(0, PAPYRUS_DEFAULT_ARRAY_CAPCITY);
+	for (auto& value : values) {
+		lean_inc_ref(link);
+		arr = lean_array_push(arr, mkValueRef(link, value.get()));
+	}
+	return lean_io_result_mk_ok(arr);
+}
+
+// set incoming value of block
+extern "C" lean_obj_res papyrus_phi_node_set_incoming_value_for_block
+	(b_lean_obj_res instRef, b_lean_obj_res bb, b_lean_obj_res val, lean_obj_arg /* w */) {
+	toPHINode(instRef)->setIncomingValueForBlock(toBasicBlock(bb), toValue(val));
+	return lean_io_result_mk_ok(lean_box(0));
+}
+
+// return incoming value for given block
+extern "C" lean_obj_res papyrus_phi_node_get_incoming_value_for_block
+	(b_lean_obj_res instRef, b_lean_obj_res bb, lean_obj_arg /* w */)
+{
+	auto val = toPHINode(instRef)->getIncomingValueForBlock(toBasicBlock(bb));
+	return lean_io_result_mk_ok(mkValueRef(copyLink(instRef), val));
+}
+
+// whether the phi node has incoming values for all predecessors 
+extern "C" uint8_t papyrus_phi_node_is_complete
+	(b_lean_obj_res instRef, lean_obj_arg /* w */)
+{
+	return toPHINode(instRef)->isComplete();
+}
+
+extern "C" uint8_t papyrus_phi_node_has_constant_or_undef_value
+	(b_lean_obj_res instRef, lean_obj_arg /* w */)
+{
+	return toPHINode(instRef)->hasConstantOrUndefValue();
+}
+
+
+
 } // end namespace papyrus
