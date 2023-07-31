@@ -52,7 +52,7 @@ jobs:
       if: matrix.os == 'macOS-latest'
       run: |
         brew install llvm@12
-        echo "$(brew --prefix)/opt/llvm/bin" >> $GITHUB_PATH
+        echo "$(brew --prefix)/opt/llvm@12/bin" >> $GITHUB_PATH
     - name: Install LLVM (Ubuntu)
       if: matrix.os == 'ubuntu-latest'
       run: |
